@@ -5,7 +5,11 @@
   "author": "Soham Zemse (github.com/zemse)",
   "license": "MIT",
   "private": false,
-  "scripts": {"build": "./do.sh build all"},
+  "scripts": {
+    "build": "./do.sh build all", 
+    "localnet:start": "npx solana-localnet update && npx solana-localnet up",
+    "localnet:stop": "npx solana-localnet down"
+  },
   "devDependencies": {
     "mocha": "^8.1.3",
     "ts-node": "^9.0.0",
