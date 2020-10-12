@@ -71,6 +71,7 @@ perform_action() {
         #   cp "$projectDir/target/$profile/$so_name.so" "$so_path/${so_name}.so"
           cp "$so_path/${so_name}.so" "$so_path/${so_name}_debug.so"
           "$sdkDir"/dependencies/llvm-native/bin/llvm-objcopy --strip-all "$so_path/${so_name}.so" "$so_path/$so_name.so"
+          mkdir -p "$PWD/build" && cp "$so_path/${so_name}.so" "$PWD/build/${so_name}.so"
         else
             echo "$projectDir does not contain a program, skipping"
         fi
