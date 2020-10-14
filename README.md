@@ -7,6 +7,20 @@
 
 > TODO: add info
 
+## Pre-requisites
+
+```
+$ node --version
+$ npm --version
+$ docker -v
+$ wget --version
+$ rustup --version
+$ rustc --version
+$ cargo --version
+```
+
+You can [view](https://github.com/solana-labs/example-helloworld/blob/master/README-installation-notes.md) installation notes.
+
 ## Available Scripts
 
 ### `yarn build`
