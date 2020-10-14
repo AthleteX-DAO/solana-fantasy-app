@@ -1,5 +1,5 @@
-import { DeployContract } from './DeployContract.test';
+import { LoadProgram } from './LoadProgram.test';
 
 export const HelloWorld = () => describe('Hello World', () => {
-  DeployContract();
+  LoadProgram();
 })
