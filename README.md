@@ -11,7 +11,7 @@
 
 ```
 $ node --version
-$ npm --version
+$ yarn --version
 $ docker -v
 $ wget --version
 $ rustup --version
