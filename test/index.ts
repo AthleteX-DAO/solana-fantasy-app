@@ -3,4 +3,4 @@ import { TestCases } from './suites';
 
 describe('Solana', () => {
   TestCases();
-})
+});
