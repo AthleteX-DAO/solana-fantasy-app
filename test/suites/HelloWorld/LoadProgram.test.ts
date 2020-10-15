@@ -14,8 +14,8 @@ export const LoadProgram = () =>
 
       // console.log(data.slice(0, 10));
 
-      const balance = await global.connection.getBalance(global.payerAccount.publicKey);
-      console.log(balance);
+      const balanceBefore = await global.connection.getBalance(global.payerAccount.publicKey);
+      // console.log(balanceBefore);
 
       const isLoaded = await BpfLoader.load(
         global.connection,
@@ -28,5 +28,10 @@ export const LoadProgram = () =>
       strictEqual(isLoaded, true, 'load method should return true');
 
       global.helloWorldPPK = programAccount.publicKey;
+
+      const balanceAfter = await global.connection.getBalance(global.payerAccount.publicKey);
+      // console.log(balanceAfter);
+
+      console.log('fees for deploy tx', (balanceBefore - balanceAfter) / 10 ** 9, 'sol');
     });
   });
