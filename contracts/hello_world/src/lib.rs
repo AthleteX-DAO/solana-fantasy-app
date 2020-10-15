@@ -43,7 +43,7 @@ fn process_instruction(
     // Increment and store the number of times the account has been greeted
     let mut data = account.try_borrow_mut_data()?;
     let mut num_greets = LittleEndian::read_u32(&data);
-    num_greets += 2;
+    num_greets += 1;
     LittleEndian::write_u32(&mut data[0..], num_greets);
 
     info!("Hello!");
