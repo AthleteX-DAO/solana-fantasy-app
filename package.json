@@ -9,7 +9,7 @@
   "scripts": {
     "build": "./do.sh build all",
     "localnet:up": "sudo ./localnet.sh update && sudo ./localnet.sh up",
-    "localnet:down": "./localnet.sh down",
+    "localnet:down": "sudo ./localnet.sh down",
     "mocha": "mocha -t 120000 -r ts-node/register test/index.ts",
     "test": "yarn build && yarn localnet:up && npm-run-all mocha localnet:down --continue-on-error",
     "style:check": "prettier --check .",
