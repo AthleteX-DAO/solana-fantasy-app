@@ -11,7 +11,7 @@ const BufferLayout = require('buffer-layout');
 // account to greet to
 const greetAccount = new Account();
 
-const greetedAccountDataLayout = BufferLayout.struct([BufferLayout.u32('numGreets')]);
+const greetedAccountDataLayout = BufferLayout.struct([BufferLayout.u32('numGreets'),BufferLayout.u32('numGreets2')]);
 
 export const Greet = () =>
   describe('Greet', () => {
@@ -21,13 +21,14 @@ export const Greet = () =>
       const lamports = await global.connection.getMinimumBalanceForRentExemption(
         greetedAccountDataLayout.span
       );
-
+        console.log(space);
+        
       const transaction = new Transaction().add(
         SystemProgram.createAccount({
           fromPubkey: global.payerAccount.publicKey,
           newAccountPubkey: greetAccount.publicKey,
           lamports,
-          space,
+          space: space + 10,
           programId: global.helloWorldPPK,
         })
       );
@@ -70,8 +71,10 @@ export const Greet = () =>
 async function getNumberOfGreetings(): Promise<number> {
   const accountInfo = await global.connection.getAccountInfo(greetAccount.publicKey);
   if (accountInfo === null) {
-    throw 'Error: cannot find the greeted account';
+    throw Error('Error: cannot find the greeted account');
   }
+  console.log(accountInfo);
+  
   const info: { numGreets: number } = greetedAccountDataLayout.decode(
     Buffer.from(accountInfo.data)
   );

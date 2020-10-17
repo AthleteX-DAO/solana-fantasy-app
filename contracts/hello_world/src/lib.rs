@@ -35,16 +35,19 @@ fn process_instruction(
     }
 
     // The data must be large enough to hold a u64 count
-    if account.try_data_len()? < mem::size_of::<u32>() {
-        info!("Greeted account data length too small for u32");
+    if account.try_data_len()? < 8 {
+        info!("Greeted account data length too small for u32 x 2");
         return Err(ProgramError::InvalidAccountData);
     }
 
     // Increment and store the number of times the account has been greeted
     let mut data = account.try_borrow_mut_data()?;
-    let mut num_greets = LittleEndian::read_u32(&data);
+    let mut num_greets = LittleEndian::read_u32(&data[0..4]);
+    let mut num_greets2 = LittleEndian::read_u32(&data[4..8]);
     num_greets += 1;
-    LittleEndian::write_u32(&mut data[0..], num_greets);
+    num_greets2 += 2;
+    LittleEndian::write_u32(&mut data[0..4], num_greets);
+    LittleEndian::write_u32(&mut data[4..8], num_greets2);
 
     info!("Hello!");
 
