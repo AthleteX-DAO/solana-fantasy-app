@@ -1,16 +1,50 @@
-interface League {}
+type GameResults = Record<number, number>;
 
-interface Program {
+interface Season {
   /**
    * list of players available for current/coming season
    * used as initial list for league creating
    */
   availablePlayers: string[];
 
+  games: Record<number, GameResults>;
+}
+
+interface UserState {
+  ownedPlayers: number[];
+
+  gamePlayersPick: Record<number, number[]>;
+
+  exchangeProposals: Array<{ from: number; to: number }>;
+}
+
+interface League {
+  seasonId: number;
+
+  bidAmount: number;
+
+  invitedUsers: string[];
+
+  maxUsers: number;
+
+  users: Record<string, UserState>;
+}
+
+interface Program {
+  /**
+   * Record of id:playerName
+   */
+  players: Record<number, string>;
+
+  /**
+   * Record of id:season
+   */
+  seasons: Record<number, Season>;
+
   /**
    * full state of every league
    */
-  leagues: Record<string, League>;
+  leagues: Record<number, League>;
 
   // User Api
   // ----------------------------------------------------------------------------------------------------------------
@@ -49,10 +83,10 @@ interface Program {
   // ----------------------------------------------------------------------------------------------------------------
 
   /**
-   * Ability to update list of players available for coming season
-   * @param players player names
+   * Create new season
+   * @param season season state
    */
-  updatePlayersList(players: string[]): void;
+  createNewSeason(season: Season): void;
 
   /**
    * The way Oracle will bring weekly game scores
