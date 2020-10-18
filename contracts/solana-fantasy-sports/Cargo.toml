@@ -2,11 +2,11 @@
 # Note: This crate must be built using do.sh
 
 [package]
-name = "spl-token-v3"
-version = "3.0.0"
-description = "Solana Program Library Token v3"
-authors = ["Solana Maintainers <maintainers@solana.foundation>"]
-repository = "https://github.com/solana-labs/solana-program-library"
+name = "solana-fantasy-sports"
+version = "1.0.0"
+description = "Solana Fantasy Sports"
+authors = []
+repository = "https://github.com/ProtoDao/solana-fantasy-app"
 license = "Apache-2.0"
 edition = "2018"
 exclude = ["js/**"]
