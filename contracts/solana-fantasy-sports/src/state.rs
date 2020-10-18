@@ -1,6 +1,5 @@
 //! State transition types
 
-use crate::instruction::MAX_SIGNERS;
 use arrayref::{array_mut_ref, array_ref, array_refs, mut_array_refs};
 use num_enum::TryFromPrimitive;
 use solana_sdk::{
@@ -9,76 +8,6 @@ use solana_sdk::{
     program_pack::{IsInitialized, Pack, Sealed},
     pubkey::Pubkey,
 };
-
-/// Mint data.
-#[repr(C)]
-#[derive(Clone, Copy, Debug, Default, PartialEq)]
-pub struct Mint {
-    /// Optional authority used to mint new tokens. The mint authority may only be provided during
-    /// mint creation. If no mint authority is present then the mint has a fixed supply and no
-    /// further tokens may be minted.
-    pub mint_authority: COption<Pubkey>,
-    /// Total supply of tokens.
-    pub supply: u64,
-    /// Number of base 10 digits to the right of the decimal place.
-    pub decimals: u8,
-    /// Is `true` if this structure has been initialized
-    pub is_initialized: bool,
-    /// Optional authority to freeze token accounts.
-    pub freeze_authority: COption<Pubkey>,
-}
-impl Sealed for Mint {}
-impl IsInitialized for Mint {
-    fn is_initialized(&self) -> bool {
-        self.is_initialized
-    }
-}
-impl Pack for Mint {
-    const LEN: usize = 82;
-    fn unpack_from_slice(src: &[u8]) -> Result<Self, ProgramError> {
-        let src = array_ref![src, 0, 82];
-        let (mint_authority, supply, decimals, is_initialized, freeze_authority) =
-            array_refs![src, 36, 8, 1, 1, 36];
-        let mint_authority = unpack_coption_key(mint_authority)?;
-        let supply = u64::from_le_bytes(*supply);
-        let decimals = decimals[0];
-        let is_initialized = match is_initialized {
-            [0] => false,
-            [1] => true,
-            _ => return Err(ProgramError::InvalidAccountData),
-        };
-        let freeze_authority = unpack_coption_key(freeze_authority)?;
-        Ok(Mint {
-            mint_authority,
-            supply,
-            decimals,
-            is_initialized,
-            freeze_authority,
-        })
-    }
-    fn pack_into_slice(&self, dst: &mut [u8]) {
-        let dst = array_mut_ref![dst, 0, 82];
-        let (
-            mint_authority_dst,
-            supply_dst,
-            decimals_dst,
-            is_initialized_dst,
-            freeze_authority_dst,
-        ) = mut_array_refs![dst, 36, 8, 1, 1, 36];
-        let &Mint {
-            ref mint_authority,
-            supply,
-            decimals,
-            is_initialized,
-            ref freeze_authority,
-        } = self;
-        pack_coption_key(mint_authority, mint_authority_dst);
-        *supply_dst = supply.to_le_bytes();
-        decimals_dst[0] = decimals;
-        is_initialized_dst[0] = is_initialized as u8;
-        pack_coption_key(freeze_authority, freeze_authority_dst);
-    }
-}
 
 /// Account data.
 #[repr(C)]
@@ -188,60 +117,6 @@ pub enum AccountState {
 impl Default for AccountState {
     fn default() -> Self {
         AccountState::Uninitialized
-    }
-}
-
-/// Multisignature data.
-#[repr(C)]
-#[derive(Clone, Copy, Debug, Default, PartialEq)]
-pub struct Multisig {
-    /// Number of signers required
-    pub m: u8,
-    /// Number of valid signers
-    pub n: u8,
-    /// Is `true` if this structure has been initialized
-    pub is_initialized: bool,
-    /// Signer public keys
-    pub signers: [Pubkey; MAX_SIGNERS],
-}
-impl Sealed for Multisig {}
-impl IsInitialized for Multisig {
-    fn is_initialized(&self) -> bool {
-        self.is_initialized
-    }
-}
-impl Pack for Multisig {
-    const LEN: usize = 355;
-    fn unpack_from_slice(src: &[u8]) -> Result<Self, ProgramError> {
-        let src = array_ref![src, 0, 355];
-        #[allow(clippy::ptr_offset_with_cast)]
-        let (m, n, is_initialized, signers_flat) = array_refs![src, 1, 1, 1, 32 * MAX_SIGNERS];
-        let mut result = Multisig {
-            m: m[0],
-            n: n[0],
-            is_initialized: match is_initialized {
-                [0] => false,
-                [1] => true,
-                _ => return Err(ProgramError::InvalidAccountData),
-            },
-            signers: [Pubkey::new_from_array([0u8; 32]); MAX_SIGNERS],
-        };
-        for (src, dst) in signers_flat.chunks(32).zip(result.signers.iter_mut()) {
-            *dst = Pubkey::new(src);
-        }
-        Ok(result)
-    }
-    fn pack_into_slice(&self, dst: &mut [u8]) {
-        let dst = array_mut_ref![dst, 0, 355];
-        #[allow(clippy::ptr_offset_with_cast)]
-        let (m, n, is_initialized, signers_flat) = mut_array_refs![dst, 1, 1, 1, 32 * MAX_SIGNERS];
-        *m = [self.m];
-        *n = [self.n];
-        *is_initialized = [self.is_initialized as u8];
-        for (i, src) in self.signers.iter().enumerate() {
-            let dst_array = array_mut_ref![signers_flat, 32 * i, 32];
-            dst_array.copy_from_slice(src.as_ref());
-        }
     }
 }
 
