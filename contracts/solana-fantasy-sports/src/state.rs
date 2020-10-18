@@ -9,6 +9,59 @@ use solana_sdk::{
     pubkey::Pubkey,
 };
 
+/// Root data.
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Default, PartialEq)]
+pub struct Root {
+    /// Oracle authority used to supply game scores.
+    pub oracle_authority: COption<Pubkey>,
+    /// An address of an account that stores the latest state.
+    pub latest_state_account: Pubkey,
+    /// Is `true` if this structure has been initialized
+    pub is_initialized: bool,
+}
+impl Sealed for Root {}
+impl IsInitialized for Root {
+    fn is_initialized(&self) -> bool {
+        self.is_initialized
+    }
+}
+impl Pack for Root {
+    const LEN: usize = 69;
+    fn unpack_from_slice(src: &[u8]) -> Result<Self, ProgramError> {
+        let src = array_ref![src, 0, 69];
+        let (oracle_authority, latest_state_account, is_initialized) =
+            array_refs![src, 36, 32, 1];
+        let oracle_authority = unpack_coption_key(oracle_authority)?;
+        let is_initialized = match is_initialized {
+            [0] => false,
+            [1] => true,
+            _ => return Err(ProgramError::InvalidAccountData),
+        };
+        Ok(Root {
+            oracle_authority,
+            latest_state_account: Pubkey::new_from_array(*latest_state_account),
+            is_initialized,
+        })
+    }
+    fn pack_into_slice(&self, dst: &mut [u8]) {
+        let dst = array_mut_ref![dst, 0, 69];
+        let (
+            oracle_authority_dst,
+            latest_state_account_dst,
+            is_initialized_dst,
+        ) = mut_array_refs![dst, 36, 32, 1];
+        let &Root {
+            ref oracle_authority,
+            ref latest_state_account,
+            is_initialized,
+        } = self;
+        pack_coption_key(oracle_authority, oracle_authority_dst);
+        latest_state_account_dst.copy_from_slice(latest_state_account.as_ref());
+        is_initialized_dst[0] = is_initialized as u8;
+    }
+}
+
 /// Account data.
 #[repr(C)]
 #[derive(Clone, Copy, Debug, Default, PartialEq)]

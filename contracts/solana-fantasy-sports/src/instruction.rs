@@ -15,6 +15,21 @@ use std::mem::size_of;
 #[repr(C)]
 #[derive(Clone, Debug, PartialEq)]
 pub enum SfsInstruction {
+    /// Initializes a new root.
+    ///
+    /// The `InitializeRoot` instruction requires no signers and MUST be included within
+    /// the same Transaction as the system program's `CreateInstruction` that creates the account
+    /// being initialized.  Otherwise another party can acquire ownership of the uninitialized account.
+    ///
+    /// Accounts expected by this instruction:
+    ///
+    ///   0. `[writable]` The root to initialize.
+    ///   1. `[]` Rent sysvar
+    ///
+    InitializeRoot {
+        /// The authority/multisignature to supply game scores.
+        oracle_authority: COption<Pubkey>,
+    },
     /// Test
     TestMutate,
 }
@@ -25,7 +40,13 @@ impl SfsInstruction {
 
         let (&tag, rest) = input.split_first().ok_or(InvalidInstruction)?;
         Ok(match tag {
-            0 => Self::TestMutate,
+            0 => {
+                let (oracle_authority, _rest) = Self::unpack_pubkey_option(rest)?;
+                Self::InitializeRoot {
+                    oracle_authority,
+                }
+            },
+            1 => Self::TestMutate,
 
             _ => return Err(SfsError::InvalidInstruction.into()),
         })
@@ -35,7 +56,13 @@ impl SfsInstruction {
     pub fn pack(&self) -> Vec<u8> {
         let mut buf = Vec::with_capacity(size_of::<Self>());
         match self {
-            Self::TestMutate => buf.push(0),
+            &Self::InitializeRoot {
+                ref oracle_authority,
+            } => {
+                buf.push(0);
+                Self::pack_pubkey_option(oracle_authority, &mut buf);
+            }
+            Self::TestMutate => buf.push(1),
         };
         buf
     }
@@ -73,9 +100,33 @@ impl SfsInstruction {
     }
 }
 
+/// Creates a `InitializeRoot` instruction.
+pub fn initialize_root(
+    sfs_program_id: &Pubkey,
+    root_pubkey: &Pubkey,
+    oracle_authority_pubkey: Option<&Pubkey>,
+) -> Result<Instruction, ProgramError> {
+    let oracle_authority = oracle_authority_pubkey.cloned().into();
+    let data = SfsInstruction::InitializeRoot {
+        oracle_authority,
+    }
+    .pack();
+
+    let accounts = vec![
+        AccountMeta::new(*root_pubkey, false),
+        AccountMeta::new_readonly(sysvar::rent::id(), false),
+    ];
+
+    Ok(Instruction {
+        program_id: *sfs_program_id,
+        accounts,
+        data,
+    })
+}
+
 /// Creates a `TestMutate` instruction.
 pub fn test_mutate(
-    token_program_id: &Pubkey,
+    sfs_program_id: &Pubkey,
     account_pubkey: &Pubkey,
     mint_pubkey: &Pubkey,
     owner_pubkey: &Pubkey,
@@ -90,7 +141,7 @@ pub fn test_mutate(
     ];
 
     Ok(Instruction {
-        program_id: *token_program_id,
+        program_id: *sfs_program_id,
         accounts,
         data,
     })
@@ -102,6 +153,16 @@ mod test {
 
     #[test]
     fn test_instruction_packing() {
+        let check = SfsInstruction::InitializeRoot {
+            oracle_authority: COption::Some(Pubkey::new(&[3u8; 32])),
+        };
+        let packed = check.pack();
+        let mut expect = vec![0u8, 1];
+        expect.extend_from_slice(&[3u8; 32]);
+        assert_eq!(packed, expect);
+        let unpacked = SfsInstruction::unpack(&expect).unwrap();
+        assert_eq!(unpacked, check);
+
         let check = SfsInstruction::TestMutate;
         let packed = check.pack();
         let expect = Vec::from([1u8]);

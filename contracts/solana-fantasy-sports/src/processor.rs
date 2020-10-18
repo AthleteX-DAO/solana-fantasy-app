@@ -5,7 +5,7 @@
 use crate::{
     error::SfsError,
     instruction::{SfsInstruction},
-    state::{Account, AccountState},
+    state::{Root, Account, AccountState},
 };
 use num_traits::FromPrimitive;
 use solana_sdk::{
@@ -23,6 +23,33 @@ use solana_sdk::{
 /// Program state handler.
 pub struct Processor {}
 impl Processor {
+    /// Processes an [InitializeRoot](enum.SfsInstruction.html) instruction.
+    pub fn process_initialize_root(
+        accounts: &[AccountInfo],
+        oracle_authority: COption<Pubkey>,
+    ) -> ProgramResult {
+        let account_info_iter = &mut accounts.iter();
+        let root_info = next_account_info(account_info_iter)?;
+        let root_data_len = root_info.data_len();
+        let rent = &Rent::from_account_info(next_account_info(account_info_iter)?)?;
+
+        let mut root = Root::unpack_unchecked(&root_info.data.borrow())?;
+        if root.is_initialized {
+            return Err(SfsError::AlreadyInUse.into());
+        }
+
+        if !rent.is_exempt(root_info.lamports(), root_data_len) {
+            return Err(SfsError::NotRentExempt.into());
+        }
+
+        root.oracle_authority = oracle_authority;
+        root.is_initialized = true;
+
+        Root::pack(root, &mut root_info.data.borrow_mut())?;
+
+        Ok(())
+    }
+
     /// Processes an [InitializeAccount](enum.SfsInstruction.html) instruction.
     pub fn process_test_mutate(accounts: &[AccountInfo]) -> ProgramResult {
         Ok(())
@@ -33,6 +60,12 @@ impl Processor {
         let instruction = SfsInstruction::unpack(input)?;
 
         match instruction {
+            SfsInstruction::InitializeRoot {
+                oracle_authority,
+            } => {
+                info!("Instruction: InitializeRoot");
+                Self::process_initialize_root(accounts, oracle_authority)
+            }
             SfsInstruction::TestMutate => {
                 info!("Instruction: TestMutate");
                 Self::process_test_mutate(accounts)
@@ -107,6 +140,10 @@ mod tests {
         rent::create_account(42, &Rent::default())
     }
 
+    fn root_minimum_balance() -> u64 {
+        Rent::default().minimum_balance(Root::get_packed_len())
+    }
+
     #[test]
     fn test_print_error() {
         let error = return_sfs_error_as_program_error();
@@ -114,8 +151,76 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "Custom(5)")]
+    #[should_panic(expected = "Custom(4)")]
     fn test_error_unwrap() {
         Err::<(), ProgramError>(return_sfs_error_as_program_error()).unwrap();
+    }
+
+    #[test]
+    fn test_pack_unpack() {
+        // Root
+        let check = Root {
+            oracle_authority: COption::Some(Pubkey::new(&[1; 32])),
+            latest_state_account: Pubkey::new(&[2; 32]),
+            is_initialized: true,
+        };
+        let mut packed = vec![0; Root::get_packed_len() + 1];
+        assert_eq!(
+            Err(ProgramError::InvalidAccountData),
+            Root::pack(check, &mut packed)
+        );
+        let mut packed = vec![0; Root::get_packed_len() - 1];
+        assert_eq!(
+            Err(ProgramError::InvalidAccountData),
+            Root::pack(check, &mut packed)
+        );
+        let mut packed = vec![0; Root::get_packed_len()];
+        Root::pack(check, &mut packed).unwrap();
+        let mut expect = vec![1, 0, 0, 0];
+        expect.extend_from_slice(&[1u8; 32]);
+        expect.extend_from_slice(&[2u8; 32]);
+        expect.extend_from_slice(&[1u8]);
+        assert_eq!(packed, expect);
+        let unpacked = Root::unpack(&packed).unwrap();
+        assert_eq!(unpacked, check);
+    }
+
+    #[test]
+    fn test_initialize_root() {
+        let program_id = pubkey_rand();
+        let owner_key = pubkey_rand();
+        let root_key = pubkey_rand();
+        let mut root_account = SolanaAccount::new(42, Root::get_packed_len(), &program_id);
+        let mut rent_sysvar = rent_sysvar();
+
+        // root is not rent exempt
+        assert_eq!(
+            Err(SfsError::NotRentExempt.into()),
+            do_process_instruction(
+                initialize_root(&program_id, &root_key, Some(&owner_key)).unwrap(),
+                vec![&mut root_account, &mut rent_sysvar]
+            )
+        );
+
+        root_account.lamports = root_minimum_balance();
+
+        // create new root
+        do_process_instruction(
+            initialize_root(&program_id, &root_key, Some(&owner_key)).unwrap(),
+            vec![&mut root_account, &mut rent_sysvar],
+        )
+        .unwrap();
+
+        // create twice
+        assert_eq!(
+            Err(SfsError::AlreadyInUse.into()),
+            do_process_instruction(
+                initialize_root(&program_id, &root_key, Some(&owner_key)).unwrap(),
+                vec![&mut root_account, &mut rent_sysvar],
+            )
+        );
+
+        let root = Root::unpack_unchecked(&root_account.data).unwrap();
+        assert_eq!(root.oracle_authority, COption::Some(owner_key));
     }
 }
