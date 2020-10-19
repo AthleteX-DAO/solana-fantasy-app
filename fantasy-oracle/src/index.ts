@@ -1,8 +1,8 @@
-// import { getPlayerList } from './players-list';
+import { getPlayerList } from './players-list';
 import { calculateScore } from './calculate-score';
 
 (async () => {
-  console.log(1);
-  // const x = await calculateScore([]);
-  // console.log(x);
+  const players = await getPlayerList();
+  const score = await calculateScore(players.slice(0, 2).map(p => p.PlayerID));
+  console.log(score);
 })(); 
