@@ -123,16 +123,16 @@ interface ScoreRaw {
   Temperature: number; // 93,
   Humidity: number; // 114,
   WindSpeed: number; // 16,
-  FanDuelSalary: null,
-  DraftKingsSalary: null,
-  FantasyDataSalary: null,
+  FanDuelSalary: null;
+  DraftKingsSalary: null;
+  FantasyDataSalary: null;
   OffensiveSnapsPlayed: number; // 0,
   DefensiveSnapsPlayed: number; // 77,
   SpecialTeamsSnapsPlayed: number; // 10,
   OffensiveTeamSnaps: number; // 80,
   DefensiveTeamSnaps: number; // 77,
   SpecialTeamsTeamSnaps: number; // 31,
-  VictivSalary: null,
+  VictivSalary: null;
   TwoPointConversionReturns: number; // 0,
   FantasyPointsFanDuel: number; // 0,
   FieldGoalsMade0to19: number; // 0,
@@ -141,22 +141,22 @@ interface ScoreRaw {
   FieldGoalsMade40to49: number; // 0,
   FieldGoalsMade50Plus: number; // 0,
   FantasyPointsDraftKings: number; // 0,
-  YahooSalary: null,
+  YahooSalary: null;
   FantasyPointsYahoo: number; // 0,
   InjuryStatus: string; // 'Scrambled',
   InjuryBodyPart: string; // 'Scrambled',
-  InjuryStartDate: null,
+  InjuryStartDate: null;
   InjuryNotes: string; // 'Scrambled',
   FanDuelPosition: string; // 'Scrambled',
   DraftKingsPosition: string; // 'Scrambled',
   YahooPosition: string; // 'Scrambled',
   OpponentRank: number; // 17,
-  OpponentPositionRank: null,
+  OpponentPositionRank: null;
   InjuryPractice: string; // 'Scrambled',
   InjuryPracticeDescription: string; // 'Scrambled',
   DeclaredInactive: boolean; // false,
-  FantasyDraftSalary: null,
-  FantasyDraftPosition: null,
+  FantasyDraftSalary: null;
+  FantasyDraftPosition: null;
   TeamID: number; // 33,
   OpponentID: number; // 22,
   Day: string; // '2020-09-13T00:00:00',
@@ -166,7 +166,7 @@ interface ScoreRaw {
   GlobalOpponentID: number; // 22,
   ScoreID: number; // 17274,
   FantasyPointsFantasyDraft: number; // 0,
-  OffensiveFumbleRecoveryTouchdowns: null,
+  OffensiveFumbleRecoveryTouchdowns: null;
   ScoringDetails: Array<{
     GameKey: string; // '202010111',
     SeasonType: number; // 1,
@@ -182,28 +182,32 @@ interface ScoreRaw {
 }
 
 export async function calculateScore(playerIds: number[]): Promise<number> {
-  const response: AxiosResponse<ScoreRaw[]> = await axios.get('https://api.sportsdata.io/v3/nfl/stats/json/PlayerGameStatsByWeek/2020/1?key=014d8886bd8f40dfabc9f75bc0451a0d')
-  const playerGameStatsArr = response.data.filter(o => playerIds.includes(o.PlayerID));
- 
+  const response: AxiosResponse<ScoreRaw[]> = await axios.get(
+    'https://api.sportsdata.io/v3/nfl/stats/json/PlayerGameStatsByWeek/2020/1?key=014d8886bd8f40dfabc9f75bc0451a0d'
+  );
+  const playerGameStatsArr = response.data.filter((o) => playerIds.includes(o.PlayerID));
+
   let totalScore = 0;
 
-  for(const playerGameStats of playerGameStatsArr) {
+  for (const playerGameStats of playerGameStatsArr) {
     // https://www.espn.in/fantasy/football/ffl/story?page=fflrulesstandardscoring
     /**
      * Calculation for Offense
      */
     let offensePositions = ['QB', 'RB', 'WR', 'TE'];
-    if(offensePositions.includes(playerGameStats.Position)) {
-      /** 
-       * 6 pts per rushing or receiving TD 
-      */
-      const rushings = playerGameStats.RushingAttempts +
+    if (offensePositions.includes(playerGameStats.Position)) {
+      /**
+       * 6 pts per rushing or receiving TD
+       */
+      const rushings =
+        playerGameStats.RushingAttempts +
         playerGameStats.RushingLong +
         playerGameStats.RushingTouchdowns +
-        playerGameStats.RushingYards + 
+        playerGameStats.RushingYards +
         playerGameStats.RushingYardsPerAttempt;
 
-      const receivings = playerGameStats.ReceivingLong + 
+      const receivings =
+        playerGameStats.ReceivingLong +
         playerGameStats.ReceivingTargets +
         playerGameStats.ReceivingTouchdowns +
         playerGameStats.ReceivingYards +
@@ -212,11 +216,11 @@ export async function calculateScore(playerIds: number[]): Promise<number> {
 
       totalScore += (rushings + receivings) * 6;
 
-
       /**
        * 6 pts for player returning kick/punt for TD
        */
-      const returningKicksPlunts = playerGameStats.PuntReturns +
+      const returningKicksPlunts =
+        playerGameStats.PuntReturns +
         playerGameStats.PuntReturnYards +
         playerGameStats.PuntReturnYardsPerAttempt +
         playerGameStats.PuntReturnTouchdowns +
@@ -229,7 +233,7 @@ export async function calculateScore(playerIds: number[]): Promise<number> {
         playerGameStats.KickReturnFairCatches +
         playerGameStats.PuntReturnFairCatches;
 
-      totalScore += (returningKicksPlunts) * 6;
+      totalScore += returningKicksPlunts * 6;
     }
   }
 

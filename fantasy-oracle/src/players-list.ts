@@ -14,7 +14,7 @@ interface PlayerRaw {
   AverageDraftPositionIDP: number; // 166,
   AverageDraftPositionRookie: number; // null,
   AverageDraftPositionDynasty: number; // null,
-  AverageDraftPosition2QB: null
+  AverageDraftPosition2QB: null;
 }
 
 export interface PlayerRelevant {
@@ -27,9 +27,11 @@ export interface PlayerRelevant {
 import { axios, AxiosResponse } from './axios';
 
 export async function getPlayerList(): Promise<PlayerRelevant[]> {
-  const response: AxiosResponse<PlayerRaw[]> = await axios.get('https://api.sportsdata.io/v3/nfl/stats/json/FantasyPlayers?key=014d8886bd8f40dfabc9f75bc0451a0d');
-  return response.data.map(player => {
+  const response: AxiosResponse<PlayerRaw[]> = await axios.get(
+    'https://api.sportsdata.io/v3/nfl/stats/json/FantasyPlayers?key=014d8886bd8f40dfabc9f75bc0451a0d'
+  );
+  return response.data.map((player) => {
     const { PlayerID, Name, Position, AverageDraftPosition } = player;
     return { PlayerID, Name, Position, AverageDraftPosition };
-  })
+  });
 }
