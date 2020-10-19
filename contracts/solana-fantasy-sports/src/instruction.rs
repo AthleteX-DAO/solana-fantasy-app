@@ -31,6 +31,11 @@ pub enum SfsInstruction {
         oracle_authority: COption<Pubkey>,
     },
     /// Test
+    ///
+    /// Accounts expected by this instruction:
+    ///
+    ///   0. `[writable]`  The root account.
+    ///   1. `[]` The latest state account.
     TestMutate,
 }
 impl SfsInstruction {
@@ -127,17 +132,14 @@ pub fn initialize_root(
 /// Creates a `TestMutate` instruction.
 pub fn test_mutate(
     sfs_program_id: &Pubkey,
-    account_pubkey: &Pubkey,
-    mint_pubkey: &Pubkey,
-    owner_pubkey: &Pubkey,
+    root_pubkey: &Pubkey,
+    state_pubkey: &Pubkey,
 ) -> Result<Instruction, ProgramError> {
     let data = SfsInstruction::TestMutate.pack(); // TODO do we need to return result?
 
     let accounts = vec![
-        AccountMeta::new(*account_pubkey, false),
-        AccountMeta::new_readonly(*mint_pubkey, false),
-        AccountMeta::new_readonly(*owner_pubkey, false),
-        AccountMeta::new_readonly(sysvar::rent::id(), false),
+        AccountMeta::new(*root_pubkey, false),
+        AccountMeta::new_readonly(*state_pubkey, false),
     ];
 
     Ok(Instruction {

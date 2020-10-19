@@ -5,10 +5,13 @@
 use crate::{
     error::SfsError,
     instruction::{SfsInstruction},
-    state::{Root, Account, AccountState},
+    state::{Root, State, AccountState},
 };
 use num_traits::FromPrimitive;
+use solana_sdk::program::invoke;
+use solana_sdk::program::invoke_signed;
 use solana_sdk::{
+    instruction::{AccountMeta, Instruction},
     account_info::{next_account_info, AccountInfo},
     decode_error::DecodeError,
     entrypoint::ProgramResult,
@@ -18,6 +21,7 @@ use solana_sdk::{
     program_pack::{IsInitialized, Pack},
     pubkey::Pubkey,
     sysvar::{rent::Rent, Sysvar},
+    system_instruction::SystemInstruction,
 };
 
 /// Program state handler.
@@ -25,6 +29,7 @@ pub struct Processor {}
 impl Processor {
     /// Processes an [InitializeRoot](enum.SfsInstruction.html) instruction.
     pub fn process_initialize_root(
+        program_id: &Pubkey,
         accounts: &[AccountInfo],
         oracle_authority: COption<Pubkey>,
     ) -> ProgramResult {
@@ -42,6 +47,26 @@ impl Processor {
             return Err(SfsError::NotRentExempt.into());
         }
 
+        let state = State{ test: String::from("hello") };
+
+        let data = CreateAccount::pack(SystemInstruction::CreateAccount{
+            lamports: 0,
+            space: 0,
+            owner: program_id.clone().into(),
+        });
+
+        let accounts2 = vec![
+            AccountMeta::new(*program_id, false),
+        ];
+
+        let instruction = Instruction {
+            program_id: Pubkey::new(&String::from("11111111111111111111111111111111").into_bytes()),
+            accounts: accounts2,
+            data,
+        }
+        invoke(&instruction, &accounts2[..])?;
+
+        // root.state =;
         root.oracle_authority = oracle_authority;
         root.is_initialized = true;
 
@@ -51,7 +76,27 @@ impl Processor {
     }
 
     /// Processes an [InitializeAccount](enum.SfsInstruction.html) instruction.
-    pub fn process_test_mutate(accounts: &[AccountInfo]) -> ProgramResult {
+    pub fn process_test_mutate(program_id: &Pubkey, accounts: &[AccountInfo]) -> ProgramResult {
+        let account_info_iter = &mut accounts.iter();
+
+        let root_info = next_account_info(account_info_iter)?;
+        let root_data_len = root_info.data_len();
+
+        let mut root = Root::unpack_unchecked(&root_info.data.borrow())?;
+        if !root.is_initialized {
+            return Err(SfsError::InvalidState.into());
+        }
+
+        let state_info = next_account_info(account_info_iter)?;
+        let state_data_len = state_info.data_len();
+        if state_info.key != &root.latest_state_account {
+            return Err(SfsError::InvalidState.into());
+        }
+
+        let state = State::unpack_from_slice(&state_info.data.borrow())?;
+        info!(&state.test);
+
+
         Ok(())
     }
 
@@ -64,11 +109,11 @@ impl Processor {
                 oracle_authority,
             } => {
                 info!("Instruction: InitializeRoot");
-                Self::process_initialize_root(accounts, oracle_authority)
+                Self::process_initialize_root(program_id, accounts, oracle_authority)
             }
             SfsInstruction::TestMutate => {
                 info!("Instruction: TestMutate");
-                Self::process_test_mutate(accounts)
+                Self::process_test_mutate(program_id, accounts)
             }
         }
     }
