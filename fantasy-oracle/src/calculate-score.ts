@@ -1,5 +1,4 @@
-import { axios } from './axios';
-import type { PlayerRelevant } from './players-list'
+import { axios, AxiosResponse } from './axios';
 
 interface ScoreRaw {
   GameKey: string; // '202010122',
@@ -182,9 +181,57 @@ interface ScoreRaw {
   }>; // []
 }
 
-export async function calculateScore(players: PlayerRelevant[]): Promise<number> {
-  const response = await axios.get('https://api.sportsdata.io/v3/nfl/stats/json/PlayerGameStatsByWeek/2020/1?key=014d8886bd8f40dfabc9f75bc0451a0d')
-  console.log(response.data);
+export async function calculateScore(playerIds: number[]): Promise<number> {
+  const response: AxiosResponse<ScoreRaw[]> = await axios.get('https://api.sportsdata.io/v3/nfl/stats/json/PlayerGameStatsByWeek/2020/1?key=014d8886bd8f40dfabc9f75bc0451a0d')
+  const playerGameStatsArr = response.data.filter(o => playerIds.includes(o.PlayerID));
  
-  return 0;
+  let totalScore = 0;
+
+  for(const playerGameStats of playerGameStatsArr) {
+    // https://www.espn.in/fantasy/football/ffl/story?page=fflrulesstandardscoring
+    /**
+     * Calculation for Offense
+     */
+    let offensePositions = ['QB', 'RB', 'WR', 'TE'];
+    if(offensePositions.includes(playerGameStats.Position)) {
+      /** 
+       * 6 pts per rushing or receiving TD 
+      */
+      const rushings = playerGameStats.RushingAttempts +
+        playerGameStats.RushingLong +
+        playerGameStats.RushingTouchdowns +
+        playerGameStats.RushingYards + 
+        playerGameStats.RushingYardsPerAttempt;
+
+      const receivings = playerGameStats.ReceivingLong + 
+        playerGameStats.ReceivingTargets +
+        playerGameStats.ReceivingTouchdowns +
+        playerGameStats.ReceivingYards +
+        playerGameStats.ReceivingYardsPerReception +
+        playerGameStats.ReceivingYardsPerTarget;
+
+      totalScore += (rushings + receivings) * 6;
+
+
+      /**
+       * 6 pts for player returning kick/punt for TD
+       */
+      const returningKicksPlunts = playerGameStats.PuntReturns +
+        playerGameStats.PuntReturnYards +
+        playerGameStats.PuntReturnYardsPerAttempt +
+        playerGameStats.PuntReturnTouchdowns +
+        playerGameStats.PuntReturnLong +
+        playerGameStats.KickReturns +
+        playerGameStats.KickReturnYards +
+        playerGameStats.KickReturnYardsPerAttempt +
+        playerGameStats.KickReturnTouchdowns +
+        playerGameStats.KickReturnLong +
+        playerGameStats.KickReturnFairCatches +
+        playerGameStats.PuntReturnFairCatches;
+
+      totalScore += (returningKicksPlunts) * 6;
+    }
+  }
+
+  return totalScore;
 }
