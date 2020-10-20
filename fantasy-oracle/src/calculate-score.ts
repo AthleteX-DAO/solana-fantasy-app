@@ -192,49 +192,543 @@ export async function calculateScore(playerIds: number[]): Promise<number> {
   for (const playerGameStats of playerGameStatsArr) {
     // https://www.espn.in/fantasy/football/ffl/story?page=fflrulesstandardscoring
     /**
-     * Calculation for Offense
+     * Calculation for Offense STARTS here
      */
     let offensePositions = ['QB', 'RB', 'WR', 'TE'];
     if (offensePositions.includes(playerGameStats.Position)) {
       /**
        * 6 pts per rushing or receiving TD
        */
-      const rushings =
-        playerGameStats.RushingAttempts +
-        playerGameStats.RushingLong +
-        playerGameStats.RushingTouchdowns +
-        playerGameStats.RushingYards +
-        playerGameStats.RushingYardsPerAttempt;
+      {
+        const rushings =
+          // playerGameStats.RushingAttempts +
+          // playerGameStats.RushingLong +
+          playerGameStats.RushingTouchdowns; // +
+        // playerGameStats.RushingYards +
+        // playerGameStats.RushingYardsPerAttempt;
 
-      const receivings =
-        playerGameStats.ReceivingLong +
-        playerGameStats.ReceivingTargets +
-        playerGameStats.ReceivingTouchdowns +
-        playerGameStats.ReceivingYards +
-        playerGameStats.ReceivingYardsPerReception +
-        playerGameStats.ReceivingYardsPerTarget;
+        const receivings =
+          // playerGameStats.ReceivingLong +
+          // playerGameStats.ReceivingTargets +
+          playerGameStats.ReceivingTouchdowns; // +
+        // playerGameStats.ReceivingYards +
+        // playerGameStats.ReceivingYardsPerReception +
+        // playerGameStats.ReceivingYardsPerTarget;
 
-      totalScore += (rushings + receivings) * 6;
+        totalScore += (rushings + receivings) * 6;
+      }
 
       /**
        * 6 pts for player returning kick/punt for TD
        */
-      const returningKicksPlunts =
-        playerGameStats.PuntReturns +
-        playerGameStats.PuntReturnYards +
-        playerGameStats.PuntReturnYardsPerAttempt +
-        playerGameStats.PuntReturnTouchdowns +
-        playerGameStats.PuntReturnLong +
-        playerGameStats.KickReturns +
-        playerGameStats.KickReturnYards +
-        playerGameStats.KickReturnYardsPerAttempt +
-        playerGameStats.KickReturnTouchdowns +
-        playerGameStats.KickReturnLong +
-        playerGameStats.KickReturnFairCatches +
-        playerGameStats.PuntReturnFairCatches;
+      {
+        const returningKicksPlunts =
+          // playerGameStats.PuntReturns +
+          // playerGameStats.PuntReturnYards +
+          // playerGameStats.PuntReturnYardsPerAttempt +
+          playerGameStats.PuntReturnTouchdowns +
+          // playerGameStats.PuntReturnLong +
+          // playerGameStats.KickReturns +
+          // playerGameStats.KickReturnYards +
+          // playerGameStats.KickReturnYardsPerAttempt +
+          playerGameStats.KickReturnTouchdowns; // +
+        // playerGameStats.KickReturnLong +
+        // playerGameStats.KickReturnFairCatches +
+        // playerGameStats.PuntReturnFairCatches;
 
-      totalScore += returningKicksPlunts * 6;
+        totalScore += returningKicksPlunts * 6;
+      }
+
+      /**
+       * 6 pts for player returning or recovering a fumble for TD
+       */
+      {
+        const fumbles =
+          playerGameStats.FumbleReturnTouchdowns +
+          playerGameStats.FumbleReturnYards +
+          playerGameStats.Fumbles +
+          playerGameStats.FumblesForced +
+          playerGameStats.FumblesLost +
+          playerGameStats.FumblesOutOfBounds +
+          playerGameStats.FumblesOwnRecoveries +
+          playerGameStats.FumblesRecovered +
+          playerGameStats.MiscFumblesForced +
+          playerGameStats.MiscFumblesRecovered +
+          // playerGameStats.OffensiveFumbleRecoveryTouchdowns +
+          playerGameStats.SpecialTeamsFumblesForced +
+          playerGameStats.SpecialTeamsFumblesRecovered;
+
+        totalScore += fumbles * 6;
+      }
+
+      /**
+       * 4 pts per passing TD
+       */
+      {
+        const passingTd =
+          // playerGameStats.PassingAttempts +
+          // playerGameStats.PassingCompletionPercentage +
+          // playerGameStats.PassingCompletions +
+          // playerGameStats.PassingInterceptions +
+          // playerGameStats.PassingLong +
+          // playerGameStats.PassingRating +
+          // playerGameStats.PassingSackYards +
+          // playerGameStats.PassingSacks +
+          playerGameStats.PassingTouchdowns; // +
+        // playerGameStats.PassingYards +
+        // playerGameStats.PassingYardsPerAttempt +
+        // playerGameStats.PassingYardsPerCompletion;
+
+        totalScore += passingTd * 4;
+      }
+
+      /**
+       * 2 pts per rushing or receiving 2 pt conversion (note: teams do not receive points for yardage gained during the conversion)
+       */
+      {
+        const rushings =
+          playerGameStats.RushingAttempts +
+          playerGameStats.RushingLong +
+          playerGameStats.RushingTouchdowns +
+          playerGameStats.RushingYards +
+          playerGameStats.RushingYardsPerAttempt;
+
+        const receivings =
+          playerGameStats.ReceivingLong +
+          playerGameStats.ReceivingTargets +
+          playerGameStats.ReceivingTouchdowns +
+          playerGameStats.ReceivingYards +
+          playerGameStats.ReceivingYardsPerReception +
+          playerGameStats.ReceivingYardsPerTarget;
+
+        totalScore += (rushings + receivings) * 2;
+      }
+
+      /**
+       * 2 pts per passing 2 pt conversion
+       */
+      {
+        const passing =
+          playerGameStats.PassingAttempts +
+          playerGameStats.PassingCompletionPercentage +
+          playerGameStats.PassingCompletions +
+          playerGameStats.PassingInterceptions +
+          playerGameStats.PassingLong +
+          playerGameStats.PassingRating +
+          playerGameStats.PassingSackYards +
+          playerGameStats.PassingSacks +
+          playerGameStats.PassingTouchdowns +
+          playerGameStats.PassingYards +
+          playerGameStats.PassingYardsPerAttempt +
+          playerGameStats.PassingYardsPerCompletion;
+
+        totalScore += passing * 2;
+      }
+
+      /**
+       * 1 pt per 10 yards rushing or receiving
+       */
+      {
+        const rushings =
+          playerGameStats.RushingAttempts +
+          playerGameStats.RushingLong +
+          playerGameStats.RushingTouchdowns +
+          playerGameStats.RushingYards +
+          playerGameStats.RushingYardsPerAttempt;
+
+        const receivings =
+          playerGameStats.ReceivingLong +
+          playerGameStats.ReceivingTargets +
+          playerGameStats.ReceivingTouchdowns +
+          playerGameStats.ReceivingYards +
+          playerGameStats.ReceivingYardsPerReception +
+          playerGameStats.ReceivingYardsPerTarget;
+
+        totalScore += (rushings + receivings) * 1;
+      }
+
+      /**
+       * 1 pt per 25 yards passing
+       */
+      {
+        const passing =
+          playerGameStats.PassingAttempts +
+          playerGameStats.PassingCompletionPercentage +
+          playerGameStats.PassingCompletions +
+          playerGameStats.PassingInterceptions +
+          playerGameStats.PassingLong +
+          playerGameStats.PassingRating +
+          playerGameStats.PassingSackYards +
+          playerGameStats.PassingSacks +
+          playerGameStats.PassingTouchdowns +
+          playerGameStats.PassingYards +
+          playerGameStats.PassingYardsPerAttempt +
+          playerGameStats.PassingYardsPerCompletion;
+
+        totalScore += passing * 1;
+      }
+
+      /**
+       *  Calculation for Offense Bonous Points
+       */
+      {
+        /**
+         * 2 pts per rushing or receiving TD of 40 yards or more
+         */
+        {
+          const rushings =
+            playerGameStats.RushingAttempts +
+            playerGameStats.RushingLong +
+            playerGameStats.RushingTouchdowns +
+            playerGameStats.RushingYards +
+            playerGameStats.RushingYardsPerAttempt;
+
+          const receivings =
+            playerGameStats.ReceivingLong +
+            playerGameStats.ReceivingTargets +
+            playerGameStats.ReceivingTouchdowns +
+            playerGameStats.ReceivingYards +
+            playerGameStats.ReceivingYardsPerReception +
+            playerGameStats.ReceivingYardsPerTarget;
+
+          totalScore += (rushings + receivings) * 2;
+        }
+
+        /**
+         * 2 pts per passing TD of 40 yards or more (note: the player must score a touchdown to score the points)
+         */
+        {
+          const passing =
+            playerGameStats.PassingAttempts +
+            playerGameStats.PassingCompletionPercentage +
+            playerGameStats.PassingCompletions +
+            playerGameStats.PassingInterceptions +
+            playerGameStats.PassingLong +
+            playerGameStats.PassingRating +
+            playerGameStats.PassingSackYards +
+            playerGameStats.PassingSacks +
+            playerGameStats.PassingTouchdowns +
+            playerGameStats.PassingYards +
+            playerGameStats.PassingYardsPerAttempt +
+            playerGameStats.PassingYardsPerCompletion;
+
+          totalScore += passing * 1;
+        }
+      }
+
+      /**
+       *  Calculation for Offense Penalty Points
+       */
+      {
+        /**
+         * -2 pts per intercepted pass
+         */
+        {
+          const passing =
+            // playerGameStats.PassingAttempts +
+            // playerGameStats.PassingCompletionPercentage +
+            // playerGameStats.PassingCompletions +
+            playerGameStats.PassingInterceptions; // +
+          // playerGameStats.PassingLong +
+          // playerGameStats.PassingRating +
+          // playerGameStats.PassingSackYards +
+          // playerGameStats.PassingSacks +
+          // playerGameStats.PassingTouchdowns +
+          // playerGameStats.PassingYards +
+          // playerGameStats.PassingYardsPerAttempt +
+          // playerGameStats.PassingYardsPerCompletion;
+
+          totalScore += passing * -2;
+        }
+
+        /**
+         * -2 pts per fumble lost
+         */
+        {
+          const fumbles =
+            playerGameStats.FumbleReturnTouchdowns +
+            playerGameStats.FumbleReturnYards +
+            playerGameStats.Fumbles +
+            playerGameStats.FumblesForced +
+            playerGameStats.FumblesLost +
+            playerGameStats.FumblesOutOfBounds +
+            playerGameStats.FumblesOwnRecoveries +
+            playerGameStats.FumblesRecovered +
+            playerGameStats.MiscFumblesForced +
+            playerGameStats.MiscFumblesRecovered +
+            // playerGameStats.OffensiveFumbleRecoveryTouchdowns +
+            playerGameStats.SpecialTeamsFumblesForced +
+            playerGameStats.SpecialTeamsFumblesRecovered;
+
+          totalScore += fumbles * 6;
+        }
+      }
     }
+    /**
+     * Calculation for Offense ENDS here
+     */
+
+    /**
+     * Calculation for Kickers (K) STARTS here
+     */
+    let kickersPositions = ['K'];
+    if (kickersPositions.includes(playerGameStats.Position)) {
+      /**
+       * 5 pts per 50+ yard FG made
+       */
+      {
+        const fg =
+          playerGameStats.FieldGoalPercentage +
+          playerGameStats.FieldGoalReturnTouchdowns +
+          playerGameStats.FieldGoalReturnYards +
+          playerGameStats.FieldGoalsAttempted +
+          playerGameStats.FieldGoalsHadBlocked +
+          playerGameStats.FieldGoalsLongestMade +
+          playerGameStats.FieldGoalsMade +
+          playerGameStats.FieldGoalsMade0to19 +
+          playerGameStats.FieldGoalsMade20to29 +
+          playerGameStats.FieldGoalsMade30to39 +
+          playerGameStats.FieldGoalsMade40to49 +
+          playerGameStats.FieldGoalsMade50Plus +
+          playerGameStats.FantasyPointsDraftKings;
+        totalScore += fg * 5;
+      }
+
+      /**
+       * 4 pts per 40-49 yard FG made
+       */
+      {
+        const fg =
+          playerGameStats.FieldGoalPercentage +
+          playerGameStats.FieldGoalReturnTouchdowns +
+          playerGameStats.FieldGoalReturnYards +
+          playerGameStats.FieldGoalsAttempted +
+          playerGameStats.FieldGoalsHadBlocked +
+          playerGameStats.FieldGoalsLongestMade +
+          playerGameStats.FieldGoalsMade +
+          playerGameStats.FieldGoalsMade0to19 +
+          playerGameStats.FieldGoalsMade20to29 +
+          playerGameStats.FieldGoalsMade30to39 +
+          playerGameStats.FieldGoalsMade40to49 +
+          playerGameStats.FieldGoalsMade50Plus +
+          playerGameStats.FantasyPointsDraftKings;
+        totalScore += fg * 4;
+      }
+
+      /**
+       * 3 pts per FG made, 39 yards or less
+       */
+      {
+        const fg =
+          playerGameStats.FieldGoalPercentage +
+          playerGameStats.FieldGoalReturnTouchdowns +
+          playerGameStats.FieldGoalReturnYards +
+          playerGameStats.FieldGoalsAttempted +
+          playerGameStats.FieldGoalsHadBlocked +
+          playerGameStats.FieldGoalsLongestMade +
+          playerGameStats.FieldGoalsMade +
+          playerGameStats.FieldGoalsMade0to19 +
+          playerGameStats.FieldGoalsMade20to29 +
+          playerGameStats.FieldGoalsMade30to39 +
+          playerGameStats.FieldGoalsMade40to49 +
+          playerGameStats.FieldGoalsMade50Plus +
+          playerGameStats.FantasyPointsDraftKings;
+
+        totalScore += fg * 3;
+      }
+
+      /**
+       * 2 pts per rushing, passing, or receiving 2 pt conversion
+       */
+      {
+        const rushings =
+          playerGameStats.RushingAttempts +
+          playerGameStats.RushingLong +
+          playerGameStats.RushingTouchdowns +
+          playerGameStats.RushingYards +
+          playerGameStats.RushingYardsPerAttempt;
+
+        const receivings =
+          playerGameStats.ReceivingLong +
+          playerGameStats.ReceivingTargets +
+          playerGameStats.ReceivingTouchdowns +
+          playerGameStats.ReceivingYards +
+          playerGameStats.ReceivingYardsPerReception +
+          playerGameStats.ReceivingYardsPerTarget;
+
+        const passing =
+          playerGameStats.PassingAttempts +
+          playerGameStats.PassingCompletionPercentage +
+          playerGameStats.PassingCompletions +
+          playerGameStats.PassingInterceptions +
+          playerGameStats.PassingLong +
+          playerGameStats.PassingRating +
+          playerGameStats.PassingSackYards +
+          playerGameStats.PassingSacks +
+          playerGameStats.PassingTouchdowns +
+          playerGameStats.PassingYards +
+          playerGameStats.PassingYardsPerAttempt +
+          playerGameStats.PassingYardsPerCompletion;
+
+        totalScore += (rushings + passing + receivings) * 2;
+      }
+
+      /**
+       * 1 pt per Extra Point made
+       */
+      {
+        const extraPoint =
+          playerGameStats.ExtraPointsAttempted +
+          playerGameStats.ExtraPointsHadBlocked +
+          playerGameStats.ExtraPointsMade;
+
+        totalScore += extraPoint * 1;
+      }
+
+      /**
+       * Kickers Penalty Points
+       */
+
+      /**
+       * -2 pts per missed FG (0-39 yds)
+       */
+      {
+        // i think there can be different/specific props here outside of interface
+        const missedFG =
+          playerGameStats.FieldGoalPercentage +
+          playerGameStats.FieldGoalReturnTouchdowns +
+          playerGameStats.FieldGoalReturnYards +
+          playerGameStats.FieldGoalsAttempted +
+          playerGameStats.FieldGoalsHadBlocked +
+          playerGameStats.FieldGoalsLongestMade +
+          playerGameStats.FieldGoalsMade +
+          playerGameStats.FieldGoalsMade0to19 +
+          playerGameStats.FieldGoalsMade20to29 +
+          playerGameStats.FieldGoalsMade30to39 +
+          playerGameStats.FieldGoalsMade40to49 +
+          playerGameStats.FieldGoalsMade50Plus +
+          playerGameStats.FantasyPointsDraftKings;
+
+        totalScore += missedFG * -2;
+      }
+
+      /**
+       * -1 pt per missed FG (40-49 yds)
+       * (note: a missed FG includes any attempt that is blocked, deflected, etc.)
+       */
+      {
+        // i think there can be different/specific props here outside of interface
+        const missedFG =
+          playerGameStats.FieldGoalPercentage +
+          playerGameStats.FieldGoalReturnTouchdowns +
+          playerGameStats.FieldGoalReturnYards +
+          playerGameStats.FieldGoalsAttempted +
+          playerGameStats.FieldGoalsHadBlocked +
+          playerGameStats.FieldGoalsLongestMade +
+          playerGameStats.FieldGoalsMade +
+          playerGameStats.FieldGoalsMade0to19 +
+          playerGameStats.FieldGoalsMade20to29 +
+          playerGameStats.FieldGoalsMade30to39 +
+          playerGameStats.FieldGoalsMade40to49 +
+          playerGameStats.FieldGoalsMade50Plus +
+          playerGameStats.FantasyPointsDraftKings;
+
+        totalScore += missedFG * -1;
+      }
+    }
+    /**
+     * Calculation for Kickers (K) ENDS here
+     */
+
+    /**
+     * Defensive/Special Teams (D) STARTS here
+     */
+    let defensivePositions = ['D'];
+    if (defensivePositions.includes(playerGameStats.Position)) {
+      /**
+       * 3 pts per defensive or special teams TD
+       */
+      {
+        const td = playerGameStats.DefensiveTouchdowns + playerGameStats.SpecialTeamsTouchdowns;
+
+        totalScore += td * 3;
+      }
+
+      /**
+       * 2 pts per interception
+       */
+      {
+        const interceptions =
+          playerGameStats.InterceptionReturnTouchdowns +
+          playerGameStats.InterceptionReturnYards +
+          playerGameStats.Interceptions +
+          playerGameStats.PassingInterceptions;
+
+        totalScore += interceptions * 2;
+      }
+
+      /**
+       * 2 pts per fumble recovery (Note: includes a fumble by the opposing team out of the end zone)
+       */
+      {
+        const fumbleRecovery =
+          // playerGameStats.FumbleReturnTouchdowns +
+          // playerGameStats.FumbleReturnYards +
+          // playerGameStats.Fumbles +
+          // playerGameStats.FumblesForced +
+          // playerGameStats.FumblesLost +
+          // playerGameStats.FumblesOutOfBounds +
+          playerGameStats.FumblesOwnRecoveries +
+          playerGameStats.FumblesRecovered +
+          // playerGameStats.MiscFumblesForced +
+          // playerGameStats.MiscFumblesRecovered +
+          // playerGameStats.OffensiveFumbleRecoveryTouchdowns +
+          // playerGameStats.SpecialTeamsFumblesForced +
+          playerGameStats.SpecialTeamsFumblesRecovered;
+
+        totalScore += fumbleRecovery * 2;
+      }
+
+      /**
+       * 2 pts per blocked punt, PAT, or FG (Note: a deflected kick of any kind does not receive points)
+       */
+      {
+        const blocked =
+          playerGameStats.BlockedKickReturnTouchdowns +
+          playerGameStats.BlockedKickReturnYards +
+          playerGameStats.BlockedKicks +
+          playerGameStats.ExtraPointsHadBlocked +
+          playerGameStats.FieldGoalsHadBlocked +
+          playerGameStats.PuntsHadBlocked;
+
+        totalScore += blocked * 2;
+      }
+
+      /**
+       * 2 pts per safety
+       */
+      {
+        const safety = playerGameStats.Safeties + playerGameStats.SafetiesAllowed;
+
+        totalScore += safety * 2;
+      }
+
+      /**
+       * 1 pt per sack
+       */
+      {
+        const sack =
+          playerGameStats.SackYards +
+          playerGameStats.Sacks +
+          playerGameStats.PassingSackYards +
+          playerGameStats.PassingSacks;
+
+        totalScore += sack * 2;
+      }
+    }
+    /**
+     * Defensive/Special Teams (D) ENDS here
+     */
   }
 
   return totalScore;
