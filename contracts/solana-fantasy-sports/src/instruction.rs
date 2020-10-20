@@ -1,6 +1,10 @@
 //! Instruction types
 
-use crate::error::SfsError;
+use crate::{
+    error::SfsError, 
+    state::{Player, TOTAL_PLAYERS_COUNT}
+};
+use arrayref::{array_ref};
 use solana_sdk::{
     instruction::{AccountMeta, Instruction},
     program_error::ProgramError,
@@ -29,6 +33,7 @@ pub enum SfsInstruction {
     InitializeRoot {
         /// The authority/multisignature to supply game scores.
         oracle_authority: COption<Pubkey>,
+        players: [Player; TOTAL_PLAYERS_COUNT]
     },
     /// Test
     ///
@@ -47,8 +52,10 @@ impl SfsInstruction {
         Ok(match tag {
             0 => {
                 let (oracle_authority, _rest) = Self::unpack_pubkey_option(rest)?;
+                let (players, __rest) = Self::unpack_pubkey_option(_rest)?;
                 Self::InitializeRoot {
                     oracle_authority,
+                    players
                 }
             },
             1 => Self::TestMutate,
@@ -102,6 +109,15 @@ impl SfsInstruction {
             }
             COption::None => buf.push(0),
         }
+    }
+    fn unpack_players(value: &[u8]) -> Result<(&[Player; TOTAL_PLAYERS_COUNT], &[u8]), ProgramError> {
+        let mut players = vec![Player::default(); TOTAL_PLAYERS_COUNT];
+        let (_value, rest) = value.split_at(Player::LEN * TOTAL_PLAYERS_COUNT);
+        for i in 0..TOTAL_PLAYERS_COUNT {
+            let player_src = array_ref!(_value, i * Player::LEN, Player::LEN);
+            players[i] = Player::unpack_from_slice(player_src).unwrap();
+        }
+        return Ok((players, rest));
     }
 }
 

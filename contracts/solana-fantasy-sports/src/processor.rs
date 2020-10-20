@@ -5,7 +5,7 @@
 use crate::{
     error::SfsError,
     instruction::{SfsInstruction},
-    state::{Root},
+    state::{Root, Player, TOTAL_PLAYERS_COUNT},
 };
 use num_traits::FromPrimitive;
 use solana_sdk::program::invoke;
@@ -32,6 +32,7 @@ impl Processor {
         program_id: &Pubkey,
         accounts: &[AccountInfo],
         oracle_authority: COption<Pubkey>,
+        players: &[Player; TOTAL_PLAYERS_COUNT]
     ) -> ProgramResult {
         let account_info_iter = &mut accounts.iter();
         let root_info = next_account_info(account_info_iter)?;
@@ -47,6 +48,7 @@ impl Processor {
             return Err(SfsError::NotRentExempt.into());
         }
 
+        root.players = players.to_vec();
         // let state = State{ test: String::from("hello") };
 
         // let data = CreateAccount::pack(SystemInstruction::CreateAccount{
