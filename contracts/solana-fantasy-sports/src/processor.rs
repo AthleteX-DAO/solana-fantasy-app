@@ -5,7 +5,7 @@
 use crate::{
     error::SfsError,
     instruction::{SfsInstruction},
-    state::{Root, State, AccountState},
+    state::{Root},
 };
 use num_traits::FromPrimitive;
 use solana_sdk::program::invoke;
@@ -47,24 +47,24 @@ impl Processor {
             return Err(SfsError::NotRentExempt.into());
         }
 
-        let state = State{ test: String::from("hello") };
+        // let state = State{ test: String::from("hello") };
 
-        let data = CreateAccount::pack(SystemInstruction::CreateAccount{
-            lamports: 0,
-            space: 0,
-            owner: program_id.clone().into(),
-        });
+        // let data = CreateAccount::pack(SystemInstruction::CreateAccount{
+        //     lamports: 0,
+        //     space: 0,
+        //     owner: program_id.clone().into(),
+        // });
 
-        let accounts2 = vec![
-            AccountMeta::new(*program_id, false),
-        ];
+        // let accounts2 = vec![
+        //     AccountMeta::new(*program_id, false),
+        // ];
 
-        let instruction = Instruction {
-            program_id: Pubkey::new(&String::from("11111111111111111111111111111111").into_bytes()),
-            accounts: accounts2,
-            data,
-        }
-        invoke(&instruction, &accounts2[..])?;
+        // let instruction = Instruction {
+        //     program_id: Pubkey::new(&String::from("11111111111111111111111111111111").into_bytes()),
+        //     accounts: accounts2,
+        //     data,
+        // }
+        // invoke(&instruction, &accounts2[..])?;
 
         // root.state =;
         root.oracle_authority = oracle_authority;
@@ -87,14 +87,14 @@ impl Processor {
             return Err(SfsError::InvalidState.into());
         }
 
-        let state_info = next_account_info(account_info_iter)?;
-        let state_data_len = state_info.data_len();
-        if state_info.key != &root.latest_state_account {
-            return Err(SfsError::InvalidState.into());
-        }
+        // let state_info = next_account_info(account_info_iter)?;
+        // let state_data_len = state_info.data_len();
+        // if state_info.key != &root.latest_state_account {
+        //     return Err(SfsError::InvalidState.into());
+        // }
 
-        let state = State::unpack_from_slice(&state_info.data.borrow())?;
-        info!(&state.test);
+        // let state = State::unpack_from_slice(&state_info.data.borrow())?;
+        // info!(&state.test);
 
 
         Ok(())
@@ -199,35 +199,6 @@ mod tests {
     #[should_panic(expected = "Custom(4)")]
     fn test_error_unwrap() {
         Err::<(), ProgramError>(return_sfs_error_as_program_error()).unwrap();
-    }
-
-    #[test]
-    fn test_pack_unpack() {
-        // Root
-        let check = Root {
-            oracle_authority: COption::Some(Pubkey::new(&[1; 32])),
-            latest_state_account: Pubkey::new(&[2; 32]),
-            is_initialized: true,
-        };
-        let mut packed = vec![0; Root::get_packed_len() + 1];
-        assert_eq!(
-            Err(ProgramError::InvalidAccountData),
-            Root::pack(check, &mut packed)
-        );
-        let mut packed = vec![0; Root::get_packed_len() - 1];
-        assert_eq!(
-            Err(ProgramError::InvalidAccountData),
-            Root::pack(check, &mut packed)
-        );
-        let mut packed = vec![0; Root::get_packed_len()];
-        Root::pack(check, &mut packed).unwrap();
-        let mut expect = vec![1, 0, 0, 0];
-        expect.extend_from_slice(&[1u8; 32]);
-        expect.extend_from_slice(&[2u8; 32]);
-        expect.extend_from_slice(&[1u8]);
-        assert_eq!(packed, expect);
-        let unpacked = Root::unpack(&packed).unwrap();
-        assert_eq!(unpacked, check);
     }
 
     #[test]

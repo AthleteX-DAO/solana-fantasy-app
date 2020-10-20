@@ -133,13 +133,11 @@ pub fn initialize_root(
 pub fn test_mutate(
     sfs_program_id: &Pubkey,
     root_pubkey: &Pubkey,
-    state_pubkey: &Pubkey,
 ) -> Result<Instruction, ProgramError> {
     let data = SfsInstruction::TestMutate.pack(); // TODO do we need to return result?
 
     let accounts = vec![
         AccountMeta::new(*root_pubkey, false),
-        AccountMeta::new_readonly(*state_pubkey, false),
     ];
 
     Ok(Instruction {

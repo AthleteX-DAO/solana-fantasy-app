@@ -1,4 +1,4 @@
-#![deny(missing_docs)]
+// #![deny(missing_docs)]
 #![forbid(unsafe_code)]
 
 //! A Solana Fantasy Sports program
