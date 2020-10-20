@@ -71,21 +71,14 @@ impl Processor {
         root.is_initialized = true;
 
         Root::pack(root, &mut root_info.data.borrow_mut())?;
-
         Ok(())
     }
 
     /// Processes an [InitializeAccount](enum.SfsInstruction.html) instruction.
     pub fn process_test_mutate(program_id: &Pubkey, accounts: &[AccountInfo]) -> ProgramResult {
         let account_info_iter = &mut accounts.iter();
-
         let root_info = next_account_info(account_info_iter)?;
-        let root_data_len = root_info.data_len();
-
-        let mut root = Root::unpack_unchecked(&root_info.data.borrow())?;
-        if !root.is_initialized {
-            return Err(SfsError::InvalidState.into());
-        }
+        let mut root = Root::unpack(&root_info.data.borrow())?;
 
         // let state_info = next_account_info(account_info_iter)?;
         // let state_data_len = state_info.data_len();
@@ -96,7 +89,7 @@ impl Processor {
         // let state = State::unpack_from_slice(&state_info.data.borrow())?;
         // info!(&state.test);
 
-
+        Root::pack(root, &mut root_info.data.borrow_mut())?;
         Ok(())
     }
 

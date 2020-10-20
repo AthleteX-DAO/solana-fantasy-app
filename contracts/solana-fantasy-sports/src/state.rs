@@ -1,6 +1,5 @@
 //! State transition types
 
-use std::mem;
 use byteorder::{ByteOrder, LittleEndian};
 use arrayref::{array_mut_ref, array_ref, array_refs, mut_array_refs};
 use num_enum::TryFromPrimitive;
@@ -108,7 +107,7 @@ impl Pack for Root {
         pack_coption_key(oracle_authority, oracle_authority_dst);
         for i in 0..TOTAL_PLAYERS_COUNT {
             let player_dst = array_mut_ref!(players_dst, i * Player::LEN, Player::LEN);
-            Player::pack_into_slice(&players[i], players_dst);
+            Player::pack_into_slice(&players[i], player_dst);
         }
         for i in 0..LEAGUES_COUNT {
             let league_dst = array_mut_ref!(leagues_dst, i * League::LEN, League::LEN);
@@ -235,6 +234,7 @@ impl Pack for Player {
             is_initialized,
         } = self;
         LittleEndian::write_u16(id_dst, id);
+        position_dst[0] = position as u8;
         for i in 0..GAMES_COUNT {
             let score_dst = array_mut_ref!(scores_dst, i * Score::LEN, Score::LEN);
             scores[i].pack_into_slice(score_dst);
@@ -334,9 +334,8 @@ impl Pack for UserState {
         for i in 0..TEAM_PLAYERS_COUNT {
             LittleEndian::write_u16(array_mut_ref!(bench_dst, i * 2, 2), bench[i]);
         }
-        let lineups = [[0u16;ACTIVE_PLAYERS_COUNT];GAMES_COUNT];
         for i in 0..GAMES_COUNT {
-            let mut lineup_dst = array_mut_ref!(lineups_dst, i * LINEUP_LEN, LINEUP_LEN);
+            let lineup_dst = array_mut_ref!(lineups_dst, i * LINEUP_LEN, LINEUP_LEN);
             for j in 0..ACTIVE_PLAYERS_COUNT {
                 LittleEndian::write_u16(array_mut_ref!(lineup_dst, j * 2, 2), lineups[i][j]);
             }
