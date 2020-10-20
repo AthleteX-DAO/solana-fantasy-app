@@ -10,7 +10,7 @@ use solana_sdk::{
     pubkey::Pubkey,
 };
 
-pub const TOTAL_PLAYERS_COUNT: usize = 3989;
+pub const TOTAL_PLAYERS_COUNT: usize = 10;
 const GAMES_COUNT: usize = 17;
 const LEAGUES_COUNT: usize = 10;
 const LEAGUE_USERS_COUNT: usize = 10;

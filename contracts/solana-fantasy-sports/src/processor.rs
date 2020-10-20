@@ -102,9 +102,10 @@ impl Processor {
         match instruction {
             SfsInstruction::InitializeRoot {
                 oracle_authority,
+                players
             } => {
                 info!("Instruction: InitializeRoot");
-                Self::process_initialize_root(program_id, accounts, oracle_authority)
+                Self::process_initialize_root(program_id, accounts, oracle_authority, &players)
             }
             SfsInstruction::TestMutate => {
                 info!("Instruction: TestMutate");

@@ -9,6 +9,7 @@ use solana_sdk::{
     instruction::{AccountMeta, Instruction},
     program_error::ProgramError,
     program_option::COption,
+    program_pack::{IsInitialized, Pack, Sealed},
     pubkey::Pubkey,
     sysvar,
 };
@@ -52,7 +53,7 @@ impl SfsInstruction {
         Ok(match tag {
             0 => {
                 let (oracle_authority, _rest) = Self::unpack_pubkey_option(rest)?;
-                let (players, __rest) = Self::unpack_pubkey_option(_rest)?;
+                let (players, __rest) = Self::unpack_players(_rest)?;
                 Self::InitializeRoot {
                     oracle_authority,
                     players
@@ -70,6 +71,7 @@ impl SfsInstruction {
         match self {
             &Self::InitializeRoot {
                 ref oracle_authority,
+                ref players
             } => {
                 buf.push(0);
                 Self::pack_pubkey_option(oracle_authority, &mut buf);
@@ -110,8 +112,8 @@ impl SfsInstruction {
             COption::None => buf.push(0),
         }
     }
-    fn unpack_players(value: &[u8]) -> Result<(&[Player; TOTAL_PLAYERS_COUNT], &[u8]), ProgramError> {
-        let mut players = vec![Player::default(); TOTAL_PLAYERS_COUNT];
+    fn unpack_players(value: &[u8]) -> Result<([Player; TOTAL_PLAYERS_COUNT], &[u8]), ProgramError> {
+        let mut players = [Player::default(); TOTAL_PLAYERS_COUNT];
         let (_value, rest) = value.split_at(Player::LEN * TOTAL_PLAYERS_COUNT);
         for i in 0..TOTAL_PLAYERS_COUNT {
             let player_src = array_ref!(_value, i * Player::LEN, Player::LEN);
@@ -126,10 +128,12 @@ pub fn initialize_root(
     sfs_program_id: &Pubkey,
     root_pubkey: &Pubkey,
     oracle_authority_pubkey: Option<&Pubkey>,
+    players: &[Player; TOTAL_PLAYERS_COUNT]
 ) -> Result<Instruction, ProgramError> {
     let oracle_authority = oracle_authority_pubkey.cloned().into();
     let data = SfsInstruction::InitializeRoot {
         oracle_authority,
+        players: *players
     }
     .pack();
 
