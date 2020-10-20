@@ -11,8 +11,6 @@ use solana_sdk::{
     pubkey::Pubkey,
 };
 
-const PLAYER_NAME_LIMIT: usize = 256;
-
 const TOTAL_PLAYERS_COUNT: usize = 10;
 const GAMES_COUNT: usize = 17;
 const LEAGUES_COUNT: usize = 10;
@@ -175,7 +173,7 @@ impl Pack for Score {
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Player {
     /// Player name.
-    pub name: [u8; PLAYER_NAME_LIMIT],
+    pub id: u16,
     pub position: Position,
     pub scores: [Score; GAMES_COUNT],
     /// Is `true` if this structure has been initialized
@@ -191,7 +189,7 @@ impl Default for Player {
     #[inline]
     fn default() -> Self {
         Self {
-            name: [0u8; PLAYER_NAME_LIMIT],
+            id: 0u16,
             position: Position::Uninitialized,
             scores: [Score::default(); GAMES_COUNT],
             is_initialized: false
@@ -199,11 +197,11 @@ impl Default for Player {
     }
 }
 impl Pack for Player {
-    const LEN: usize = PLAYER_NAME_LIMIT + 1 + GAMES_COUNT * Score::LEN + 1;
+    const LEN: usize = 2 + 1 + GAMES_COUNT * Score::LEN + 1;
     fn unpack_from_slice(src: &[u8]) -> Result<Self, ProgramError> {
         let src = array_ref![src, 0, Player::LEN];
-        let (name, position, scores_src, is_initialized) =
-            array_refs![src, PLAYER_NAME_LIMIT, 1, GAMES_COUNT * Score::LEN, 1];
+        let (id, position, scores_src, is_initialized) =
+            array_refs![src, 2, 1, GAMES_COUNT * Score::LEN, 1];
         let is_initialized = match is_initialized {
             [0] => false,
             [1] => true,
@@ -215,7 +213,7 @@ impl Pack for Player {
             scores[i] = Score::unpack_from_slice(score_src).unwrap();
         }
         Ok(Player {
-            name: *name,
+            id: LittleEndian::read_u16(id),
             position: Position::try_from_primitive(position[0])
                 .or(Err(ProgramError::InvalidAccountData))?,
             scores,
@@ -225,18 +223,18 @@ impl Pack for Player {
     fn pack_into_slice(&self, dst: &mut [u8]) {
         let dst = array_mut_ref![dst, 0, Player::LEN];
         let (
-            name_dst,
+            id_dst,
             position_dst,
             scores_dst,
             is_initialized_dst,
-        ) = mut_array_refs![dst, PLAYER_NAME_LIMIT, 1, GAMES_COUNT * Score::LEN, 1];
+        ) = mut_array_refs![dst, 2, 1, GAMES_COUNT * Score::LEN, 1];
         let &Player {
-            ref name,
+            id,
             position,
             ref scores,
             is_initialized,
         } = self;
-        name_dst.copy_from_slice(name.as_ref());
+        LittleEndian::write_u16(id_dst, id);
         for i in 0..GAMES_COUNT {
             let score_dst = array_mut_ref!(scores_dst, i * Score::LEN, Score::LEN);
             scores[i].pack_into_slice(score_dst);
