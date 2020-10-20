@@ -11,7 +11,7 @@ use solana_sdk::{
     pubkey::Pubkey,
 };
 
-const TOTAL_PLAYERS_COUNT: usize = 10;
+const TOTAL_PLAYERS_COUNT: usize = 3989;
 const GAMES_COUNT: usize = 17;
 const LEAGUES_COUNT: usize = 10;
 const LEAGUE_USERS_COUNT: usize = 10;
@@ -24,12 +24,12 @@ const PUB_KEY_LEN: usize = 32;
 
 /// Root data.
 #[repr(C)]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Root {
     /// Oracle authority used to supply game scores.
     pub oracle_authority: COption<Pubkey>,
     /// An address of an account that stores the latest state.
-    pub players: [Player; TOTAL_PLAYERS_COUNT],
+    pub players: Vec<Player>,
     /// Leagues
     pub leagues: [League; LEAGUES_COUNT],
     /// Is `true` if this structure has been initialized
@@ -46,7 +46,7 @@ impl Default for Root {
     fn default() -> Self {
         Self {
             oracle_authority: COption::None,
-            players: [Player::default(); TOTAL_PLAYERS_COUNT],
+            players: vec![Player::default(); TOTAL_PLAYERS_COUNT],
             leagues: [League::default(); LEAGUES_COUNT],
             is_initialized: false
         }
@@ -64,7 +64,7 @@ impl Pack for Root {
                 1
             ];
         let oracle_authority = unpack_coption_key(oracle_authority)?;
-        let mut players = [Player::default(); TOTAL_PLAYERS_COUNT];
+        let mut players = vec![Player::default(); TOTAL_PLAYERS_COUNT];
         for i in 0..TOTAL_PLAYERS_COUNT {
             let player_src = array_ref!(players_src, i * Player::LEN, Player::LEN);
             players[i] = Player::unpack_from_slice(player_src).unwrap();
@@ -101,7 +101,7 @@ impl Pack for Root {
             ];
         let &Root {
             ref oracle_authority,
-            players,
+            ref players,
             leagues,
             is_initialized,
         } = self;
