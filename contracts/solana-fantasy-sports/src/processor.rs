@@ -202,6 +202,7 @@ mod tests {
         let program_id = pubkey_rand();
         let owner_key = pubkey_rand();
         let root_key = pubkey_rand();
+        let players = &[Player::default(); TOTAL_PLAYERS_COUNT];
         let mut root_account = SolanaAccount::new(42, Root::get_packed_len(), &program_id);
         let mut rent_sysvar = rent_sysvar();
 
@@ -209,16 +210,15 @@ mod tests {
         assert_eq!(
             Err(SfsError::NotRentExempt.into()),
             do_process_instruction(
-                initialize_root(&program_id, &root_key, Some(&owner_key)).unwrap(),
+                initialize_root(&program_id, &root_key, Some(&owner_key), players).unwrap(),
                 vec![&mut root_account, &mut rent_sysvar]
             )
         );
-
         root_account.lamports = root_minimum_balance();
 
         // create new root
         do_process_instruction(
-            initialize_root(&program_id, &root_key, Some(&owner_key)).unwrap(),
+            initialize_root(&program_id, &root_key, Some(&owner_key), players).unwrap(),
             vec![&mut root_account, &mut rent_sysvar],
         )
         .unwrap();
@@ -227,7 +227,7 @@ mod tests {
         assert_eq!(
             Err(SfsError::AlreadyInUse.into()),
             do_process_instruction(
-                initialize_root(&program_id, &root_key, Some(&owner_key)).unwrap(),
+                initialize_root(&program_id, &root_key, Some(&owner_key), players).unwrap(),
                 vec![&mut root_account, &mut rent_sysvar],
             )
         );

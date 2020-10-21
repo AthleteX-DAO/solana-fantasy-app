@@ -75,6 +75,7 @@ impl SfsInstruction {
             } => {
                 buf.push(0);
                 Self::pack_pubkey_option(oracle_authority, &mut buf);
+                Self::pack_players(players, &mut buf)
             }
             Self::TestMutate => buf.push(1),
         };
@@ -112,14 +113,23 @@ impl SfsInstruction {
             COption::None => buf.push(0),
         }
     }
-    fn unpack_players(value: &[u8]) -> Result<([Player; TOTAL_PLAYERS_COUNT], &[u8]), ProgramError> {
+
+    fn unpack_players(input: &[u8]) -> Result<([Player; TOTAL_PLAYERS_COUNT], &[u8]), ProgramError> {
         let mut players = [Player::default(); TOTAL_PLAYERS_COUNT];
-        let (_value, rest) = value.split_at(Player::LEN * TOTAL_PLAYERS_COUNT);
+        let (_input, rest) = input.split_at(Player::LEN * TOTAL_PLAYERS_COUNT);
         for i in 0..TOTAL_PLAYERS_COUNT {
-            let player_src = array_ref!(_value, i * Player::LEN, Player::LEN);
+            let player_src = array_ref!(_input, i * Player::LEN, Player::LEN);
             players[i] = Player::unpack_from_slice(player_src).unwrap();
         }
         return Ok((players, rest));
+    }
+
+    fn pack_players(value: &[Player; TOTAL_PLAYERS_COUNT], buf: &mut Vec<u8>) {
+        for i in 0..TOTAL_PLAYERS_COUNT {
+            let mut player_dst = [0u8; Player::LEN];
+            Player::pack_into_slice(&value[i], &mut player_dst);
+            buf.extend_from_slice(&player_dst);
+        }
     }
 }
 
@@ -175,10 +185,12 @@ mod test {
     fn test_instruction_packing() {
         let check = SfsInstruction::InitializeRoot {
             oracle_authority: COption::Some(Pubkey::new(&[3u8; 32])),
+            players: [Player::default(); TOTAL_PLAYERS_COUNT]
         };
         let packed = check.pack();
         let mut expect = vec![0u8, 1];
         expect.extend_from_slice(&[3u8; 32]);
+        expect.extend_from_slice(&[0u8; Player::LEN * TOTAL_PLAYERS_COUNT]);
         assert_eq!(packed, expect);
         let unpacked = SfsInstruction::unpack(&expect).unwrap();
         assert_eq!(unpacked, check);
