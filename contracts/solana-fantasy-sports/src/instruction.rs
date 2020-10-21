@@ -1,7 +1,7 @@
 //! Instruction types
 
 use crate::{
-    error::SfsError, 
+    error::SfsError,
     state::{Player, TOTAL_PLAYERS_COUNT}
 };
 use arrayref::{array_ref};
@@ -47,9 +47,7 @@ pub enum SfsInstruction {
 impl SfsInstruction {
     /// Unpacks a byte buffer into a [SfsInstruction](enum.SfsInstruction.html).
     pub fn unpack(input: &[u8]) -> Result<Self, ProgramError> {
-        use SfsError::InvalidInstruction;
-
-        let (&tag, rest) = input.split_first().ok_or(InvalidInstruction)?;
+        let (&tag, rest) = input.split_first().ok_or(SfsError::InvalidInstruction)?;
         Ok(match tag {
             0 => {
                 let (oracle_authority, _rest) = Self::unpack_pubkey_option(rest)?;
@@ -115,13 +113,17 @@ impl SfsInstruction {
     }
 
     fn unpack_players(input: &[u8]) -> Result<([Player; TOTAL_PLAYERS_COUNT], &[u8]), ProgramError> {
-        let mut players = [Player::default(); TOTAL_PLAYERS_COUNT];
-        let (_input, rest) = input.split_at(Player::LEN * TOTAL_PLAYERS_COUNT);
-        for i in 0..TOTAL_PLAYERS_COUNT {
-            let player_src = array_ref!(_input, i * Player::LEN, Player::LEN);
-            players[i] = Player::unpack_from_slice(player_src).unwrap();
+        if input.len() >= Player::LEN * TOTAL_PLAYERS_COUNT {
+            let mut players = [Player::default(); TOTAL_PLAYERS_COUNT];
+            let (_input, rest) = input.split_at(Player::LEN * TOTAL_PLAYERS_COUNT);
+            for i in 0..TOTAL_PLAYERS_COUNT {
+                let player_src = array_ref!(_input, i * Player::LEN, Player::LEN);
+                players[i] = Player::unpack_from_slice(player_src).unwrap();
+            }
+            return Ok((players, rest));
+        } else {
+            Err(SfsError::InvalidInstruction.into())
         }
-        return Ok((players, rest));
     }
 
     fn pack_players(value: &[Player; TOTAL_PLAYERS_COUNT], buf: &mut Vec<u8>) {

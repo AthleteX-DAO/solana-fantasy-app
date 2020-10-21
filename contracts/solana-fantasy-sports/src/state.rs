@@ -499,8 +499,8 @@ mod tests {
     //     // Root
     //     let check = Root {
     //         oracle_authority: COption::Some(Pubkey::new(&[1; 32])),
-    //         players:
-    //         latest_state_account: Pubkey::new(&[2; 32]),
+    //         players: vec![Player::default(); TOTAL_PLAYERS_COUNT],
+    //         leagues: [League::default(); LEAGUES_COUNT],
     //         is_initialized: true,
     //     };
     //     let mut packed = vec![0; Root::get_packed_len() + 1];

@@ -6,6 +6,7 @@ declare global {
       connection: Connection;
       payerAccount: Account;
       helloWorldPPK: PublicKey; // PPK => Program Public Key
+      solanaFantasySportsPPK: PublicKey;
     }
   }
 }
