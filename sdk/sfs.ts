@@ -113,11 +113,7 @@ export class SFS {
     const data = Buffer.from(info.data);
     const rootInfo = RootLayout.decode(data);
 
-    if (rootInfo.oracleAuthorityOption === 0) {
-      rootInfo.oracleAuthority = null;
-    } else {
-      rootInfo.oracleAuthority = new PublicKey(rootInfo.oracleAuthority);
-    }
+    rootInfo.oracleAuthority = new PublicKey(rootInfo.oracleAuthority);
 
     rootInfo.isInitialized = rootInfo.isInitialized != 0;
 

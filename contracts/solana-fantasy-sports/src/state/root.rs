@@ -2,7 +2,6 @@
 use arrayref::{array_mut_ref, array_ref, array_refs, mut_array_refs};
 use solana_sdk::{
     program_error::ProgramError,
-    program_option::COption,
     program_pack::{IsInitialized, Pack, Sealed},
     pubkey::Pubkey,
 };
@@ -17,7 +16,7 @@ use super::{
 #[derive(Clone, Debug, PartialEq)]
 pub struct Root {
     /// Oracle authority used to supply game scores.
-    pub oracle_authority: COption<Pubkey>,
+    pub oracle_authority: Pubkey,
     /// An address of an account that stores the latest state.
     pub players: PlayerList,
     /// Leagues
@@ -35,7 +34,7 @@ impl Default for Root {
     #[inline]
     fn default() -> Self {
         Self {
-            oracle_authority: COption::None,
+            oracle_authority: Pubkey::default(),
             players: PlayerList::default(),
             leagues: LeagueList::default(),
             is_initialized: false
@@ -43,13 +42,13 @@ impl Default for Root {
     }
 }
 impl Pack for Root {
-    const LEN: usize = 36 + PlayerList::LEN + LeagueList::LEN + 1;
+    const LEN: usize = PUB_KEY_LEN + PlayerList::LEN + LeagueList::LEN + 1;
     fn unpack_from_slice(src: &[u8]) -> Result<Self, ProgramError> {
         let src = array_ref![src, 0, Root::LEN];
         let (oracle_authority, players, leagues, is_initialized) =
-            array_refs![src, 36, PlayerList::LEN, LeagueList::LEN, 1];
+            array_refs![src, PUB_KEY_LEN, PlayerList::LEN, LeagueList::LEN, 1];
         Ok(Root {
-            oracle_authority: unpack_coption_key(oracle_authority)?,
+            oracle_authority: Pubkey::new_from_array(*oracle_authority),
             players: PlayerList::unpack_unchecked(players).unwrap(),
             leagues: LeagueList::unpack_unchecked(leagues).unwrap(),
             is_initialized: unpack_is_initialized(is_initialized).unwrap(),
@@ -62,14 +61,14 @@ impl Pack for Root {
             players_dst,
             leagues_dst,
             is_initialized_dst,
-        ) = mut_array_refs![dst, 36, PlayerList::LEN, LeagueList::LEN, 1];
+        ) = mut_array_refs![dst, PUB_KEY_LEN, PlayerList::LEN, LeagueList::LEN, 1];
         let &Root {
             ref oracle_authority,
             ref players,
             ref leagues,
             is_initialized,
         } = self;
-        pack_coption_key(oracle_authority, oracle_authority_dst);
+        oracle_authority_dst.copy_from_slice(oracle_authority.as_ref());
         PlayerList::pack(players.clone(), players_dst).unwrap();
         LeagueList::pack(leagues.clone(), leagues_dst).unwrap();
         is_initialized_dst[0] = is_initialized as u8;
@@ -83,7 +82,7 @@ mod tests {
     #[test]
     fn test_pack_unpack() {
         let check = Root {
-            oracle_authority: COption::Some(Pubkey::new(&[1; 32])),
+            oracle_authority: Pubkey::new(&[1; PUB_KEY_LEN]),
             players: PlayerList::default(),
             leagues: LeagueList::default(),
             is_initialized: true,
@@ -100,7 +99,7 @@ mod tests {
         );
         let mut packed = vec![0; Root::get_packed_len()];
         Root::pack(check.clone(), &mut packed).unwrap();
-        let mut expect = vec![1, 0, 0, 0];
+        let mut expect = vec![0u8; 0];
         expect.extend_from_slice(&[1u8; 32]);
         expect.extend_from_slice(&[0u8; PlayerList::LEN]);
         expect.extend_from_slice(&[0u8; LeagueList::LEN]);

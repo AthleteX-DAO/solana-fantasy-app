@@ -92,7 +92,6 @@ export type Root = {
 };
 
 export const RootLayout: typeof BufferLayout.Structure = BufferLayout.struct([
-  BufferLayout.u32('oracleAuthorityOption'),
   Layout.publicKey('oracleAuthority'),
   BufferLayout.seq(PlayerLayout, TOTAL_PLAYERS_COUNT, 'players'),
   BufferLayout.seq(LeagueLayout, LEAGUES_COUNT, 'lagues'),

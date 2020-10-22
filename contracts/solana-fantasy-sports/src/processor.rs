@@ -8,7 +8,7 @@ use crate::{
     state::{
         Root,
         Player,
-        lists::{PlayerList, ActivePlayersList}
+        lists::{PlayerList, ActivePlayersList, LeagueList}
     },
 };
 use num_traits::FromPrimitive;
@@ -35,7 +35,7 @@ impl Processor {
     pub fn process_initialize_root(
         program_id: &Pubkey,
         accounts: &[AccountInfo],
-        oracle_authority: COption<Pubkey>,
+        oracle_authority: Pubkey,
         players: PlayerList
     ) -> ProgramResult {
         let account_info_iter = &mut accounts.iter();
@@ -255,7 +255,7 @@ mod tests {
         assert_eq!(
             Err(SfsError::NotRentExempt.into()),
             do_process_instruction(
-                initialize_root(&program_id, &root_key, Some(&owner_key), players.clone()).unwrap(),
+                initialize_root(&program_id, &root_key, &owner_key, players.clone()).unwrap(),
                 vec![&mut root_account, &mut rent_sysvar]
             )
         );
@@ -263,7 +263,7 @@ mod tests {
 
         // create new root
         do_process_instruction(
-            initialize_root(&program_id, &root_key, Some(&owner_key), players.clone()).unwrap(),
+            initialize_root(&program_id, &root_key, &owner_key, players.clone()).unwrap(),
             vec![&mut root_account, &mut rent_sysvar],
         )
         .unwrap();
@@ -272,12 +272,12 @@ mod tests {
         assert_eq!(
             Err(SfsError::AlreadyInUse.into()),
             do_process_instruction(
-                initialize_root(&program_id, &root_key, Some(&owner_key), players.clone()).unwrap(),
+                initialize_root(&program_id, &root_key, &owner_key, players.clone()).unwrap(),
                 vec![&mut root_account, &mut rent_sysvar],
             )
         );
 
         let root = Root::unpack_unchecked(&root_account.data).unwrap();
-        assert_eq!(root.oracle_authority, COption::Some(owner_key));
+        assert_eq!(root.oracle_authority, owner_key);
     }
 }

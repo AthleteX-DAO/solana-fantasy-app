@@ -11,6 +11,7 @@ import {
   ScoreLayout,
   PlayerLayout,
   TOTAL_PLAYERS_COUNT,
+  PUB_KEY_LEN,
 } from '../../../sdk/state';
 import { BufferLayout } from '../../../sdk/util/layout';
 
@@ -59,7 +60,7 @@ export const InstructionsTests = () =>
       console.log(data.data);
       strictEqual(ScoreLayout.span, 2);
       strictEqual(PlayerLayout.span, 2 + 1 + GAMES_COUNT * ScoreLayout.span + 1);
-      strictEqual(data.data.length, 2 + 32 + PlayerLayout.span * TOTAL_PLAYERS_COUNT);
+      strictEqual(data.data.length, 1 + PUB_KEY_LEN + PlayerLayout.span * TOTAL_PLAYERS_COUNT);
 
       // it('calls InitializeRoot on the program on the network', async () => {
       //   const instruction = new TransactionInstruction({

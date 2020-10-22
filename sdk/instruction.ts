@@ -28,7 +28,6 @@ export class SfsInstruction {
     ];
     const commandDataLayout = BufferLayout.struct([
       BufferLayout.u8('instruction'),
-      BufferLayout.u8('option'),
       Layout.publicKey('oracleAuthority'),
       BufferLayout.seq(PlayerLayout, TOTAL_PLAYERS_COUNT, 'players'),
     ]);

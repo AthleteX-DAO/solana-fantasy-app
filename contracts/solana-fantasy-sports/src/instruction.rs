@@ -5,6 +5,7 @@ use crate::{
     state::{
         PackNext,
         lists::{PlayerList, ActivePlayersList},
+        consts::PUB_KEY_LEN
     }
 };
 use arrayref::{array_ref};
@@ -37,7 +38,7 @@ pub enum SfsInstruction {
     ///
     InitializeRoot {
         /// The authority/multisignature to supply game scores.
-        oracle_authority: COption<Pubkey>,
+        oracle_authority: Pubkey,
         players: PlayerList
     },
     UpdateLineup {
@@ -60,7 +61,7 @@ impl SfsInstruction {
 
         Ok(match tag {
             0 => {
-                let (oracle_authority, _rest) = Self::unpack_pubkey_option(rest)?;
+                let (oracle_authority, _rest) = Self::unpack_pubkey(rest)?;
                 let (players, __rest) = PlayerList::unpack_next(_rest)?;
                 Self::InitializeRoot {
                     oracle_authority,
@@ -92,7 +93,7 @@ impl SfsInstruction {
                 ref players
             } => {
                 buf.push(0);
-                Self::pack_pubkey_option(oracle_authority, &mut buf);
+                Self::pack_pubkey(oracle_authority, &mut buf);
                 PlayerList::pack_next(players, &mut buf);
             }
             &Self::UpdateLineup {
@@ -109,8 +110,8 @@ impl SfsInstruction {
     }
 
     fn unpack_pubkey(input: &[u8]) -> Result<(Pubkey, &[u8]), ProgramError> {
-        if input.len() >= 32 {
-            let (key, rest) = input.split_at(32);
+        if input.len() >= PUB_KEY_LEN {
+            let (key, rest) = input.split_at(PUB_KEY_LEN);
             let pk = Pubkey::new(key);
             Ok((pk, rest))
         } else {
@@ -118,11 +119,15 @@ impl SfsInstruction {
         }
     }
 
+    fn pack_pubkey(value: &Pubkey, buf: &mut Vec<u8>) {
+        buf.extend_from_slice(&value.to_bytes());
+    }
+
     fn unpack_pubkey_option(input: &[u8]) -> Result<(COption<Pubkey>, &[u8]), ProgramError> {
         match input.split_first() {
             Option::Some((&0, rest)) => Ok((COption::None, rest)),
-            Option::Some((&1, rest)) if rest.len() >= 32 => {
-                let (key, rest) = rest.split_at(32);
+            Option::Some((&1, rest)) if rest.len() >= PUB_KEY_LEN => {
+                let (key, rest) = rest.split_at(PUB_KEY_LEN);
                 let pk = Pubkey::new(key);
                 Ok((COption::Some(pk), rest))
             }
@@ -154,12 +159,11 @@ impl SfsInstruction {
 pub fn initialize_root(
     sfs_program_id: &Pubkey,
     root_pubkey: &Pubkey,
-    oracle_authority_pubkey: Option<&Pubkey>,
+    oracle_authority_pubkey: &Pubkey,
     players: PlayerList
 ) -> Result<Instruction, ProgramError> {
-    let oracle_authority = oracle_authority_pubkey.cloned().into();
     let data = SfsInstruction::InitializeRoot {
-        oracle_authority,
+        oracle_authority: *oracle_authority_pubkey,
         players
     }
     .pack();
@@ -201,11 +205,11 @@ mod test {
     #[test]
     fn test_instruction_packing() {
         let check = SfsInstruction::InitializeRoot {
-            oracle_authority: COption::Some(Pubkey::new(&[3u8; 32])),
+            oracle_authority: Pubkey::new(&[3u8; 32]),
             players: PlayerList::default()
         };
         let packed = check.pack();
-        let mut expect = vec![0u8, 1];
+        let mut expect = vec![0u8];
         expect.extend_from_slice(&[3u8; 32]);
         expect.extend_from_slice(&[0u8; PlayerList::LEN]);
         assert_eq!(packed, expect);
