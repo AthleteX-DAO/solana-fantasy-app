@@ -44,7 +44,7 @@ impl Pack for League {
             array_refs![src, 1, UserStateList::LEN, 1];
         Ok(League {
             bid: bid[0],
-            user_states: UserStateList::unpack_from_slice(user_states).unwrap(),
+            user_states: UserStateList::unpack_unchecked(user_states).unwrap(),
             is_initialized: unpack_is_initialized(is_initialized).unwrap(),
         })
     }

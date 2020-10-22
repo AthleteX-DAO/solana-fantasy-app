@@ -50,8 +50,8 @@ impl Pack for Root {
             array_refs![src, 36, PlayerList::LEN, LeagueList::LEN, 1];
         Ok(Root {
             oracle_authority: unpack_coption_key(oracle_authority)?,
-            players: PlayerList::unpack_from_slice(players).unwrap(),
-            leagues: LeagueList::unpack_from_slice(leagues).unwrap(),
+            players: PlayerList::unpack_unchecked(players).unwrap(),
+            leagues: LeagueList::unpack_unchecked(leagues).unwrap(),
             is_initialized: unpack_is_initialized(is_initialized).unwrap(),
         })
     }

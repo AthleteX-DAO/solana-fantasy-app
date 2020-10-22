@@ -52,7 +52,7 @@ impl Pack for Player {
             id: LittleEndian::read_u16(id),
             position: Position::try_from_primitive(position[0])
                 .or(Err(ProgramError::InvalidAccountData))?,
-            scores: ScoreList::unpack_from_slice(scores_src).unwrap(),
+            scores: ScoreList::unpack_unchecked(scores_src).unwrap(),
             is_initialized: unpack_is_initialized(is_initialized).unwrap(),
         })
     }

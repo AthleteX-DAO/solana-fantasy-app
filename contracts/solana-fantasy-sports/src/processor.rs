@@ -128,8 +128,6 @@ impl Processor {
         //     return Err(SfsError::InvalidState.into());
         // }
 
-        // let state = State::unpack_from_slice(&state_info.data.borrow())?;
-        // info!(&state.test);
 
         Root::pack(root, &mut root_info.data.borrow_mut())?;
         Ok(())

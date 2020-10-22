@@ -47,8 +47,8 @@ impl Pack for UserState {
             array_refs![src, PUB_KEY_LEN, BenchList::LEN, LineupList::LEN, 1];
         Ok(UserState {
             pub_key: Pubkey::new_from_array(*pub_key),
-            bench: BenchList::unpack_from_slice(bench).unwrap(),
-            lineups: LineupList::unpack_from_slice(lineups).unwrap(),
+            bench: BenchList::unpack_unchecked(bench).unwrap(),
+            lineups: LineupList::unpack_unchecked(lineups).unwrap(),
             is_initialized: unpack_is_initialized(is_initialized).unwrap(),
         })
     }
