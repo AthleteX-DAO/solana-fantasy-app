@@ -1,8 +1,11 @@
 //! Instruction types
 
 use crate::{
-    error::SfsError, 
-    state::{Player, TOTAL_PLAYERS_COUNT, ACTIVE_PLAYERS_COUNT}
+    error::SfsError,
+    state::{
+        PackNext,
+        lists::{PlayerList, ActivePlayersList},
+    }
 };
 use arrayref::{array_ref};
 use solana_sdk::{
@@ -35,12 +38,12 @@ pub enum SfsInstruction {
     InitializeRoot {
         /// The authority/multisignature to supply game scores.
         oracle_authority: COption<Pubkey>,
-        players: [Player; TOTAL_PLAYERS_COUNT]
+        players: PlayerList
     },
     UpdateLineup {
         league: u8,
         week: u8,
-        lineup: [u16; ACTIVE_PLAYERS_COUNT]
+        lineup: ActivePlayersList
     },
     /// Test
     ///
@@ -54,10 +57,11 @@ impl SfsInstruction {
     /// Unpacks a byte buffer into a [SfsInstruction](enum.SfsInstruction.html).
     pub fn unpack(input: &[u8]) -> Result<Self, ProgramError> {
         let (&tag, rest) = input.split_first().ok_or(SfsError::InvalidInstruction)?;
+
         Ok(match tag {
             0 => {
                 let (oracle_authority, _rest) = Self::unpack_pubkey_option(rest)?;
-                let (players, __rest) = Self::unpack_players(_rest)?;
+                let (players, __rest) = PlayerList::unpack_next(_rest)?;
                 Self::InitializeRoot {
                     oracle_authority,
                     players
@@ -66,7 +70,7 @@ impl SfsInstruction {
             1 => {
                 let (league, _rest) = Self::unpack_u8(rest)?;
                 let (week, __rest) = Self::unpack_u8(_rest)?;
-                let (lineup, ___rest) = Self::unpack_lineup(__rest)?;
+                let (lineup, ___rest) = ActivePlayersList::unpack_next(__rest)?;
                 Self::UpdateLineup {
                     league,
                     week,
@@ -89,16 +93,17 @@ impl SfsInstruction {
             } => {
                 buf.push(0);
                 Self::pack_pubkey_option(oracle_authority, &mut buf);
-                Self::pack_players(players, &mut buf)
+                PlayerList::pack_next(players, &mut buf);
             }
             &Self::UpdateLineup {
                 ref league,
                 ref week,
                 ref lineup
             } => {
+                buf.push(1);
                 // @TODO: add something here
             }
-            Self::TestMutate => buf.push(1),
+            Self::TestMutate => buf.push(2),
         };
         buf
     }
@@ -135,39 +140,6 @@ impl SfsInstruction {
         }
     }
 
-    fn unpack_players(input: &[u8]) -> Result<([Player; TOTAL_PLAYERS_COUNT], &[u8]), ProgramError> {
-        if input.len() >= Player::LEN * TOTAL_PLAYERS_COUNT {
-            let mut players = [Player::default(); TOTAL_PLAYERS_COUNT];
-            let (_input, rest) = input.split_at(Player::LEN * TOTAL_PLAYERS_COUNT);
-            for i in 0..TOTAL_PLAYERS_COUNT {
-                let player_src = array_ref!(_input, i * Player::LEN, Player::LEN);
-                players[i] = Player::unpack_from_slice(player_src).unwrap();
-            }
-            return Ok((players, rest));
-        } else {
-            Err(SfsError::InvalidInstruction.into())
-        }
-    }
-
-    fn pack_players(value: &[Player; TOTAL_PLAYERS_COUNT], buf: &mut Vec<u8>) {
-        for i in 0..TOTAL_PLAYERS_COUNT {
-            let mut player_dst = [0u8; Player::LEN];
-            Player::pack_into_slice(&value[i], &mut player_dst);
-            buf.extend_from_slice(&player_dst);
-        }
-    }
-    
-    fn unpack_lineup(value: &[u8]) -> Result<([u16; ACTIVE_PLAYERS_COUNT], &[u8]), ProgramError> {
-        let mut lineup = [u16::default(); ACTIVE_PLAYERS_COUNT];
-        let (_value, rest) = value.split_at(2 * ACTIVE_PLAYERS_COUNT);
-        for i in 0..ACTIVE_PLAYERS_COUNT {
-            let lineup_src = array_ref!(_value, i * 2, 2);
-            // lineup[i] = Player::unpack_from_slice(player_src).unwrap();
-            lineup[i] = LittleEndian::read_u16(lineup_src);
-        }
-        return Ok((lineup, rest));
-    }
-
     fn unpack_u8(input: &[u8]) -> Result<(u8, &[u8]), ProgramError> {
         if input.len() >= 1 {
             let (num, rest) = input.split_at(1);
@@ -183,12 +155,12 @@ pub fn initialize_root(
     sfs_program_id: &Pubkey,
     root_pubkey: &Pubkey,
     oracle_authority_pubkey: Option<&Pubkey>,
-    players: &[Player; TOTAL_PLAYERS_COUNT]
+    players: PlayerList
 ) -> Result<Instruction, ProgramError> {
     let oracle_authority = oracle_authority_pubkey.cloned().into();
     let data = SfsInstruction::InitializeRoot {
         oracle_authority,
-        players: *players
+        players
     }
     .pack();
 
@@ -230,19 +202,19 @@ mod test {
     fn test_instruction_packing() {
         let check = SfsInstruction::InitializeRoot {
             oracle_authority: COption::Some(Pubkey::new(&[3u8; 32])),
-            players: [Player::default(); TOTAL_PLAYERS_COUNT]
+            players: PlayerList::default()
         };
         let packed = check.pack();
         let mut expect = vec![0u8, 1];
         expect.extend_from_slice(&[3u8; 32]);
-        expect.extend_from_slice(&[0u8; Player::LEN * TOTAL_PLAYERS_COUNT]);
+        expect.extend_from_slice(&[0u8; PlayerList::LEN]);
         assert_eq!(packed, expect);
         let unpacked = SfsInstruction::unpack(&expect).unwrap();
         assert_eq!(unpacked, check);
 
         let check = SfsInstruction::TestMutate;
         let packed = check.pack();
-        let expect = Vec::from([1u8]);
+        let expect = Vec::from([2u8]);
         assert_eq!(packed, expect);
         let unpacked = SfsInstruction::unpack(&expect).unwrap();
         assert_eq!(unpacked, check);

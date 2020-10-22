@@ -5,7 +5,11 @@
 use crate::{
     error::SfsError,
     instruction::{SfsInstruction},
-    state::{Root, Player, TOTAL_PLAYERS_COUNT, ACTIVE_PLAYERS_COUNT, LEAGUE_USERS_COUNT},
+    state::{
+        Root,
+        Player,
+        lists::{PlayerList, ActivePlayersList}
+    },
 };
 use num_traits::FromPrimitive;
 use solana_sdk::program::invoke;
@@ -32,7 +36,7 @@ impl Processor {
         program_id: &Pubkey,
         accounts: &[AccountInfo],
         oracle_authority: COption<Pubkey>,
-        players: &[Player; TOTAL_PLAYERS_COUNT]
+        players: PlayerList
     ) -> ProgramResult {
         let account_info_iter = &mut accounts.iter();
         let root_info = next_account_info(account_info_iter)?;
@@ -48,7 +52,7 @@ impl Processor {
             return Err(SfsError::NotRentExempt.into());
         }
 
-        root.players = players.to_vec();
+        // root.players = players.to_vec();
         // let state = State{ test: String::from("hello") };
 
         // let data = CreateAccount::pack(SystemInstruction::CreateAccount{
@@ -81,7 +85,7 @@ impl Processor {
         accounts: &[AccountInfo],
         league: &u8,
         week: &u8,
-        lineup: &[u16; ACTIVE_PLAYERS_COUNT]
+        lineup: ActivePlayersList
     ) -> ProgramResult {
         let account_info_iter = &mut accounts.iter();
         let root_info = next_account_info(account_info_iter)?;
@@ -101,13 +105,13 @@ impl Processor {
 
         // @TODO: before mutating check if league and week values entered from user input are authorized
 
-        for i in 0..LEAGUE_USERS_COUNT {
-            if *user_account_info.key == root.leagues[*league as usize].user_states[i].pub_key {
-                root.leagues[*league as usize].user_states[i].lineups[*week as usize] = *lineup;
-                break;
-            }
-        }
-        
+        // for i in 0..LEAGUE_USERS_COUNT {
+        //     if *user_account_info.key == root.leagues[*league as usize].user_states[i].pub_key {
+        //         root.leagues[*league as usize].user_states[i].lineups[*week as usize] = *lineup;
+        //         break;
+        //     }
+        // }
+
         Root::pack(root, &mut root_info.data.borrow_mut())?;
         Ok(())
     }
@@ -141,14 +145,14 @@ impl Processor {
                 players
             } => {
                 info!("Instruction: InitializeRoot");
-                Self::process_initialize_root(program_id, accounts, oracle_authority, &players)
+                Self::process_initialize_root(program_id, accounts, oracle_authority, players)
             }
             SfsInstruction::UpdateLineup {
                 league,
                 week,
                 lineup
             } => {
-                Self::process_update_lineup(program_id, accounts, &league, &week, &lineup)
+                Self::process_update_lineup(program_id, accounts, &league, &week, lineup)
             }
             SfsInstruction::TestMutate => {
                 info!("Instruction: TestMutate");
@@ -245,7 +249,7 @@ mod tests {
         let program_id = pubkey_rand();
         let owner_key = pubkey_rand();
         let root_key = pubkey_rand();
-        let players = &[Player::default(); TOTAL_PLAYERS_COUNT];
+        let players = PlayerList::default();
         let mut root_account = SolanaAccount::new(42, Root::get_packed_len(), &program_id);
         let mut rent_sysvar = rent_sysvar();
 
@@ -253,7 +257,7 @@ mod tests {
         assert_eq!(
             Err(SfsError::NotRentExempt.into()),
             do_process_instruction(
-                initialize_root(&program_id, &root_key, Some(&owner_key), players).unwrap(),
+                initialize_root(&program_id, &root_key, Some(&owner_key), players.clone()).unwrap(),
                 vec![&mut root_account, &mut rent_sysvar]
             )
         );
@@ -261,7 +265,7 @@ mod tests {
 
         // create new root
         do_process_instruction(
-            initialize_root(&program_id, &root_key, Some(&owner_key), players).unwrap(),
+            initialize_root(&program_id, &root_key, Some(&owner_key), players.clone()).unwrap(),
             vec![&mut root_account, &mut rent_sysvar],
         )
         .unwrap();
@@ -270,7 +274,7 @@ mod tests {
         assert_eq!(
             Err(SfsError::AlreadyInUse.into()),
             do_process_instruction(
-                initialize_root(&program_id, &root_key, Some(&owner_key), players).unwrap(),
+                initialize_root(&program_id, &root_key, Some(&owner_key), players.clone()).unwrap(),
                 vec![&mut root_account, &mut rent_sysvar],
             )
         );
