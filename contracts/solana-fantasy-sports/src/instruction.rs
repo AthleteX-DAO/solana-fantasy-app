@@ -41,11 +41,18 @@ pub enum SfsInstruction {
         oracle_authority: Pubkey,
         players: PlayerList
     },
+    ///
+    /// Updates lineup of a user
+    ///
+    /// Accounts expected by this instruction:
+    ///   0. `[user address]` // check if this is correct
+    ///
     UpdateLineup {
         league: u8,
         week: u8,
         lineup: ActivePlayersList
     },
+    ///
     /// Test
     ///
     /// Accounts expected by this instruction:
