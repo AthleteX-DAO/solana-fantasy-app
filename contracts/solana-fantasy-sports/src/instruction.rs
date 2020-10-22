@@ -1,8 +1,8 @@
 //! Instruction types
 
 use crate::{
-    error::SfsError,
-    state::{Player, TOTAL_PLAYERS_COUNT}
+    error::SfsError, 
+    state::{Player, TOTAL_PLAYERS_COUNT, ACTIVE_PLAYERS_COUNT}
 };
 use arrayref::{array_ref};
 use solana_sdk::{
@@ -13,6 +13,7 @@ use solana_sdk::{
     pubkey::Pubkey,
     sysvar,
 };
+use byteorder::{ByteOrder, LittleEndian};
 use std::convert::TryInto;
 use std::mem::size_of;
 
@@ -36,6 +37,11 @@ pub enum SfsInstruction {
         oracle_authority: COption<Pubkey>,
         players: [Player; TOTAL_PLAYERS_COUNT]
     },
+    UpdateLineup {
+        league: u8,
+        week: u8,
+        lineup: [u16; ACTIVE_PLAYERS_COUNT]
+    },
     /// Test
     ///
     /// Accounts expected by this instruction:
@@ -57,7 +63,17 @@ impl SfsInstruction {
                     players
                 }
             },
-            1 => Self::TestMutate,
+            1 => {
+                let (league, _rest) = Self::unpack_u8(rest)?;
+                let (week, __rest) = Self::unpack_u8(_rest)?;
+                let (lineup, ___rest) = Self::unpack_lineup(__rest)?;
+                Self::UpdateLineup {
+                    league,
+                    week,
+                    lineup
+                }
+            }
+            2 => Self::TestMutate,
 
             _ => return Err(SfsError::InvalidInstruction.into()),
         })
@@ -74,6 +90,13 @@ impl SfsInstruction {
                 buf.push(0);
                 Self::pack_pubkey_option(oracle_authority, &mut buf);
                 Self::pack_players(players, &mut buf)
+            }
+            &Self::UpdateLineup {
+                ref league,
+                ref week,
+                ref lineup
+            } => {
+                // @TODO: add something here
             }
             Self::TestMutate => buf.push(1),
         };
@@ -131,6 +154,26 @@ impl SfsInstruction {
             let mut player_dst = [0u8; Player::LEN];
             Player::pack_into_slice(&value[i], &mut player_dst);
             buf.extend_from_slice(&player_dst);
+        }
+    }
+    
+    fn unpack_lineup(value: &[u8]) -> Result<([u16; ACTIVE_PLAYERS_COUNT], &[u8]), ProgramError> {
+        let mut lineup = [u16::default(); ACTIVE_PLAYERS_COUNT];
+        let (_value, rest) = value.split_at(2 * ACTIVE_PLAYERS_COUNT);
+        for i in 0..ACTIVE_PLAYERS_COUNT {
+            let lineup_src = array_ref!(_value, i * 2, 2);
+            // lineup[i] = Player::unpack_from_slice(player_src).unwrap();
+            lineup[i] = LittleEndian::read_u16(lineup_src);
+        }
+        return Ok((lineup, rest));
+    }
+
+    fn unpack_u8(input: &[u8]) -> Result<(u8, &[u8]), ProgramError> {
+        if input.len() >= 1 {
+            let (num, rest) = input.split_at(1);
+            Ok((u8::from_le_bytes(num.try_into().unwrap()), rest))
+        } else {
+            Err(SfsError::InvalidInstruction.into())
         }
     }
 }

@@ -13,8 +13,8 @@ use solana_sdk::{
 pub const TOTAL_PLAYERS_COUNT: usize = 10;
 const GAMES_COUNT: usize = 17;
 const LEAGUES_COUNT: usize = 10;
-const LEAGUE_USERS_COUNT: usize = 10;
-const ACTIVE_PLAYERS_COUNT: usize = 8;
+pub const LEAGUE_USERS_COUNT: usize = 10;
+pub const ACTIVE_PLAYERS_COUNT: usize = 8;
 const BENCH_PLAYERS_COUNT: usize = 8;
 const TEAM_PLAYERS_COUNT: usize = ACTIVE_PLAYERS_COUNT + BENCH_PLAYERS_COUNT;
 const LINEUP_LEN: usize = 2 * ACTIVE_PLAYERS_COUNT;

@@ -5,7 +5,7 @@
 use crate::{
     error::SfsError,
     instruction::{SfsInstruction},
-    state::{Root, Player, TOTAL_PLAYERS_COUNT},
+    state::{Root, Player, TOTAL_PLAYERS_COUNT, ACTIVE_PLAYERS_COUNT, LEAGUE_USERS_COUNT},
 };
 use num_traits::FromPrimitive;
 use solana_sdk::program::invoke;
@@ -76,6 +76,42 @@ impl Processor {
         Ok(())
     }
 
+    pub fn process_update_lineup(
+        program_id: &Pubkey,
+        accounts: &[AccountInfo],
+        league: &u8,
+        week: &u8,
+        lineup: &[u16; ACTIVE_PLAYERS_COUNT]
+    ) -> ProgramResult {
+        let account_info_iter = &mut accounts.iter();
+        let root_info = next_account_info(account_info_iter)?;
+        let root_data_len = root_info.data_len();
+        let rent = &Rent::from_account_info(next_account_info(account_info_iter)?)?;
+
+        let mut root = Root::unpack_unchecked(&root_info.data.borrow())?;
+        if root.is_initialized {
+            return Err(SfsError::AlreadyInUse.into());
+        }
+
+        if !rent.is_exempt(root_info.lamports(), root_data_len) {
+            return Err(SfsError::NotRentExempt.into());
+        }
+
+        let user_account_info = next_account_info(account_info_iter)?;
+
+        // @TODO: before mutating check if league and week values entered from user input are authorized
+
+        for i in 0..LEAGUE_USERS_COUNT {
+            if *user_account_info.key == root.leagues[*league as usize].user_states[i].pub_key {
+                root.leagues[*league as usize].user_states[i].lineups[*week as usize] = *lineup;
+                break;
+            }
+        }
+        
+        Root::pack(root, &mut root_info.data.borrow_mut())?;
+        Ok(())
+    }
+
     /// Processes an [InitializeAccount](enum.SfsInstruction.html) instruction.
     pub fn process_test_mutate(program_id: &Pubkey, accounts: &[AccountInfo]) -> ProgramResult {
         let account_info_iter = &mut accounts.iter();
@@ -106,6 +142,13 @@ impl Processor {
             } => {
                 info!("Instruction: InitializeRoot");
                 Self::process_initialize_root(program_id, accounts, oracle_authority, &players)
+            }
+            SfsInstruction::UpdateLineup {
+                league,
+                week,
+                lineup
+            } => {
+                Self::process_update_lineup(program_id, accounts, &league, &week, &lineup)
             }
             SfsInstruction::TestMutate => {
                 info!("Instruction: TestMutate");
