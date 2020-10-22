@@ -11,7 +11,7 @@ use super::{
 
 /// Player data.
 #[repr(C)]
-#[derive(Clone, Copy, Debug, Default, PartialEq)]
+#[derive(Clone, Debug, Default, PartialEq)]
 pub struct Score {
     /// score
     pub score1: u8,
@@ -54,6 +54,10 @@ impl Pack for Score {
     }
 }
 
+// Pull in syscall stubs when building for non-BPF targets
+#[cfg(not(target_arch = "bpf"))]
+solana_sdk::program_stubs!();
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -81,5 +85,10 @@ mod tests {
         assert_eq!(packed, expect);
         let unpacked = Score::unpack_unchecked(&packed).unwrap();
         assert_eq!(unpacked, check);
+
+        let size = Score::get_packed_len();
+        assert!(size < 100, "too large size, {} bytes", size);
+        let size = std::mem::size_of::<Score>();
+        assert!(size < 100, "too large size, {} bytes", size);
     }
 }

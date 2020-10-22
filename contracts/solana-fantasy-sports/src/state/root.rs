@@ -13,7 +13,7 @@ use super::{
 
 /// Root data.
 #[repr(C)]
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Default, PartialEq)]
 pub struct Root {
     /// Oracle authority used to supply game scores.
     pub oracle_authority: Pubkey,
@@ -30,17 +30,17 @@ impl IsInitialized for Root {
         self.is_initialized
     }
 }
-impl Default for Root {
-    #[inline]
-    fn default() -> Self {
-        Self {
-            oracle_authority: Pubkey::default(),
-            players: PlayerList::default(),
-            leagues: LeagueList::default(),
-            is_initialized: false
-        }
-    }
-}
+// impl Default for Root {
+//     #[inline]
+//     fn default() -> Self {
+//         Self {
+//             oracle_authority: Pubkey::default(),
+//             players: PlayerList::default(),
+//             leagues: LeagueList::default(),
+//             is_initialized: false
+//         }
+//     }
+// }
 impl Pack for Root {
     const LEN: usize = PUB_KEY_LEN + PlayerList::LEN + LeagueList::LEN + 1;
     fn unpack_from_slice(src: &[u8]) -> Result<Self, ProgramError> {
@@ -75,6 +75,10 @@ impl Pack for Root {
     }
 }
 
+// Pull in syscall stubs when building for non-BPF targets
+#[cfg(not(target_arch = "bpf"))]
+solana_sdk::program_stubs!();
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -107,5 +111,10 @@ mod tests {
         assert_eq!(packed, expect);
         let unpacked = Root::unpack_unchecked(&packed).unwrap();
         assert_eq!(unpacked, check);
+
+        let size = Root::get_packed_len();
+        assert!(size < 100, "too large size, {} bytes", size);
+        let size = std::mem::size_of::<Root>();
+        assert!(size < 100, "too large size, {} bytes", size);
     }
 }

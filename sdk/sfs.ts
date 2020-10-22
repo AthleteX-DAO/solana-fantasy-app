@@ -69,7 +69,7 @@ export class SFS {
         fromPubkey: payer.publicKey,
         newAccountPubkey: rootAccount.publicKey,
         lamports: balanceNeeded,
-        space: RootLayout.span,
+        space: 5000000,
         programId,
       })
     );

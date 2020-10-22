@@ -1,14 +1,14 @@
 //! Program state processor
 
 #![cfg(feature = "program")]
-
 use crate::{
     error::SfsError,
     instruction::{SfsInstruction},
     state::{
         Root,
         Player,
-        lists::{PlayerList, ActivePlayersList, LeagueList}
+        League,
+        lists::{PlayerList, ActivePlayersList, LeagueList, UserStateList}
     },
 };
 use num_traits::FromPrimitive;
@@ -42,6 +42,20 @@ impl Processor {
         let root_info = next_account_info(account_info_iter)?;
         let root_data_len = root_info.data_len();
         let rent = &Rent::from_account_info(next_account_info(account_info_iter)?)?;
+        let data = &root_info.data.borrow();
+        return Ok(());
+        // let mut root = Root::default();
+        // let mut x2 = Box::new([0u8; 1000]);
+
+    //     for i in 0..200 {
+    //     let mut x2 = Box::new([0u8; 1000]);
+    // }
+        // x2 = League::default();
+        // for i in 0..20 {
+            // let x2 = Box::new(League::default());
+        // }
+        // let x = LeagueList::default();
+        // return Ok(());
 
         let mut root = Root::unpack_unchecked(&root_info.data.borrow())?;
         if root.is_initialized {
@@ -73,10 +87,10 @@ impl Processor {
         // invoke(&instruction, &accounts2[..])?;
 
         // root.state =;
-        root.oracle_authority = oracle_authority;
-        root.is_initialized = true;
+        // root.oracle_authority = oracle_authority;
+        // root.is_initialized = true;
 
-        Root::pack(root, &mut root_info.data.borrow_mut())?;
+        // Root::pack(root, &mut root_info.data.borrow_mut())?;
         Ok(())
     }
 
@@ -105,12 +119,12 @@ impl Processor {
 
         // @TODO: before mutating check if league and week values entered from user input are authorized
 
-        // for i in 0..LEAGUE_USERS_COUNT {
-        //     if *user_account_info.key == root.leagues[*league as usize].user_states[i].pub_key {
-        //         root.leagues[*league as usize].user_states[i].lineups[*week as usize] = *lineup;
-        //         break;
-        //     }
-        // }
+        for i in 0..UserStateList::LEN {
+            if *user_account_info.key == root.leagues.list[*league as usize].user_states.list[i].pub_key {
+                root.leagues.list[*league as usize].user_states.list[i].lineups.list[*week as usize] = lineup;
+                break;
+            }
+        }
 
         Root::pack(root, &mut root_info.data.borrow_mut())?;
         Ok(())

@@ -13,7 +13,7 @@ use super::{
 
 /// User data.
 #[repr(C)]
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Default, PartialEq)]
 pub struct UserState {
     /// Player name.
     pub pub_key: Pubkey,
@@ -28,17 +28,17 @@ impl IsInitialized for UserState {
         self.is_initialized
     }
 }
-impl Default for UserState {
-    #[inline]
-    fn default() -> Self {
-        Self {
-            pub_key: Pubkey::default(),
-            bench: BenchList::default(),
-            lineups: LineupList::default(),
-            is_initialized: false
-        }
-    }
-}
+// impl Default for UserState {
+//     // #[inline]
+//     fn default() -> Self {
+//         Self {
+//             pub_key: Pubkey::default(),
+//             bench: BenchList::default(),
+//             lineups: LineupList::default(),
+//             is_initialized: false
+//         }
+//     }
+// }
 impl Pack for UserState {
     const LEN: usize = PUB_KEY_LEN + BenchList::LEN + LineupList::LEN + 1;
     fn unpack_from_slice(src: &[u8]) -> Result<Self, ProgramError> {
@@ -73,6 +73,10 @@ impl Pack for UserState {
     }
 }
 
+// Pull in syscall stubs when building for non-BPF targets
+#[cfg(not(target_arch = "bpf"))]
+solana_sdk::program_stubs!();
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -104,5 +108,10 @@ mod tests {
         assert_eq!(packed, expect);
         let unpacked = UserState::unpack_unchecked(&packed).unwrap();
         assert_eq!(unpacked, check);
+
+        let size = UserState::get_packed_len();
+        assert!(size < 100, "too large size, {} bytes", size);
+        let size = std::mem::size_of::<UserState>();
+        assert!(size < 100, "too large size, {} bytes", size);
     }
 }

@@ -15,7 +15,7 @@ use solana_sdk::{
     program_option::COption,
     program_pack::{IsInitialized, Pack, Sealed},
     pubkey::Pubkey,
-    sysvar,
+    sysvar
 };
 use byteorder::{ByteOrder, LittleEndian};
 use std::convert::TryInto;
@@ -198,6 +198,10 @@ pub fn test_mutate(
     })
 }
 
+// Pull in syscall stubs when building for non-BPF targets
+#[cfg(not(target_arch = "bpf"))]
+solana_sdk::program_stubs!();
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -216,11 +220,17 @@ mod test {
         let unpacked = SfsInstruction::unpack(&expect).unwrap();
         assert_eq!(unpacked, check);
 
+        let size = packed.len();
+        assert!(size < 100, "too large size, {} bytes", size);
+
         let check = SfsInstruction::TestMutate;
         let packed = check.pack();
         let expect = Vec::from([2u8]);
         assert_eq!(packed, expect);
         let unpacked = SfsInstruction::unpack(&expect).unwrap();
         assert_eq!(unpacked, check);
+
+        let size = std::mem::size_of::<SfsInstruction>();
+        assert!(size < 100, "too large size, {} bytes", size);
     }
 }

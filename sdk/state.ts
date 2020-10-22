@@ -5,7 +5,7 @@ import * as Layout from './util/layout';
 
 export const TOTAL_PLAYERS_COUNT = 10;
 export const GAMES_COUNT = 17;
-export const LEAGUES_COUNT = 10;
+export const LEAGUES_COUNT = 1;
 export const LEAGUE_USERS_COUNT = 10;
 export const ACTIVE_PLAYERS_COUNT = 8;
 export const BENCH_PLAYERS_COUNT = 8;

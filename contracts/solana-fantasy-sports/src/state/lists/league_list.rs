@@ -12,19 +12,19 @@ const ITEM_COUNT: usize = consts::LEAGUES_COUNT;
 
 /// LeagueList data.
 #[repr(C)]
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Default, PartialEq)]
 pub struct LeagueList {
-    pub list: Vec<League>,
+    pub list: [League; ITEM_COUNT],
 }
 impl Sealed for LeagueList {}
-impl Default for LeagueList {
-    #[inline]
-    fn default() -> Self {
-        Self {
-            list: vec![League::default(); ITEM_COUNT],
-        }
-    }
-}
+// impl Default for LeagueList {
+//     #[inline]
+//     fn default() -> Self {
+//         Self {
+//             list: [League::default(); ITEM_COUNT],
+//         }
+//     }
+// }
 impl Pack for LeagueList {
     const LEN: usize = ITEM_SIZE * ITEM_COUNT;
     fn unpack_from_slice(src: &[u8]) -> Result<Self, ProgramError> {
@@ -46,6 +46,10 @@ impl Pack for LeagueList {
 }
 impl PackNext for LeagueList {}
 
+// Pull in syscall stubs when building for non-BPF targets
+#[cfg(not(target_arch = "bpf"))]
+solana_sdk::program_stubs!();
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -53,7 +57,7 @@ mod tests {
     #[test]
     fn test_pack_unpack() {
         let check = LeagueList {
-            list: vec![League::default(); ITEM_COUNT],
+            list: [League::default(); ITEM_COUNT],
         };
         let mut packed = vec![0; LeagueList::get_packed_len() + 1];
         assert_eq!(
@@ -71,5 +75,10 @@ mod tests {
         assert_eq!(packed, expect);
         let unpacked = LeagueList::unpack_unchecked(&packed).unwrap();
         assert_eq!(unpacked, check);
+
+        let size = LeagueList::get_packed_len();
+        assert!(size < 100, "too large size, {} bytes", size);
+        let size = std::mem::size_of::<LeagueList>();
+        assert!(size < 100, "too large size, {} bytes", size);
     }
 }

@@ -12,6 +12,7 @@ import {
   PlayerLayout,
   TOTAL_PLAYERS_COUNT,
   PUB_KEY_LEN,
+  RootLayout,
 } from '../../../sdk/state';
 import { BufferLayout } from '../../../sdk/util/layout';
 

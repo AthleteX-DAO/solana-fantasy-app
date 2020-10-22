@@ -11,7 +11,7 @@ use super::{
 
 /// League data.
 #[repr(C)]
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Default, PartialEq)]
 pub struct League {
     /// Bid
     pub bid: u8,
@@ -26,16 +26,16 @@ impl IsInitialized for League {
         self.is_initialized
     }
 }
-impl Default for League {
-    #[inline]
-    fn default() -> Self {
-        Self {
-            bid: 0,
-            user_states: UserStateList::default(),
-            is_initialized: false
-        }
-    }
-}
+// impl Default for League {
+//     // #[inline]
+//     fn default() -> Self {
+//         Self {
+//             bid: 0,
+//             user_states: UserStateList::default(),
+//             is_initialized: false
+//         }
+//     }
+// }
 impl Pack for League {
     const LEN: usize = 1 + UserStateList::LEN + 1;
     fn unpack_from_slice(src: &[u8]) -> Result<Self, ProgramError> {
@@ -66,6 +66,10 @@ impl Pack for League {
     }
 }
 
+// Pull in syscall stubs when building for non-BPF targets
+#[cfg(not(target_arch = "bpf"))]
+solana_sdk::program_stubs!();
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -95,5 +99,11 @@ mod tests {
         assert_eq!(packed, expect);
         let unpacked = League::unpack_unchecked(&packed).unwrap();
         assert_eq!(unpacked, check);
+
+
+        let size = League::get_packed_len();
+        assert!(size < 100, "too large size, {} bytes", size);
+        let size = std::mem::size_of::<League>();
+        assert!(size < 100, "too large size, {} bytes", size);
     }
 }
