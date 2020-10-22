@@ -26,7 +26,7 @@ export const rustString = (property: string = 'string'): Object => {
       BufferLayout.u32('lengthPadding'),
       BufferLayout.blob(BufferLayout.offset(BufferLayout.u32(), -8), 'chars'),
     ],
-    property,
+    property
   );
   const _decode = rsl.decode.bind(rsl);
   const _encode = rsl.encode.bind(rsl);
@@ -53,7 +53,7 @@ export class u64 extends BN {
   /**
    * Convert to Buffer representation
    */
-  toBuffer():  Buffer {
+  toBuffer(): Buffer {
     const a = super.toArray().reverse();
     const b = Buffer.from(a);
     if (b.length === 8) {
@@ -74,9 +74,9 @@ export class u64 extends BN {
     return new BN(
       [...(buffer as any)]
         .reverse()
-        .map(i => `00${i.toString(16)}`.slice(-2))
+        .map((i) => `00${i.toString(16)}`.slice(-2))
         .join(''),
-      16,
+      16
     );
   }
 }

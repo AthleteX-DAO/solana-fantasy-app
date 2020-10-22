@@ -1,13 +1,10 @@
-import {
-  Account,
-} from '@solana/web3.js';
+import { Account } from '@solana/web3.js';
 import { SFS } from '../../../sdk/sfs';
 import { GAMES_COUNT, Player, Position, Score, TOTAL_PLAYERS_COUNT } from '../../../sdk/state';
 
 const rootAccount = new Account();
 
 export const InitializeRoot = () =>
-
   describe('Create account', () => {
     it('create root account', async () => {
       console.log('Creating root account', rootAccount.publicKey.toBase58());
@@ -16,19 +13,21 @@ export const InitializeRoot = () =>
         global.connection,
         global.payerAccount,
         global.payerAccount.publicKey,
-        Array.from({ length: TOTAL_PLAYERS_COUNT })
-          .map((): Player => ({
+        Array.from({ length: TOTAL_PLAYERS_COUNT }).map(
+          (): Player => ({
             id: 1,
             position: Position.DB,
-            scores: Array.from({ length: GAMES_COUNT })
-            .map((): Score => ({
-              score1: 1,
-              isInitialized: true
-            })),
-            isInitialized: true
-          })),
-        global.solanaFantasySportsPPK);
-
+            scores: Array.from({ length: GAMES_COUNT }).map(
+              (): Score => ({
+                score1: 1,
+                isInitialized: true,
+              })
+            ),
+            isInitialized: true,
+          })
+        ),
+        global.solanaFantasySportsPPK
+      );
     });
 
     // it('calls InitializeRoot on the program on the network', async () => {

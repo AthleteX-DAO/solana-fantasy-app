@@ -1,7 +1,5 @@
 import { BufferLayout } from './util/layout';
-import {
-  PublicKey,
-} from '@solana/web3.js';
+import { PublicKey } from '@solana/web3.js';
 
 import * as Layout from './util/layout';
 
@@ -38,7 +36,11 @@ export type UserState = {
 export const UserStateLayout: typeof BufferLayout.Structure = BufferLayout.struct([
   Layout.publicKey('pubKey'),
   BufferLayout.seq(BufferLayout.u16(), TEAM_PLAYERS_COUNT, 'bench'),
-  BufferLayout.seq(BufferLayout.seq(BufferLayout.u16(), ACTIVE_PLAYERS_COUNT), GAMES_COUNT, 'lineups'),
+  BufferLayout.seq(
+    BufferLayout.seq(BufferLayout.u16(), ACTIVE_PLAYERS_COUNT),
+    GAMES_COUNT,
+    'lineups'
+  ),
   BufferLayout.u8('isInitialized'),
 ]);
 

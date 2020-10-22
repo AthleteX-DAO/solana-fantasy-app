@@ -1,21 +1,12 @@
-import {
-  Account,
-  PublicKey,
-  SystemProgram,
-  Transaction,
-} from '@solana/web3.js';
-import type {
-  Connection,
-} from '@solana/web3.js';
+import { Account, PublicKey, SystemProgram, Transaction } from '@solana/web3.js';
+import type { Connection } from '@solana/web3.js';
 
-import {sendAndConfirmTransaction} from './util/send-and-confirm-transaction';
+import { sendAndConfirmTransaction } from './util/send-and-confirm-transaction';
 import { Player, Root, RootLayout } from './state';
 import { SfsInstruction } from './instruction';
 
 // The address of the special mint for wrapped native token.
-export const NATIVE_MINT: PublicKey = new PublicKey(
-  'So11111111111111111111111111111111111111112',
-);
+export const NATIVE_MINT: PublicKey = new PublicKey('So11111111111111111111111111111111111111112');
 
 /**
  * SolanaFantasySport
@@ -38,17 +29,15 @@ export class SFS {
     /**
      * Program Identifier for the SFS program
      */
-    private programId: PublicKey,
-  ) { }
+    private programId: PublicKey
+  ) {}
 
   /**
    * Get the minimum balance for the root to be rent exempt
    *
    * @return Number of lamports required
    */
-  static async getMinBalanceRentForExemptRoot(
-    connection: Connection,
-  ): Promise<number> {
+  static async getMinBalanceRentForExemptRoot(connection: Connection): Promise<number> {
     return await connection.getMinimumBalanceForRentExemption(RootLayout.span);
   }
 
@@ -66,19 +55,13 @@ export class SFS {
     payer: Account,
     oracleAuthority: PublicKey,
     players: Player[],
-    programId: PublicKey,
+    programId: PublicKey
   ): Promise<SFS> {
     const rootAccount = new Account();
-    const sfs = new SFS(
-      connection,
-      rootAccount.publicKey,
-      programId,
-    );
+    const sfs = new SFS(connection, rootAccount.publicKey, programId);
 
     // Allocate memory for the account
-    const balanceNeeded = await SFS.getMinBalanceRentForExemptRoot(
-      connection,
-    );
+    const balanceNeeded = await SFS.getMinBalanceRentForExemptRoot(connection);
 
     const transaction = new Transaction();
     transaction.add(
@@ -88,7 +71,7 @@ export class SFS {
         lamports: balanceNeeded,
         space: RootLayout.span,
         programId,
-      }),
+      })
     );
 
     transaction.add(
@@ -96,8 +79,8 @@ export class SFS {
         programId,
         rootAccount.publicKey,
         oracleAuthority,
-        players,
-      ),
+        players
+      )
     );
 
     // Send the two instructions
@@ -106,7 +89,7 @@ export class SFS {
       connection,
       transaction,
       payer,
-      rootAccount,
+      rootAccount
     );
 
     return sfs;
