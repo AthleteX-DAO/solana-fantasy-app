@@ -8,35 +8,50 @@ use super::{
     lists::{UserStateList},
     helpers::*
 };
+use std::cell::{RefCell};
 
 #[repr(C)]
 pub struct League<'a> {
-    pub buf: &'a mut [u8;League::LEN],
+    pub data: &'a RefCell<&'a mut [u8]>,
+    pub offset: usize,
 }
 impl<'a> League<'a> {
     pub const LEN: usize = 1 + UserStateList::LEN + 1;
-    fn slice(self) -> (
-        &'a mut [u8;1],
-        &'a mut [u8;UserStateList::LEN],
-        &'a mut [u8;1]) {
+    fn slice<'b>(&self, data: &'b mut [u8]) -> (
+        &'b mut [u8;1],
+        &'b mut [u8;UserStateList::LEN],
+        &'b mut [u8;1]) {
         mut_array_refs![
-            self.buf,
+            array_mut_ref![data, self.offset, League::LEN],
             1,
             UserStateList::LEN,
             1
         ]
     }
 
-    pub fn get_bid(self) -> u8 { self.slice().0[0] }
-    pub fn set_bid(self, value: u8) { self.slice().0[0] = value; }
+    pub fn get_bid(&self) -> u8 {
+        self.slice(&mut self.data.borrow_mut()).0[0]
+    }
+    pub fn set_bid(&self, value: u8) {
+        self.slice(&mut self.data.borrow_mut()).0[0] = value;
+    }
 
-    pub fn get_user_states(self) -> UserStateList<'a> { UserStateList { buf: self.slice().1 } }
+    pub fn get_user_states(&self) -> UserStateList<'a> {
+        UserStateList { data: self.data, offset: self.offset + 1 }
+    }
 
-    pub fn get_is_initialized(self) -> bool { unpack_is_initialized(self.slice().2).unwrap() }
-    pub fn set_is_initialized(self, value: bool) { self.slice().2[0] = value as u8; }
+    pub fn get_is_initialized(&self) -> bool {
+        unpack_is_initialized(self.slice(&mut self.data.borrow_mut()).2).unwrap()
+    }
+    pub fn set_is_initialized(&self, value: bool) {
+        self.slice(&mut self.data.borrow_mut()).2[0] = value as u8;
+    }
 
-    pub fn copy_to(self, to: Self) {
-        to.buf.copy_from_slice(self.buf);
+    pub fn copy_to(&self, to: &Self) {
+        let mut dst = to.data.borrow_mut();
+        let mut src = self.data.borrow_mut();
+        array_mut_ref![dst, self.offset, League::LEN]
+            .copy_from_slice(array_mut_ref![src, self.offset, League::LEN]);
     }
 }
 

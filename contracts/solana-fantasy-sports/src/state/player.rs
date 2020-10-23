@@ -12,15 +12,11 @@ use super::{
     lists::{ScoreList},
     helpers::*,
 };
-use std::{
-    cell::{Ref, RefCell, RefMut},
-    cmp, fmt,
-    rc::Rc,
-};
+use std::cell::{RefCell};
 
 #[repr(C)]
 pub struct Player<'a> {
-    pub buf: &'a RefCell<&'a mut [u8]>,
+    pub data: &'a RefCell<&'a mut [u8]>,
     pub offset: usize,
 }
 impl<'a> Player<'a> {
@@ -39,23 +35,38 @@ impl<'a> Player<'a> {
         ]
     }
 
-    pub fn get_id(&self) -> u16 { LittleEndian::read_u16(self.slice(&mut self.buf.borrow_mut()).0) }
-    pub fn set_id(&self, value: u16) { LittleEndian::write_u16(self.slice(&mut self.buf.borrow_mut()).0, value); }
+    pub fn get_id(&self) -> u16 {
+        LittleEndian::read_u16(self.slice(&mut self.data.borrow_mut()).0)
+    }
+    pub fn set_id(&self, value: u16) {
+        LittleEndian::write_u16(self.slice(&mut self.data.borrow_mut()).0, value);
+    }
 
     pub fn get_position(&self) -> Position {
-        Position::try_from_primitive(self.slice(&mut self.buf.borrow_mut()).1[0])
+        Position::try_from_primitive(self.slice(&mut self.data.borrow_mut()).1[0])
                 .or(Err(ProgramError::InvalidAccountData)).unwrap()
     }
-    pub fn set_position(&self, value: Position) { self.slice(&mut self.buf.borrow_mut()).1[0] = value as u8; }
+    pub fn set_position(&self, value: Position) {
+        self.slice(&mut self.data.borrow_mut()).1[0] = value as u8;
+    }
 
-    pub fn get_scores(&self) -> ScoreList<'a> { ScoreList { buf: self.buf, offset: self.offset + 2 + 1 } }
+    pub fn get_scores(&self) -> ScoreList<'a> {
+        ScoreList { data: self.data, offset: self.offset + 2 + 1 }
+    }
 
-    pub fn get_is_initialized(&self) -> bool { unpack_is_initialized(self.slice(&mut self.buf.borrow_mut()).3).unwrap() }
-    pub fn set_is_initialized(&self, value: bool) { self.slice(&mut self.buf.borrow_mut()).3[0] = value as u8; }
+    pub fn get_is_initialized(&self) -> bool {
+        unpack_is_initialized(self.slice(&mut self.data.borrow_mut()).3).unwrap()
+    }
+    pub fn set_is_initialized(&self, value: bool) {
+        self.slice(&mut self.data.borrow_mut()).3[0] = value as u8;
+    }
 
-    // pub fn copy_to(self, to: Self) {
-    //     to.buf.copy_from_slice(self.buf);
-    // }
+    pub fn copy_to(&self, to: &Self) {
+        let mut dst = to.data.borrow_mut();
+        let mut src = self.data.borrow_mut();
+        array_mut_ref![dst, self.offset, Player::LEN]
+            .copy_from_slice(array_mut_ref![src, self.offset, Player::LEN]);
+    }
 }
 
 // Pull in syscall stubs when building for non-BPF targets

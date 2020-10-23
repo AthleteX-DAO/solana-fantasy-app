@@ -8,72 +8,44 @@ use solana_sdk::{
 use super::{
     helpers::*
 };
-use std::{
-    cell::{Ref, RefCell, RefMut},
-    cmp, fmt,
-    rc::Rc,
-};
+use std::cell::{RefCell};
 
 #[repr(C)]
 pub struct Score<'a> {
-    pub buf: &'a mut [u8;Score::LEN],
-}
-impl<'a> Score<'a> {
-    pub const LEN: usize = 1 + 1;
-    fn slice(self) -> (
-        &'a mut [u8;1],
-        &'a mut [u8;1]) {
-        mut_array_refs![
-            self.buf,
-            1,
-            1
-        ]
-    }
-
-    pub fn get_score1(self) -> u8 { self.slice().0[0] }
-    pub fn set_score1(self, value: u8) { self.slice().0[0] = value; }
-
-    pub fn get_is_initialized(self) -> bool { unpack_is_initialized(self.slice().1).unwrap() }
-    pub fn set_is_initialized(self, value: bool) { self.slice().1[0] = value as u8; }
-
-    pub fn copy_to(self, to: Self) {
-        to.buf.copy_from_slice(self.buf);
-    }
-}
-
-#[repr(C)]
-pub struct Score2<'a> {
-    pub buf: &'a RefCell<&'a mut [u8]>,
+    pub data: &'a RefCell<&'a mut [u8]>,
     pub offset: usize,
 }
-impl<'a> Score2<'a> {
+impl<'a> Score<'a> {
     pub const LEN: usize = 1 + 1;
     fn slice<'b>(&self, data: &'b mut [u8]) -> (
         &'b mut [u8;1],
         &'b mut [u8;1]) {
         mut_array_refs![
-            array_mut_ref![data, self.offset, Score2::LEN],
+            array_mut_ref![data, self.offset, Score::LEN],
             1,
             1
         ]
     }
 
     pub fn get_score1(&self) -> u8 {
-        self.slice(&mut self.buf.borrow_mut()).0[0]
+        self.slice(&mut self.data.borrow_mut()).0[0]
     }
     pub fn set_score1(&self, value: u8) {
-        self.slice(&mut self.buf.borrow_mut()).0[0] = value;
+        self.slice(&mut self.data.borrow_mut()).0[0] = value;
     }
 
     pub fn get_is_initialized(&self) -> bool {
-        unpack_is_initialized(self.slice(&mut self.buf.borrow_mut()).1).unwrap()
+        unpack_is_initialized(self.slice(&mut self.data.borrow_mut()).1).unwrap()
     }
     pub fn set_is_initialized(&self, value: bool) {
-        self.slice(&mut self.buf.borrow_mut()).1[0] = value as u8;
+        self.slice(&mut self.data.borrow_mut()).1[0] = value as u8;
     }
 
-    pub fn copy_to(self, to: Self) {
-        to.buf.borrow_mut().copy_from_slice(&self.buf.borrow_mut());
+    pub fn copy_to(&self, to: &Self) {
+        let mut dst = to.data.borrow_mut();
+        let mut src = self.data.borrow_mut();
+        array_mut_ref![dst, self.offset, Score::LEN]
+            .copy_from_slice(array_mut_ref![src, self.offset, Score::LEN]);
     }
 }
 

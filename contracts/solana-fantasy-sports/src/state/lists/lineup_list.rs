@@ -7,22 +7,27 @@ use solana_sdk::{
 };
 use crate::state::*;
 use crate::state::lists::ActivePlayersList;
+use std::cell::{RefCell};
 
 #[repr(C)]
 pub struct LineupList<'a> {
-    pub buf: &'a mut [u8;LineupList::LEN],
+    pub data: &'a RefCell<&'a mut [u8]>,
+    pub offset: usize,
 }
 impl<'a> LineupList<'a> {
     pub const ITEM_SIZE: usize = lists::ActivePlayersList::LEN;
     pub const ITEM_COUNT: usize = consts::GAMES_COUNT;
     pub const LEN: usize = LineupList::ITEM_SIZE * LineupList::ITEM_COUNT;
 
-    pub fn get(self, i: usize) -> ActivePlayersList<'a> {
-        ActivePlayersList { buf: array_mut_ref![self.buf, i * LineupList::ITEM_COUNT, LineupList::ITEM_SIZE] }
+    pub fn get(&self, i: usize) -> ActivePlayersList<'a> {
+        ActivePlayersList { data: self.data, offset: self.offset + i * ActivePlayersList::ITEM_SIZE }
     }
 
-    pub fn copy_to(self, to: Self) {
-        to.buf.copy_from_slice(self.buf);
+    pub fn copy_to(&self, to: &Self) {
+        let mut dst = to.data.borrow_mut();
+        let mut src = self.data.borrow_mut();
+        array_mut_ref![dst, self.offset, LineupList::LEN]
+            .copy_from_slice(array_mut_ref![src, self.offset, LineupList::LEN]);
     }
 }
 

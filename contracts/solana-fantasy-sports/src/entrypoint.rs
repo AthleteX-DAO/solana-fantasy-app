@@ -11,11 +11,11 @@ use solana_sdk::{
     program_error::PrintProgramError, pubkey::Pubkey,
 };
 use crate::{
-    instruction::{SfsInstruction},
+    // instruction::{SfsInstruction},
     state::{
         Root,
         Player,
-        Score2,
+        Score,
         // League,
         lists::{ScoreList, PlayerList}
     },
@@ -34,17 +34,17 @@ fn process_instruction<'a>(
     let root_data_len = root_info.data_len();
 
     // let mut state = root_info.data.borrow_mut();
-    let mut root = Player{ buf: &root_info.data, offset: 0 };
+    let mut root = Root{ data: &root_info.data, offset: 0 };
 
 
     // let x1 = root.
-{
+// {
 
 
-    if root.get_scores().get(0).get_is_initialized() {
-        return Ok(());
-    }
-}
+//     if root.get_scores().get(0).get_is_initialized() {
+//         return Ok(());
+//     }
+// }
 
 root.set_is_initialized(true);
 root.set_is_initialized(false);

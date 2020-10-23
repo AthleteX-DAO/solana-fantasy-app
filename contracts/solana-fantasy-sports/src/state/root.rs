@@ -10,23 +10,25 @@ use super::{
     consts::PUB_KEY_LEN,
     helpers::*
 };
+use std::cell::{RefCell};
 
 #[repr(C)]
 pub struct Root<'a> {
-    pub buf: &'a mut [u8;Root::LEN],
+    pub data: &'a RefCell<&'a mut [u8]>,
+    pub offset: usize,
 }
 impl<'a> Root<'a> {
     pub const LEN: usize = PUB_KEY_LEN
                          + PlayerList::LEN
                          + LeagueList::LEN
                          + 1;
-    fn slice(self) -> (
-        &'a mut [u8;PUB_KEY_LEN],
-        &'a mut [u8;PlayerList::LEN],
-        &'a mut [u8;LeagueList::LEN],
-        &'a mut [u8;1]) {
+    fn slice<'b>(&self, data: &'b mut [u8]) -> (
+        &'b mut [u8;PUB_KEY_LEN],
+        &'b mut [u8;PlayerList::LEN],
+        &'b mut [u8;LeagueList::LEN],
+        &'b mut [u8;1]) {
         mut_array_refs![
-            self.buf,
+            array_mut_ref![data, self.offset, Root::LEN],
             PUB_KEY_LEN,
             PlayerList::LEN,
             LeagueList::LEN,
@@ -34,18 +36,33 @@ impl<'a> Root<'a> {
         ]
     }
 
-    pub fn get_oracle_authority(self) -> Pubkey { Pubkey::new_from_array(*self.slice().0) }
-    pub fn set_oracle_authority(self, value: Pubkey) { self.slice().0.copy_from_slice(value.as_ref()); }
+    pub fn get_oracle_authority(&self) -> Pubkey {
+        Pubkey::new_from_array(*self.slice(&mut self.data.borrow_mut()).0)
+    }
+    pub fn set_oracle_authority(&self, value: Pubkey) {
+        self.slice(&mut self.data.borrow_mut()).0.copy_from_slice(value.as_ref());
+    }
 
-    pub fn get_players(self) -> PlayerList<'a> { PlayerList { buf: self.slice().1 } }
+    pub fn get_players(&self) -> PlayerList<'a> {
+        PlayerList { data: self.data, offset: self.offset + PUB_KEY_LEN }
+    }
 
-    pub fn get_leagues(self) -> LeagueList<'a> { LeagueList { buf: self.slice().2 } }
+    pub fn get_leagues(&self) -> LeagueList<'a> {
+        LeagueList { data: self.data, offset: self.offset + PUB_KEY_LEN + PlayerList::LEN }
+    }
 
-    pub fn get_is_initialized(self) -> bool { unpack_is_initialized(self.slice().3).unwrap() }
-    pub fn set_is_initialized(self, value: bool) { self.slice().3[0] = value as u8; }
+    pub fn get_is_initialized(&self) -> bool {
+        unpack_is_initialized(self.slice(&mut self.data.borrow_mut()).3).unwrap()
+    }
+    pub fn set_is_initialized(&self, value: bool) {
+        self.slice(&mut self.data.borrow_mut()).3[0] = value as u8;
+    }
 
-    pub fn copy_to(self, to: Self) {
-        to.buf.copy_from_slice(self.buf);
+    pub fn copy_to(&self, to: &Self) {
+        let mut dst = to.data.borrow_mut();
+        let mut src = self.data.borrow_mut();
+        array_mut_ref![dst, self.offset, Root::LEN]
+            .copy_from_slice(array_mut_ref![src, self.offset, Root::LEN]);
     }
 }
 

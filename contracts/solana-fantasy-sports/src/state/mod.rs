@@ -8,7 +8,7 @@ pub use league::{League};
 pub mod position;
 pub use position::{Position};
 pub mod score;
-pub use score::{Score, Score2};
+pub use score::{Score};
 pub mod user_state;
 pub use user_state::{UserState};
 

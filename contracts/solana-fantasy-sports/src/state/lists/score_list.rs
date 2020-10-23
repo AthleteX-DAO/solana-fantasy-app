@@ -7,29 +7,28 @@ use solana_sdk::{
     program_pack::{Pack, Sealed},
 };
 use crate::state::*;
-use std::{
-    cell::{Ref, RefCell, RefMut},
-    cmp, fmt,
-    rc::Rc,
-};
+use std::cell::{RefCell};
 
 #[repr(C)]
 pub struct ScoreList<'a> {
-    pub buf: &'a RefCell<&'a mut [u8]>,
+    pub data: &'a RefCell<&'a mut [u8]>,
     pub offset: usize,
 }
 impl<'a> ScoreList<'a> {
-    pub const ITEM_SIZE: usize = Score2::LEN;
+    pub const ITEM_SIZE: usize = Score::LEN;
     pub const ITEM_COUNT: usize = consts::GAMES_COUNT;
     pub const LEN: usize = ScoreList::ITEM_SIZE * ScoreList::ITEM_COUNT;
 
-    pub fn get(&self, i: usize) -> Score2<'a> {
-        Score2 { buf: self.buf, offset: self.offset + i * ScoreList::ITEM_SIZE }
+    pub fn get(&self, i: usize) -> Score<'a> {
+        Score { data: self.data, offset: self.offset + i * ScoreList::ITEM_SIZE }
     }
 
-    // pub fn copy_to(self, to: Self) {
-    //     to.buf.copy_from_slice(self.buf);
-    // }
+    pub fn copy_to(&self, to: &Self) {
+        let mut dst = to.data.borrow_mut();
+        let mut src = self.data.borrow_mut();
+        array_mut_ref![dst, self.offset, ScoreList::LEN]
+            .copy_from_slice(array_mut_ref![src, self.offset, ScoreList::LEN]);
+    }
 }
 
 // Pull in syscall stubs when building for non-BPF targets

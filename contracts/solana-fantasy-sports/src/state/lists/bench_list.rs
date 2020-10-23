@@ -7,25 +7,33 @@ use solana_sdk::{
     program_pack::{Pack, Sealed},
 };
 use crate::state::*;
+use std::cell::{RefCell};
 
 #[repr(C)]
 pub struct BenchList<'a> {
-    pub buf: &'a mut [u8;BenchList::LEN],
+    pub data: &'a RefCell<&'a mut [u8]>,
+    pub offset: usize,
 }
 impl<'a> BenchList<'a> {
     pub const ITEM_SIZE: usize = 2;
     pub const ITEM_COUNT: usize = consts::TEAM_PLAYERS_COUNT;
     pub const LEN: usize = BenchList::ITEM_SIZE * BenchList::ITEM_COUNT;
-
-    pub fn get(self, i: usize) -> u16 {
-        LittleEndian::read_u16(array_mut_ref![self.buf, i * BenchList::ITEM_COUNT, BenchList::ITEM_SIZE])
-    }
-    pub fn set(self, i: usize, value: u16) {
-        LittleEndian::write_u16(array_mut_ref![self.buf, i * BenchList::ITEM_COUNT, BenchList::ITEM_SIZE], value);
+    fn slice<'b>(&self, data: &'b mut [u8], i: usize) -> &'b mut [u8;2] {
+        array_mut_ref![data, self.offset + i * BenchList::ITEM_COUNT, BenchList::ITEM_SIZE]
     }
 
-    pub fn copy_to(self, to: Self) {
-        to.buf.copy_from_slice(self.buf);
+    pub fn get(&self, i: usize) -> u16 {
+        LittleEndian::read_u16(self.slice(&mut self.data.borrow_mut(), i))
+    }
+    pub fn set(&self, i: usize, value: u16) {
+        LittleEndian::write_u16(self.slice(&mut self.data.borrow_mut(), i), value);
+    }
+
+    pub fn copy_to(&self, to: &Self) {
+        let mut dst = to.data.borrow_mut();
+        let mut src = self.data.borrow_mut();
+        array_mut_ref![dst, self.offset, BenchList::LEN]
+            .copy_from_slice(array_mut_ref![src, self.offset, BenchList::LEN]);
     }
 }
 
