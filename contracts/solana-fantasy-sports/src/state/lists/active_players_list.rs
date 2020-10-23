@@ -1,13 +1,13 @@
 //! State transition types
 
-use byteorder::{ByteOrder, LittleEndian};
+use crate::state::*;
 use arrayref::{array_mut_ref, array_ref};
+use byteorder::{ByteOrder, LittleEndian};
 use solana_sdk::{
     program_error::ProgramError,
     program_pack::{Pack, Sealed},
 };
-use crate::state::*;
-use std::cell::{RefCell};
+use std::cell::RefCell;
 
 const ITEM_SIZE: usize = 2;
 const ITEM_COUNT: usize = consts::ACTIVE_PLAYERS_COUNT;
@@ -21,8 +21,12 @@ impl<'a> ActivePlayersList<'a> {
     pub const ITEM_SIZE: usize = 2;
     pub const ITEM_COUNT: usize = consts::ACTIVE_PLAYERS_COUNT;
     pub const LEN: usize = ActivePlayersList::ITEM_SIZE * ActivePlayersList::ITEM_COUNT;
-    fn slice<'b>(&self, data: &'b mut [u8], i: usize) -> &'b mut [u8;2] {
-        array_mut_ref![data, self.offset + i * ActivePlayersList::ITEM_COUNT, ActivePlayersList::ITEM_SIZE]
+    fn slice<'b>(&self, data: &'b mut [u8], i: usize) -> &'b mut [u8; 2] {
+        array_mut_ref![
+            data,
+            self.offset + i * ActivePlayersList::ITEM_COUNT,
+            ActivePlayersList::ITEM_SIZE
+        ]
     }
 
     pub fn get(&self, i: usize) -> u16 {
@@ -35,8 +39,11 @@ impl<'a> ActivePlayersList<'a> {
     pub fn copy_to(&self, to: &Self) {
         let mut dst = to.data.borrow_mut();
         let mut src = self.data.borrow_mut();
-        array_mut_ref![dst, self.offset, ActivePlayersList::LEN]
-            .copy_from_slice(array_mut_ref![src, self.offset, ActivePlayersList::LEN]);
+        array_mut_ref![dst, self.offset, ActivePlayersList::LEN].copy_from_slice(array_mut_ref![
+            src,
+            self.offset,
+            ActivePlayersList::LEN
+        ]);
     }
 }
 

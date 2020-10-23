@@ -1,13 +1,13 @@
 //! State transition types
 
-use std::ops::{Index, IndexMut};
+use crate::state::*;
 use arrayref::{array_mut_ref, array_ref};
 use solana_sdk::{
     program_error::ProgramError,
     program_pack::{Pack, Sealed},
 };
-use crate::state::*;
-use std::cell::{RefCell};
+use std::cell::RefCell;
+use std::ops::{Index, IndexMut};
 
 #[repr(C)]
 pub struct ScoreList<'a> {
@@ -20,14 +20,20 @@ impl<'a> ScoreList<'a> {
     pub const LEN: usize = ScoreList::ITEM_SIZE * ScoreList::ITEM_COUNT;
 
     pub fn get(&self, i: usize) -> Score<'a> {
-        Score { data: self.data, offset: self.offset + i * ScoreList::ITEM_SIZE }
+        Score {
+            data: self.data,
+            offset: self.offset + i * ScoreList::ITEM_SIZE,
+        }
     }
 
     pub fn copy_to(&self, to: &Self) {
         let mut dst = to.data.borrow_mut();
         let mut src = self.data.borrow_mut();
-        array_mut_ref![dst, self.offset, ScoreList::LEN]
-            .copy_from_slice(array_mut_ref![src, self.offset, ScoreList::LEN]);
+        array_mut_ref![dst, self.offset, ScoreList::LEN].copy_from_slice(array_mut_ref![
+            src,
+            self.offset,
+            ScoreList::LEN
+        ]);
     }
 }
 

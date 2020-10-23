@@ -1,14 +1,12 @@
 //! State transition types
 
+use super::helpers::*;
 use arrayref::{array_mut_ref, array_ref, array_refs, mut_array_refs};
 use solana_sdk::{
     program_error::ProgramError,
     program_pack::{IsInitialized, Pack, Sealed},
 };
-use super::{
-    helpers::*
-};
-use std::cell::{RefCell};
+use std::cell::RefCell;
 
 #[repr(C)]
 pub struct Score<'a> {
@@ -17,14 +15,8 @@ pub struct Score<'a> {
 }
 impl<'a> Score<'a> {
     pub const LEN: usize = 1 + 1;
-    fn slice<'b>(&self, data: &'b mut [u8]) -> (
-        &'b mut [u8;1],
-        &'b mut [u8;1]) {
-        mut_array_refs![
-            array_mut_ref![data, self.offset, Score::LEN],
-            1,
-            1
-        ]
+    fn slice<'b>(&self, data: &'b mut [u8]) -> (&'b mut [u8; 1], &'b mut [u8; 1]) {
+        mut_array_refs![array_mut_ref![data, self.offset, Score::LEN], 1, 1]
     }
 
     pub fn get_score1(&self) -> u8 {
@@ -44,8 +36,11 @@ impl<'a> Score<'a> {
     pub fn copy_to(&self, to: &Self) {
         let mut dst = to.data.borrow_mut();
         let mut src = self.data.borrow_mut();
-        array_mut_ref![dst, self.offset, Score::LEN]
-            .copy_from_slice(array_mut_ref![src, self.offset, Score::LEN]);
+        array_mut_ref![dst, self.offset, Score::LEN].copy_from_slice(array_mut_ref![
+            src,
+            self.offset,
+            Score::LEN
+        ]);
     }
 }
 

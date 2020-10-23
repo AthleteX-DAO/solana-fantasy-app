@@ -1,14 +1,11 @@
 //! State transition types
+use super::{helpers::*, lists::UserStateList};
 use arrayref::{array_mut_ref, array_ref, array_refs, mut_array_refs};
 use solana_sdk::{
     program_error::ProgramError,
     program_pack::{IsInitialized, Pack, Sealed},
 };
-use super::{
-    lists::{UserStateList},
-    helpers::*
-};
-use std::cell::{RefCell};
+use std::cell::RefCell;
 
 #[repr(C)]
 pub struct League<'a> {
@@ -17,10 +14,14 @@ pub struct League<'a> {
 }
 impl<'a> League<'a> {
     pub const LEN: usize = 1 + UserStateList::LEN + 1;
-    fn slice<'b>(&self, data: &'b mut [u8]) -> (
-        &'b mut [u8;1],
-        &'b mut [u8;UserStateList::LEN],
-        &'b mut [u8;1]) {
+    fn slice<'b>(
+        &self,
+        data: &'b mut [u8],
+    ) -> (
+        &'b mut [u8; 1],
+        &'b mut [u8; UserStateList::LEN],
+        &'b mut [u8; 1],
+    ) {
         mut_array_refs![
             array_mut_ref![data, self.offset, League::LEN],
             1,
@@ -37,7 +38,10 @@ impl<'a> League<'a> {
     }
 
     pub fn get_user_states(&self) -> UserStateList<'a> {
-        UserStateList { data: self.data, offset: self.offset + 1 }
+        UserStateList {
+            data: self.data,
+            offset: self.offset + 1,
+        }
     }
 
     pub fn get_is_initialized(&self) -> bool {
@@ -50,8 +54,11 @@ impl<'a> League<'a> {
     pub fn copy_to(&self, to: &Self) {
         let mut dst = to.data.borrow_mut();
         let mut src = self.data.borrow_mut();
-        array_mut_ref![dst, self.offset, League::LEN]
-            .copy_from_slice(array_mut_ref![src, self.offset, League::LEN]);
+        array_mut_ref![dst, self.offset, League::LEN].copy_from_slice(array_mut_ref![
+            src,
+            self.offset,
+            League::LEN
+        ]);
     }
 }
 
@@ -88,7 +95,6 @@ mod tests {
     //     assert_eq!(packed, expect);
     //     let unpacked = League::unpack_unchecked(&packed).unwrap();
     //     assert_eq!(unpacked, check);
-
 
     //     let size = League::get_packed_len();
     //     assert!(size < 100, "too large size, {} bytes", size);

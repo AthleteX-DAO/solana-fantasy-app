@@ -3,20 +3,20 @@
 // use crate::{
 //     error::SfsError,
 //     state::{
-//         lists::{PlayerList, ActivePlayersList},
-//         consts::PUB_KEY_LEN
-//     }
+//         consts::PUB_KEY_LEN,
+//         lists::{ActivePlayersList, PlayerList},
+//     },
 // };
-// use arrayref::{array_ref, array_mut_ref};
+// use arrayref::{array_mut_ref, array_ref};
+// use byteorder::{ByteOrder, LittleEndian};
 // use solana_sdk::{
 //     instruction::{AccountMeta, Instruction},
 //     program_error::ProgramError,
 //     program_option::COption,
 //     program_pack::{IsInitialized, Pack, Sealed},
 //     pubkey::Pubkey,
-//     sysvar
+//     sysvar,
 // };
-// use byteorder::{ByteOrder, LittleEndian};
 // use std::convert::TryInto;
 // use std::mem::size_of;
 
@@ -37,12 +37,12 @@
 //     InitializeRoot {
 //         /// The authority/multisignature to supply game scores.
 //         oracle_authority: Pubkey,
-//         players: PlayerList<'a>
+//         players: PlayerList<'a>,
 //     },
 //     UpdateLineup {
 //         league: u8,
 //         week: u8,
-//         lineup: ActivePlayersList<'a>
+//         lineup: ActivePlayersList<'a>,
 //     },
 //     /// Test
 //     ///
@@ -66,9 +66,11 @@
 //                 // players_src.copy_from_slice(_rest);
 //                 Self::InitializeRoot {
 //                     oracle_authority,
-//                     players: PlayerList{ data: array_mut_ref![input, 0, PlayerList::LEN] }
+//                     players: PlayerList {
+//                         data: array_mut_ref![input, 0, PlayerList::LEN],
+//                     },
 //                 }
-//             },
+//             }
 //             1 => {
 //                 let (league, _rest) = Self::unpack_u8(rest)?;
 //                 let (week, __rest) = Self::unpack_u8(_rest)?;
@@ -77,7 +79,9 @@
 //                 Self::UpdateLineup {
 //                     league,
 //                     week,
-//                     lineup: ActivePlayersList{ data: array_mut_ref![input, 0, ActivePlayersList::LEN] }
+//                     lineup: ActivePlayersList {
+//                         data: array_mut_ref![input, 0, ActivePlayersList::LEN],
+//                     },
 //                 }
 //             }
 //             2 => Self::TestMutate,
@@ -92,7 +96,7 @@
 //         match self {
 //             &Self::InitializeRoot {
 //                 ref oracle_authority,
-//                 ref players
+//                 ref players,
 //             } => {
 //                 buf.push(0);
 //                 Self::pack_pubkey(oracle_authority, &mut buf);
@@ -101,7 +105,7 @@
 //             &Self::UpdateLineup {
 //                 ref league,
 //                 ref week,
-//                 ref lineup
+//                 ref lineup,
 //             } => {
 //                 buf.push(1);
 //                 // @TODO: add something here
@@ -189,9 +193,7 @@
 // ) -> Result<Instruction, ProgramError> {
 //     let data = SfsInstruction::TestMutate.pack(); // TODO do we need to return result?
 
-//     let accounts = vec![
-//         AccountMeta::new(*root_pubkey, false),
-//     ];
+//     let accounts = vec![AccountMeta::new(*root_pubkey, false)];
 
 //     Ok(Instruction {
 //         program_id: *sfs_program_id,

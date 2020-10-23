@@ -3,12 +3,10 @@
 // #![cfg(feature = "program")]
 // use crate::{
 //     error::SfsError,
-//     instruction::{SfsInstruction},
+//     instruction::SfsInstruction,
 //     state::{
-//         Root,
-//         Player,
-//         League,
-//         lists::{PlayerList, ActivePlayersList, LeagueList, UserStateList}
+//         lists::{ActivePlayersList, LeagueList, PlayerList, UserStateList},
+//         League, Player, Root,
 //     },
 // };
 // use arrayref::{array_mut_ref, array_ref, array_refs, mut_array_refs};
@@ -16,17 +14,17 @@
 // use solana_sdk::program::invoke;
 // use solana_sdk::program::invoke_signed;
 // use solana_sdk::{
-//     instruction::{AccountMeta, Instruction},
 //     account_info::{next_account_info, AccountInfo},
 //     decode_error::DecodeError,
 //     entrypoint::ProgramResult,
 //     info,
+//     instruction::{AccountMeta, Instruction},
 //     program_error::{PrintProgramError, ProgramError},
 //     program_option::COption,
 //     program_pack::{IsInitialized, Pack},
 //     pubkey::Pubkey,
-//     sysvar::{rent::Rent, Sysvar},
 //     system_instruction::SystemInstruction,
+//     sysvar::{rent::Rent, Sysvar},
 // };
 
 // /// Program state handler.
@@ -37,7 +35,7 @@
 //         program_id: &Pubkey,
 //         accounts: &'a [AccountInfo],
 //         oracle_authority: Pubkey,
-//         players: PlayerList
+//         players: PlayerList,
 //     ) -> ProgramResult {
 //         let account_info_iter = &mut accounts.iter();
 //         let root_info = next_account_info(account_info_iter)?;
@@ -45,7 +43,9 @@
 //         let rent = &Rent::from_account_info(next_account_info(account_info_iter)?)?;
 
 //         let mut state = root_info.data.borrow_mut();
-//         let root = Root{ buf: array_mut_ref![state, 0, Root::LEN] };
+//         let root = Root {
+//             buf: array_mut_ref![state, 0, Root::LEN],
+//         };
 
 //         if root.get_is_initialized() {
 //             return Err(SfsError::AlreadyInUse.into());
@@ -67,7 +67,7 @@
 //         accounts: &[AccountInfo],
 //         league: &u8,
 //         week: &u8,
-//         lineup: ActivePlayersList
+//         lineup: ActivePlayersList,
 //     ) -> ProgramResult {
 //         let account_info_iter = &mut accounts.iter();
 //         let root_info = next_account_info(account_info_iter)?;
@@ -75,7 +75,9 @@
 //         let rent = &Rent::from_account_info(next_account_info(account_info_iter)?)?;
 
 //         let mut state = root_info.data.borrow_mut();
-//         let root = Root{ buf: array_mut_ref![state, 0, Root::LEN] };
+//         let root = Root {
+//             buf: array_mut_ref![state, 0, Root::LEN],
+//         };
 
 //         if root.get_is_initialized() {
 //             return Err(SfsError::InvalidState.into());
@@ -86,7 +88,11 @@
 //         // @TODO: before mutating check if league and week values entered from user input are authorized
 
 //         for i in 0..UserStateList::LEN {
-//             let user_state = root.get_leagues().get(*league as usize).get_user_states().get(i);
+//             let user_state = root
+//                 .get_leagues()
+//                 .get(*league as usize)
+//                 .get_user_states()
+//                 .get(i);
 //             if *user_account_info.key == user_state.get_pub_key() {
 //                 lineup.copy_to(user_state.get_lineups().get(*week as usize));
 //                 break;
@@ -108,7 +114,6 @@
 //         //     return Err(SfsError::InvalidState.into());
 //         // }
 
-
 //         // Root::pack(root, &mut root_info.data.borrow_mut())?;
 //         Ok(())
 //     }
@@ -122,7 +127,7 @@
 //         match instruction {
 //             SfsInstruction::InitializeRoot {
 //                 oracle_authority,
-//                 players
+//                 players,
 //             } => {
 //                 info!("Instruction: InitializeRoot");
 //                 Self::process_initialize_root(program_id, accounts, oracle_authority, players)
@@ -130,10 +135,8 @@
 //             SfsInstruction::UpdateLineup {
 //                 league,
 //                 week,
-//                 lineup
-//             } => {
-//                 Self::process_update_lineup(program_id, accounts, &league, &week, lineup)
-//             }
+//                 lineup,
+//             } => Self::process_update_lineup(program_id, accounts, &league, &week, lineup),
 //             SfsInstruction::TestMutate => {
 //                 info!("Instruction: TestMutate");
 //                 Self::process_test_mutate(program_id, accounts)
@@ -148,9 +151,7 @@
 //         E: 'static + std::error::Error + DecodeError<E> + PrintProgramError + FromPrimitive,
 //     {
 //         match self {
-//             SfsError::NotRentExempt => {
-//                 info!("Error: Lamport balance below rent-exempt threshold")
-//             }
+//             SfsError::NotRentExempt => info!("Error: Lamport balance below rent-exempt threshold"),
 //             SfsError::InsufficientFunds => info!("Error: insufficient funds"),
 //             SfsError::OwnerMismatch => info!("Error: owner does not match"),
 //             SfsError::AlreadyInUse => info!("Error: account or token already in use"),

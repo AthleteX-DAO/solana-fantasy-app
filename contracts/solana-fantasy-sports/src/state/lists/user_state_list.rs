@@ -1,12 +1,12 @@
 //! State transition types
 
+use crate::state::*;
 use arrayref::{array_mut_ref, array_ref};
 use solana_sdk::{
     program_error::ProgramError,
     program_pack::{Pack, Sealed},
 };
-use crate::state::*;
-use std::cell::{RefCell};
+use std::cell::RefCell;
 
 #[repr(C)]
 pub struct UserStateList<'a> {
@@ -19,14 +19,20 @@ impl<'a> UserStateList<'a> {
     pub const LEN: usize = UserStateList::ITEM_SIZE * UserStateList::ITEM_COUNT;
 
     pub fn get(&self, i: usize) -> UserState<'a> {
-        UserState { data: self.data, offset: self.offset + i * UserStateList::ITEM_SIZE }
+        UserState {
+            data: self.data,
+            offset: self.offset + i * UserStateList::ITEM_SIZE,
+        }
     }
 
     pub fn copy_to(&self, to: &Self) {
         let mut dst = to.data.borrow_mut();
         let mut src = self.data.borrow_mut();
-        array_mut_ref![dst, self.offset, UserStateList::LEN]
-            .copy_from_slice(array_mut_ref![src, self.offset, UserStateList::LEN]);
+        array_mut_ref![dst, self.offset, UserStateList::LEN].copy_from_slice(array_mut_ref![
+            src,
+            self.offset,
+            UserStateList::LEN
+        ]);
     }
 }
 

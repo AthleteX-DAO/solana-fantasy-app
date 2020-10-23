@@ -1,18 +1,14 @@
 //! State transition types
 
-use byteorder::{ByteOrder, LittleEndian};
+use super::{helpers::*, lists::ScoreList, Position};
 use arrayref::{array_mut_ref, array_ref, array_refs, mut_array_refs};
+use byteorder::{ByteOrder, LittleEndian};
 use num_enum::TryFromPrimitive;
 use solana_sdk::{
     program_error::ProgramError,
     program_pack::{IsInitialized, Pack, Sealed},
 };
-use super::{
-    Position,
-    lists::{ScoreList},
-    helpers::*,
-};
-use std::cell::{RefCell};
+use std::cell::RefCell;
 
 #[repr(C)]
 pub struct Player<'a> {
@@ -21,11 +17,15 @@ pub struct Player<'a> {
 }
 impl<'a> Player<'a> {
     pub const LEN: usize = 2 + 1 + ScoreList::LEN + 1;
-    fn slice<'b>(&self, data: &'b mut [u8]) -> (
-        &'b mut [u8;2],
-        &'b mut [u8;1],
-        &'b mut [u8;ScoreList::LEN],
-        &'b mut [u8;1]) {
+    fn slice<'b>(
+        &self,
+        data: &'b mut [u8],
+    ) -> (
+        &'b mut [u8; 2],
+        &'b mut [u8; 1],
+        &'b mut [u8; ScoreList::LEN],
+        &'b mut [u8; 1],
+    ) {
         mut_array_refs![
             array_mut_ref![data, self.offset, Player::LEN],
             2,
@@ -44,14 +44,18 @@ impl<'a> Player<'a> {
 
     pub fn get_position(&self) -> Position {
         Position::try_from_primitive(self.slice(&mut self.data.borrow_mut()).1[0])
-                .or(Err(ProgramError::InvalidAccountData)).unwrap()
+            .or(Err(ProgramError::InvalidAccountData))
+            .unwrap()
     }
     pub fn set_position(&self, value: Position) {
         self.slice(&mut self.data.borrow_mut()).1[0] = value as u8;
     }
 
     pub fn get_scores(&self) -> ScoreList<'a> {
-        ScoreList { data: self.data, offset: self.offset + 2 + 1 }
+        ScoreList {
+            data: self.data,
+            offset: self.offset + 2 + 1,
+        }
     }
 
     pub fn get_is_initialized(&self) -> bool {
@@ -64,8 +68,11 @@ impl<'a> Player<'a> {
     pub fn copy_to(&self, to: &Self) {
         let mut dst = to.data.borrow_mut();
         let mut src = self.data.borrow_mut();
-        array_mut_ref![dst, self.offset, Player::LEN]
-            .copy_from_slice(array_mut_ref![src, self.offset, Player::LEN]);
+        array_mut_ref![dst, self.offset, Player::LEN].copy_from_slice(array_mut_ref![
+            src,
+            self.offset,
+            Player::LEN
+        ]);
     }
 }
 
