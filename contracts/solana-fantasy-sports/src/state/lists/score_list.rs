@@ -1,50 +1,36 @@
 //! State transition types
 
+use std::ops::{Index, IndexMut};
 use arrayref::{array_mut_ref, array_ref};
 use solana_sdk::{
     program_error::ProgramError,
     program_pack::{Pack, Sealed},
 };
 use crate::state::*;
+use std::{
+    cell::{Ref, RefCell, RefMut},
+    cmp, fmt,
+    rc::Rc,
+};
 
-const ITEM_SIZE: usize = Score::LEN;
-const ITEM_COUNT: usize = consts::GAMES_COUNT;
-
-/// ScoreList data.
 #[repr(C)]
-#[derive(Clone, Debug, Default, PartialEq)]
-pub struct ScoreList {
-    pub list: [Score; ITEM_COUNT],
+pub struct ScoreList<'a> {
+    pub buf: &'a RefCell<&'a mut [u8]>,
+    pub offset: usize,
 }
-impl Sealed for ScoreList {}
-// impl Default for ScoreList {
-//     // #[inline]
-//     fn default() -> Self {
-//         Self {
-//             list: [Score::default(); ITEM_COUNT],
-//         }
-//     }
-// }
-impl Pack for ScoreList {
-    const LEN: usize = ITEM_SIZE * ITEM_COUNT;
-    fn unpack_from_slice(src: &[u8]) -> Result<Self, ProgramError> {
-        let src = array_ref![src, 0, ITEM_SIZE * ITEM_COUNT];
-        let mut result = Self::default();
-        for i in 0..ITEM_COUNT {
-            let item_src = array_ref!(src, i * ITEM_SIZE, ITEM_SIZE);
-            result.list[i] = Score::unpack_unchecked(item_src).unwrap();
-        }
-        Ok(result)
+impl<'a> ScoreList<'a> {
+    pub const ITEM_SIZE: usize = Score2::LEN;
+    pub const ITEM_COUNT: usize = consts::GAMES_COUNT;
+    pub const LEN: usize = ScoreList::ITEM_SIZE * ScoreList::ITEM_COUNT;
+
+    pub fn get(&self, i: usize) -> Score2<'a> {
+        Score2 { buf: self.buf, offset: self.offset + i * ScoreList::ITEM_SIZE }
     }
-    fn pack_into_slice(&self, dst: &mut [u8]) {
-        let dst = array_mut_ref![dst, 0, ITEM_SIZE * ITEM_COUNT];
-        for i in 0..ITEM_COUNT {
-            let item_dst = array_mut_ref!(dst, i * ITEM_SIZE, ITEM_SIZE);
-            self.list[i].pack_into_slice(item_dst);
-        }
-    }
+
+    // pub fn copy_to(self, to: Self) {
+    //     to.buf.copy_from_slice(self.buf);
+    // }
 }
-impl PackNext for ScoreList {}
 
 // Pull in syscall stubs when building for non-BPF targets
 #[cfg(not(target_arch = "bpf"))]

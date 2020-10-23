@@ -1,297 +1,265 @@
-//! Program state processor
+// //! Program state processor
 
-#![cfg(feature = "program")]
-use crate::{
-    error::SfsError,
-    instruction::{SfsInstruction},
-    state::{
-        Root,
-        Player,
-        League,
-        lists::{PlayerList, ActivePlayersList, LeagueList, UserStateList}
-    },
-};
-use num_traits::FromPrimitive;
-use solana_sdk::program::invoke;
-use solana_sdk::program::invoke_signed;
-use solana_sdk::{
-    instruction::{AccountMeta, Instruction},
-    account_info::{next_account_info, AccountInfo},
-    decode_error::DecodeError,
-    entrypoint::ProgramResult,
-    info,
-    program_error::{PrintProgramError, ProgramError},
-    program_option::COption,
-    program_pack::{IsInitialized, Pack},
-    pubkey::Pubkey,
-    sysvar::{rent::Rent, Sysvar},
-    system_instruction::SystemInstruction,
-};
+// #![cfg(feature = "program")]
+// use crate::{
+//     error::SfsError,
+//     instruction::{SfsInstruction},
+//     state::{
+//         Root,
+//         Player,
+//         League,
+//         lists::{PlayerList, ActivePlayersList, LeagueList, UserStateList}
+//     },
+// };
+// use arrayref::{array_mut_ref, array_ref, array_refs, mut_array_refs};
+// use num_traits::FromPrimitive;
+// use solana_sdk::program::invoke;
+// use solana_sdk::program::invoke_signed;
+// use solana_sdk::{
+//     instruction::{AccountMeta, Instruction},
+//     account_info::{next_account_info, AccountInfo},
+//     decode_error::DecodeError,
+//     entrypoint::ProgramResult,
+//     info,
+//     program_error::{PrintProgramError, ProgramError},
+//     program_option::COption,
+//     program_pack::{IsInitialized, Pack},
+//     pubkey::Pubkey,
+//     sysvar::{rent::Rent, Sysvar},
+//     system_instruction::SystemInstruction,
+// };
 
-/// Program state handler.
-pub struct Processor {}
-impl Processor {
-    /// Processes an [InitializeRoot](enum.SfsInstruction.html) instruction.
-    pub fn process_initialize_root(
-        program_id: &Pubkey,
-        accounts: &[AccountInfo],
-        oracle_authority: Pubkey,
-        players: PlayerList
-    ) -> ProgramResult {
-        let account_info_iter = &mut accounts.iter();
-        let root_info = next_account_info(account_info_iter)?;
-        let root_data_len = root_info.data_len();
-        let rent = &Rent::from_account_info(next_account_info(account_info_iter)?)?;
-        let data = &root_info.data.borrow();
-        return Ok(());
-        // let mut root = Root::default();
-        // let mut x2 = Box::new([0u8; 1000]);
+// /// Program state handler.
+// pub struct Processor {}
+// impl Processor {
+//     /// Processes an [InitializeRoot](enum.SfsInstruction.html) instruction.
+//     pub fn process_initialize_root<'a>(
+//         program_id: &Pubkey,
+//         accounts: &'a [AccountInfo],
+//         oracle_authority: Pubkey,
+//         players: PlayerList
+//     ) -> ProgramResult {
+//         let account_info_iter = &mut accounts.iter();
+//         let root_info = next_account_info(account_info_iter)?;
+//         let root_data_len = root_info.data_len();
+//         let rent = &Rent::from_account_info(next_account_info(account_info_iter)?)?;
 
-    //     for i in 0..200 {
-    //     let mut x2 = Box::new([0u8; 1000]);
-    // }
-        // x2 = League::default();
-        // for i in 0..20 {
-            // let x2 = Box::new(League::default());
-        // }
-        // let x = LeagueList::default();
-        // return Ok(());
+//         let mut state = root_info.data.borrow_mut();
+//         let root = Root{ buf: array_mut_ref![state, 0, Root::LEN] };
 
-        let mut root = Root::unpack_unchecked(&root_info.data.borrow())?;
-        if root.is_initialized {
-            return Err(SfsError::AlreadyInUse.into());
-        }
+//         if root.get_is_initialized() {
+//             return Err(SfsError::AlreadyInUse.into());
+//         }
 
-        if !rent.is_exempt(root_info.lamports(), root_data_len) {
-            return Err(SfsError::NotRentExempt.into());
-        }
+//         if !rent.is_exempt(root_info.lamports(), root_data_len) {
+//             return Err(SfsError::NotRentExempt.into());
+//         }
 
-        // root.players = players.to_vec();
-        // let state = State{ test: String::from("hello") };
+//         players.copy_to(root.get_players());
+//         root.set_oracle_authority(oracle_authority);
+//         root.set_is_initialized(true);
 
-        // let data = CreateAccount::pack(SystemInstruction::CreateAccount{
-        //     lamports: 0,
-        //     space: 0,
-        //     owner: program_id.clone().into(),
-        // });
+//         Ok(())
+//     }
 
-        // let accounts2 = vec![
-        //     AccountMeta::new(*program_id, false),
-        // ];
+//     pub fn process_update_lineup(
+//         program_id: &Pubkey,
+//         accounts: &[AccountInfo],
+//         league: &u8,
+//         week: &u8,
+//         lineup: ActivePlayersList
+//     ) -> ProgramResult {
+//         let account_info_iter = &mut accounts.iter();
+//         let root_info = next_account_info(account_info_iter)?;
+//         let root_data_len = root_info.data_len();
+//         let rent = &Rent::from_account_info(next_account_info(account_info_iter)?)?;
 
-        // let instruction = Instruction {
-        //     program_id: Pubkey::new(&String::from("11111111111111111111111111111111").into_bytes()),
-        //     accounts: accounts2,
-        //     data,
-        // }
-        // invoke(&instruction, &accounts2[..])?;
+//         let mut state = root_info.data.borrow_mut();
+//         let root = Root{ buf: array_mut_ref![state, 0, Root::LEN] };
 
-        // root.state =;
-        // root.oracle_authority = oracle_authority;
-        // root.is_initialized = true;
+//         if root.get_is_initialized() {
+//             return Err(SfsError::InvalidState.into());
+//         }
 
-        // Root::pack(root, &mut root_info.data.borrow_mut())?;
-        Ok(())
-    }
+//         let user_account_info = next_account_info(account_info_iter)?;
 
-    pub fn process_update_lineup(
-        program_id: &Pubkey,
-        accounts: &[AccountInfo],
-        league: &u8,
-        week: &u8,
-        lineup: ActivePlayersList
-    ) -> ProgramResult {
-        let account_info_iter = &mut accounts.iter();
-        let root_info = next_account_info(account_info_iter)?;
-        let root_data_len = root_info.data_len();
-        let rent = &Rent::from_account_info(next_account_info(account_info_iter)?)?;
+//         // @TODO: before mutating check if league and week values entered from user input are authorized
 
-        let mut root = Root::unpack_unchecked(&root_info.data.borrow())?;
-        if root.is_initialized {
-            return Err(SfsError::AlreadyInUse.into());
-        }
+//         for i in 0..UserStateList::LEN {
+//             let user_state = root.get_leagues().get(*league as usize).get_user_states().get(i);
+//             if *user_account_info.key == user_state.get_pub_key() {
+//                 lineup.copy_to(user_state.get_lineups().get(*week as usize));
+//                 break;
+//             }
+//         }
 
-        if !rent.is_exempt(root_info.lamports(), root_data_len) {
-            return Err(SfsError::NotRentExempt.into());
-        }
+//         Ok(())
+//     }
 
-        let user_account_info = next_account_info(account_info_iter)?;
+//     /// Processes an [InitializeAccount](enum.SfsInstruction.html) instruction.
+//     pub fn process_test_mutate(program_id: &Pubkey, accounts: &[AccountInfo]) -> ProgramResult {
+//         let account_info_iter = &mut accounts.iter();
+//         let root_info = next_account_info(account_info_iter)?;
+//         // let mut root = Root::unpack(&root_info.data.borrow())?;
 
-        // @TODO: before mutating check if league and week values entered from user input are authorized
-
-        for i in 0..UserStateList::LEN {
-            if *user_account_info.key == root.leagues.list[*league as usize].user_states.list[i].pub_key {
-                root.leagues.list[*league as usize].user_states.list[i].lineups.list[*week as usize] = lineup;
-                break;
-            }
-        }
-
-        Root::pack(root, &mut root_info.data.borrow_mut())?;
-        Ok(())
-    }
-
-    /// Processes an [InitializeAccount](enum.SfsInstruction.html) instruction.
-    pub fn process_test_mutate(program_id: &Pubkey, accounts: &[AccountInfo]) -> ProgramResult {
-        let account_info_iter = &mut accounts.iter();
-        let root_info = next_account_info(account_info_iter)?;
-        let mut root = Root::unpack(&root_info.data.borrow())?;
-
-        // let state_info = next_account_info(account_info_iter)?;
-        // let state_data_len = state_info.data_len();
-        // if state_info.key != &root.latest_state_account {
-        //     return Err(SfsError::InvalidState.into());
-        // }
+//         // let state_info = next_account_info(account_info_iter)?;
+//         // let state_data_len = state_info.data_len();
+//         // if state_info.key != &root.latest_state_account {
+//         //     return Err(SfsError::InvalidState.into());
+//         // }
 
 
-        Root::pack(root, &mut root_info.data.borrow_mut())?;
-        Ok(())
-    }
+//         // Root::pack(root, &mut root_info.data.borrow_mut())?;
+//         Ok(())
+//     }
 
-    /// Processes an [Instruction](enum.Instruction.html).
-    pub fn process(program_id: &Pubkey, accounts: &[AccountInfo], input: &[u8]) -> ProgramResult {
-        let instruction = SfsInstruction::unpack(input)?;
+//     /// Processes an [Instruction](enum.Instruction.html).
+//     pub fn process(program_id: &Pubkey, accounts: &[AccountInfo], input: &[u8]) -> ProgramResult {
+//         let mut input_copy = Vec::<u8>::with_capacity(input.len());
+//         input_copy.extend_from_slice(input);
+//         let instruction = SfsInstruction::unpack(&mut input_copy)?;
 
-        match instruction {
-            SfsInstruction::InitializeRoot {
-                oracle_authority,
-                players
-            } => {
-                info!("Instruction: InitializeRoot");
-                Self::process_initialize_root(program_id, accounts, oracle_authority, players)
-            }
-            SfsInstruction::UpdateLineup {
-                league,
-                week,
-                lineup
-            } => {
-                Self::process_update_lineup(program_id, accounts, &league, &week, lineup)
-            }
-            SfsInstruction::TestMutate => {
-                info!("Instruction: TestMutate");
-                Self::process_test_mutate(program_id, accounts)
-            }
-        }
-    }
-}
+//         match instruction {
+//             SfsInstruction::InitializeRoot {
+//                 oracle_authority,
+//                 players
+//             } => {
+//                 info!("Instruction: InitializeRoot");
+//                 Self::process_initialize_root(program_id, accounts, oracle_authority, players)
+//             }
+//             SfsInstruction::UpdateLineup {
+//                 league,
+//                 week,
+//                 lineup
+//             } => {
+//                 Self::process_update_lineup(program_id, accounts, &league, &week, lineup)
+//             }
+//             SfsInstruction::TestMutate => {
+//                 info!("Instruction: TestMutate");
+//                 Self::process_test_mutate(program_id, accounts)
+//             }
+//         }
+//     }
+// }
 
-impl PrintProgramError for SfsError {
-    fn print<E>(&self)
-    where
-        E: 'static + std::error::Error + DecodeError<E> + PrintProgramError + FromPrimitive,
-    {
-        match self {
-            SfsError::NotRentExempt => {
-                info!("Error: Lamport balance below rent-exempt threshold")
-            }
-            SfsError::InsufficientFunds => info!("Error: insufficient funds"),
-            SfsError::OwnerMismatch => info!("Error: owner does not match"),
-            SfsError::AlreadyInUse => info!("Error: account or token already in use"),
-            SfsError::InvalidInstruction => info!("Error: Invalid instruction"),
-            SfsError::InvalidState => info!("Error: Invalid account state for operation"),
-            SfsError::Overflow => info!("Error: Operation overflowed"),
-        }
-    }
-}
+// impl PrintProgramError for SfsError {
+//     fn print<E>(&self)
+//     where
+//         E: 'static + std::error::Error + DecodeError<E> + PrintProgramError + FromPrimitive,
+//     {
+//         match self {
+//             SfsError::NotRentExempt => {
+//                 info!("Error: Lamport balance below rent-exempt threshold")
+//             }
+//             SfsError::InsufficientFunds => info!("Error: insufficient funds"),
+//             SfsError::OwnerMismatch => info!("Error: owner does not match"),
+//             SfsError::AlreadyInUse => info!("Error: account or token already in use"),
+//             SfsError::InvalidInstruction => info!("Error: Invalid instruction"),
+//             SfsError::InvalidState => info!("Error: Invalid account state for operation"),
+//             SfsError::Overflow => info!("Error: Operation overflowed"),
+//         }
+//     }
+// }
 
-// Pull in syscall stubs when building for non-BPF targets
-#[cfg(not(target_arch = "bpf"))]
-solana_sdk::program_stubs!();
+// // Pull in syscall stubs when building for non-BPF targets
+// #[cfg(not(target_arch = "bpf"))]
+// solana_sdk::program_stubs!();
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::instruction::*;
-    use solana_sdk::{
-        account::Account as SolanaAccount, account_info::create_is_signer_account_infos,
-        clock::Epoch, instruction::Instruction, sysvar::rent,
-    };
+// #[cfg(test)]
+// mod tests {
+//     use super::*;
+//     use crate::instruction::*;
+//     use solana_sdk::{
+//         account::Account as SolanaAccount, account_info::create_is_signer_account_infos,
+//         clock::Epoch, instruction::Instruction, sysvar::rent,
+//     };
 
-    fn pubkey_rand() -> Pubkey {
-        Pubkey::new(&rand::random::<[u8; 32]>())
-    }
+//     fn pubkey_rand() -> Pubkey {
+//         Pubkey::new(&rand::random::<[u8; 32]>())
+//     }
 
-    fn do_process_instruction(
-        instruction: Instruction,
-        accounts: Vec<&mut SolanaAccount>,
-    ) -> ProgramResult {
-        let mut meta = instruction
-            .accounts
-            .iter()
-            .zip(accounts)
-            .map(|(account_meta, account)| (&account_meta.pubkey, account_meta.is_signer, account))
-            .collect::<Vec<_>>();
+//     // fn do_process_instruction(
+//     //     instruction: Instruction,
+//     //     accounts: Vec<&'static mut SolanaAccount>,
+//     // ) -> ProgramResult {
+//     //     let mut meta = instruction
+//     //         .accounts
+//     //         .iter()
+//     //         .zip(accounts)
+//     //         .map(|(account_meta, account)| (&account_meta.pubkey, account_meta.is_signer, account))
+//     //         .collect::<Vec<_>>();
 
-        let account_infos = create_is_signer_account_infos(&mut meta);
-        Processor::process(&instruction.program_id, &account_infos, &instruction.data)
-    }
+//     //     let account_infos = create_is_signer_account_infos(&mut meta);
+//     //     Processor::process(&instruction.program_id, &account_infos, &instruction.data)
+//     // }
 
-    fn do_process_instruction_dups(
-        instruction: Instruction,
-        account_infos: Vec<AccountInfo>,
-    ) -> ProgramResult {
-        Processor::process(&instruction.program_id, &account_infos, &instruction.data)
-    }
+//     // fn do_process_instruction_dups(
+//     //     instruction: Instruction,
+//     //     account_infos: Vec<AccountInfo>,
+//     // ) -> ProgramResult {
+//     //     Processor::process(&instruction.program_id, &account_infos, &instruction.data)
+//     // }
 
-    fn return_sfs_error_as_program_error() -> ProgramError {
-        SfsError::InvalidInstruction.into()
-    }
+//     fn return_sfs_error_as_program_error() -> ProgramError {
+//         SfsError::InvalidInstruction.into()
+//     }
 
-    fn rent_sysvar() -> SolanaAccount {
-        rent::create_account(42, &Rent::default())
-    }
+//     fn rent_sysvar() -> SolanaAccount {
+//         rent::create_account(42, &Rent::default())
+//     }
 
-    fn root_minimum_balance() -> u64 {
-        Rent::default().minimum_balance(Root::get_packed_len())
-    }
+//     // fn root_minimum_balance() -> u64 {
+//     //     Rent::default().minimum_balance(Root::LEN)
+//     // }
 
-    #[test]
-    fn test_print_error() {
-        let error = return_sfs_error_as_program_error();
-        error.print::<SfsError>();
-    }
+//     #[test]
+//     fn test_print_error() {
+//         let error = return_sfs_error_as_program_error();
+//         error.print::<SfsError>();
+//     }
 
-    #[test]
-    #[should_panic(expected = "Custom(4)")]
-    fn test_error_unwrap() {
-        Err::<(), ProgramError>(return_sfs_error_as_program_error()).unwrap();
-    }
+//     #[test]
+//     #[should_panic(expected = "Custom(4)")]
+//     fn test_error_unwrap() {
+//         Err::<(), ProgramError>(return_sfs_error_as_program_error()).unwrap();
+//     }
 
-    #[test]
-    fn test_initialize_root() {
-        let program_id = pubkey_rand();
-        let owner_key = pubkey_rand();
-        let root_key = pubkey_rand();
-        let players = PlayerList::default();
-        let mut root_account = SolanaAccount::new(42, Root::get_packed_len(), &program_id);
-        let mut rent_sysvar = rent_sysvar();
+//     // #[test]
+//     // fn test_initialize_root() {
+//     //     let program_id = pubkey_rand();
+//     //     let owner_key = pubkey_rand();
+//     //     let root_key = pubkey_rand();
+//     //     let players = PlayerList::default();
+//     //     let mut root_account = SolanaAccount::new(42, Root::LEN, &program_id);
+//     //     let mut rent_sysvar = rent_sysvar();
 
-        // root is not rent exempt
-        assert_eq!(
-            Err(SfsError::NotRentExempt.into()),
-            do_process_instruction(
-                initialize_root(&program_id, &root_key, &owner_key, players.clone()).unwrap(),
-                vec![&mut root_account, &mut rent_sysvar]
-            )
-        );
-        root_account.lamports = root_minimum_balance();
+//     //     // root is not rent exempt
+//     //     assert_eq!(
+//     //         Err(SfsError::NotRentExempt.into()),
+//     //         do_process_instruction(
+//     //             initialize_root(&program_id, &root_key, &owner_key, players.clone()).unwrap(),
+//     //             vec![&mut root_account, &mut rent_sysvar]
+//     //         )
+//     //     );
+//     //     root_account.lamports = root_minimum_balance();
 
-        // create new root
-        do_process_instruction(
-            initialize_root(&program_id, &root_key, &owner_key, players.clone()).unwrap(),
-            vec![&mut root_account, &mut rent_sysvar],
-        )
-        .unwrap();
+//     //     // create new root
+//     //     do_process_instruction(
+//     //         initialize_root(&program_id, &root_key, &owner_key, players.clone()).unwrap(),
+//     //         vec![&mut root_account, &mut rent_sysvar],
+//     //     )
+//     //     .unwrap();
 
-        // create twice
-        assert_eq!(
-            Err(SfsError::AlreadyInUse.into()),
-            do_process_instruction(
-                initialize_root(&program_id, &root_key, &owner_key, players.clone()).unwrap(),
-                vec![&mut root_account, &mut rent_sysvar],
-            )
-        );
+//     //     // create twice
+//     //     assert_eq!(
+//     //         Err(SfsError::AlreadyInUse.into()),
+//     //         do_process_instruction(
+//     //             initialize_root(&program_id, &root_key, &owner_key, players.clone()).unwrap(),
+//     //             vec![&mut root_account, &mut rent_sysvar],
+//     //         )
+//     //     );
 
-        let root = Root::unpack_unchecked(&root_account.data).unwrap();
-        assert_eq!(root.oracle_authority, owner_key);
-    }
-}
+//     //     let root = Root { buf: &root_account.data };
+//     //     assert_eq!(root.get_oracle_authority(), owner_key);
+//     // }
+// }
