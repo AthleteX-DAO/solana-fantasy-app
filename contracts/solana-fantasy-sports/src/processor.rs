@@ -8,7 +8,7 @@ use crate::{
     state::{
         Root,
         Player,
-        lists::{PlayerList, ActivePlayersList, LeagueList}
+        lists::{PlayerList, ActivePlayersList, LeagueList, UserStateList, SwapProposalsList}
     },
 };
 use num_traits::FromPrimitive;
@@ -116,6 +116,62 @@ impl Processor {
         Ok(())
     }
 
+    pub fn process_propose_swap(
+        program_id: &Pubkey,
+        accounts: &[AccountInfo],
+        league: &u8,
+        week: &u8,
+        give_player_id: &u8,
+        want_player_id: &u8
+    ) -> ProgramResult {
+        let account_info_iter = &mut accounts.iter();
+        let root_info = next_account_info(account_info_iter)?;
+        let root_data_len = root_info.data_len();
+        let rent = &Rent::from_account_info(next_account_info(account_info_iter)?)?;
+
+        let mut root = Root::unpack_unchecked(&root_info.data.borrow())?;
+        if root.is_initialized {
+            return Err(SfsError::AlreadyInUse.into());
+        }
+
+        if !rent.is_exempt(root_info.lamports(), root_data_len) {
+            return Err(SfsError::NotRentExempt.into());
+        }
+
+        let user_account_info = next_account_info(account_info_iter)?;
+        let other_account_info = next_account_info(account_info_iter)?;
+
+        // @TODO: before mutating check if the condition of players bench is satisfied after the swap
+
+        // More checks:
+        // self user should own the "give" player
+        // receiving user should own the "want" player
+        // week should be the one after the current. if week is last then throw.
+
+        // Sudo code:
+        // 1. find the other user specified in second account be proposed in the array
+        // 2. Insert a proposal at the index of length, throw if length is equal to max length
+        // 3. Write self pub key, give and want addr
+
+        for i in 0..UserStateList::LEN {
+            if *other_account_info.key == root.leagues.list[*league as usize].user_states.list[i].pub_key {
+                for j in 0..SwapProposalsList::LEN {
+                    if(!root.leagues.list[*league as usize].user_states.list[i].swap_proposals.list[j].is_initialized) {
+                        root.leagues.list[*league as usize].user_states.list[i].swap_proposals.list[j].proposer_pub_key = *user_account_info.key;
+                        root.leagues.list[*league as usize].user_states.list[i].swap_proposals.list[j].give_player_id = *give_player_id;
+                        root.leagues.list[*league as usize].user_states.list[i].swap_proposals.list[j].want_player_id = *want_player_id;
+                        root.leagues.list[*league as usize].user_states.list[i].swap_proposals.list[j].is_initialized = true;
+                        break;
+                    }
+                }
+                break;
+            }
+        }
+
+        Root::pack(root, &mut root_info.data.borrow_mut())?;
+        Ok(())
+    }
+
     /// Processes an [InitializeAccount](enum.SfsInstruction.html) instruction.
     pub fn process_test_mutate(program_id: &Pubkey, accounts: &[AccountInfo]) -> ProgramResult {
         let account_info_iter = &mut accounts.iter();
@@ -151,6 +207,14 @@ impl Processor {
                 lineup
             } => {
                 Self::process_update_lineup(program_id, accounts, &league, &week, lineup)
+            }
+            SfsInstruction::ProposeSwap {
+                league,
+                week,
+                givePlayerId,
+                wantPlayerId
+            } => {
+                Self::process_propose_swap(program_id, accounts, &league, &week, &givePlayerId, &wantPlayerId)
             }
             SfsInstruction::TestMutate => {
                 info!("Instruction: TestMutate");

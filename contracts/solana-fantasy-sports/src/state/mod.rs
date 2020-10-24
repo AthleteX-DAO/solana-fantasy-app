@@ -9,6 +9,8 @@ pub mod position;
 pub use position::{Position};
 pub mod score;
 pub use score::{Score};
+pub mod swap_proposal;
+pub use swap_proposal::{SwapProposal};
 pub mod user_state;
 pub use user_state::{UserState};
 

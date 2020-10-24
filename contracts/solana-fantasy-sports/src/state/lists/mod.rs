@@ -11,5 +11,7 @@ pub mod player_list;
 pub use player_list::{PlayerList};
 pub mod score_list;
 pub use score_list::{ScoreList};
+pub mod swap_proposals_list;
+pub use swap_proposals_list::{SwapProposalsList};
 pub mod user_state_list;
 pub use user_state_list::{UserStateList};

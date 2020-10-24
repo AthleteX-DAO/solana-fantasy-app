@@ -6,7 +6,7 @@ use solana_sdk::{
     pubkey::Pubkey,
 };
 use super::{
-    lists::{BenchList, LineupList},
+    lists::{BenchList, LineupList, SwapProposalsList},
     consts::PUB_KEY_LEN,
     helpers::*
 };
@@ -19,6 +19,7 @@ pub struct UserState {
     pub pub_key: Pubkey,
     pub bench: BenchList,
     pub lineups: LineupList,
+    pub swap_proposals: SwapProposalsList,
     /// Is `true` if this structure has been initialized
     pub is_initialized: bool,
 }
@@ -35,20 +36,22 @@ impl Default for UserState {
             pub_key: Pubkey::default(),
             bench: BenchList::default(),
             lineups: LineupList::default(),
+            swap_proposals: SwapProposalsList::default(),
             is_initialized: false
         }
     }
 }
 impl Pack for UserState {
-    const LEN: usize = PUB_KEY_LEN + BenchList::LEN + LineupList::LEN + 1;
+    const LEN: usize = PUB_KEY_LEN + BenchList::LEN + LineupList::LEN + SwapProposalsList::LEN + 1;
     fn unpack_from_slice(src: &[u8]) -> Result<Self, ProgramError> {
         let src = array_ref![src, 0, UserState::LEN];
-        let (pub_key, bench, lineups, is_initialized) =
-            array_refs![src, PUB_KEY_LEN, BenchList::LEN, LineupList::LEN, 1];
+        let (pub_key, bench, lineups, swap_proposals, is_initialized) =
+            array_refs![src, PUB_KEY_LEN, BenchList::LEN, LineupList::LEN, SwapProposalsList::LEN, 1];
         Ok(UserState {
             pub_key: Pubkey::new_from_array(*pub_key),
             bench: BenchList::unpack_unchecked(bench).unwrap(),
             lineups: LineupList::unpack_unchecked(lineups).unwrap(),
+            swap_proposals: SwapProposalsList::unpack_unchecked(lineups).unwrap(),
             is_initialized: unpack_is_initialized(is_initialized).unwrap(),
         })
     }
@@ -58,17 +61,20 @@ impl Pack for UserState {
             pub_key_dst,
             bench_dst,
             lineups_dst,
+            swap_proposals_dst,
             is_initialized_dst,
-        ) = mut_array_refs![dst, PUB_KEY_LEN, BenchList::LEN, LineupList::LEN, 1];
+        ) = mut_array_refs![dst, PUB_KEY_LEN, BenchList::LEN, LineupList::LEN, SwapProposalsList::LEN, 1];
         let &UserState {
             ref pub_key,
             ref bench,
             ref lineups,
+            ref swap_proposals,
             is_initialized,
         } = self;
         pub_key_dst.copy_from_slice(pub_key.as_ref());
         BenchList::pack(bench.clone(), bench_dst).unwrap();
         LineupList::pack(lineups.clone(), lineups_dst).unwrap();
+        SwapProposalsList::pack(swap_proposals.clone(), swap_proposals_dst).unwrap();
         is_initialized_dst[0] = is_initialized as u8;
     }
 }

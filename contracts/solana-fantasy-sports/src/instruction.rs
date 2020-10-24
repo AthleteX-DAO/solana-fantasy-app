@@ -53,6 +53,18 @@ pub enum SfsInstruction {
         lineup: ActivePlayersList
     },
     ///
+    /// Adds a swap proposal
+    /// Accounts expected by this instruction:
+    ///   0. `[user address]`
+    ///   1. `[other user address]`
+    ///
+    ProposeSwap {
+        league: u8,
+        week: u8, // must be the next week. This can be eliminated by having the week var 
+        givePlayerId: u8,
+        wantPlayerId: u8
+    },
+    ///
     /// Test
     ///
     /// Accounts expected by this instruction:
@@ -84,8 +96,20 @@ impl SfsInstruction {
                     week,
                     lineup
                 }
-            }
-            2 => Self::TestMutate,
+            },
+            2 => {
+                let (league, rest1) = Self::unpack_u8(rest)?;
+                let (week, rest2) = Self::unpack_u8(rest1)?;
+                let (givePlayerId, rest3) = Self::unpack_u8(rest2)?;
+                let (wantPlayerId, rest4) = Self::unpack_u8(rest3)?;
+                Self::ProposeSwap {
+                    league,
+                    week,
+                    givePlayerId,
+                    wantPlayerId
+                }
+            },
+            3 => Self::TestMutate,
 
             _ => return Err(SfsError::InvalidInstruction.into()),
         })
@@ -109,9 +133,18 @@ impl SfsInstruction {
                 ref lineup
             } => {
                 buf.push(1);
-                // @TODO: add something here
+                // @TODO: add packing logic here
             }
-            Self::TestMutate => buf.push(2),
+            &Self::ProposeSwap {
+                ref league,
+                ref week,
+                ref givePlayerId,
+                ref wantPlayerId
+            } => {
+                buf.push(2);
+                // @TODO: add packing logic here
+            }
+            Self::TestMutate => buf.push(3),
         };
         buf
     }
