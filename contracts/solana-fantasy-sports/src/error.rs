@@ -1,5 +1,6 @@
 //! Error types
 #![cfg(feature = "program")]
+use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 use solana_sdk::{
     decode_error::DecodeError,
@@ -67,7 +68,6 @@ solana_sdk::program_stubs!();
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::instruction::*;
     use solana_sdk::{
         account::Account as SolanaAccount, account_info::create_is_signer_account_infos,
         clock::Epoch, instruction::Instruction, sysvar::rent,

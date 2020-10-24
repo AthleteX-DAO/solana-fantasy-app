@@ -25,7 +25,7 @@ impl<'a> InitializeRootArgs<'a> {
         &'b [u8; PlayerList::LEN],
     ) {
         array_refs![
-            array_ref![data, self.offset, InitializeRoot::LEN],
+            array_ref![data, self.offset, InitializeRootArgs::LEN],
             PUB_KEY_LEN,
             PlayerList::LEN
         ]
@@ -35,22 +35,31 @@ impl<'a> InitializeRootArgs<'a> {
         Pubkey::new_from_array(*self.slice(&self.data.borrow()).0)
     }
 
-    pub fn get_player(&self) -> Player<'a> {
-        Player {
+    pub fn get_players(&self) -> PlayerList<'a> {
+        PlayerList {
             data: self.data,
             offset: self.offset + PUB_KEY_LEN,
         }
     }
 
-    pub fn copy_to(&self, to: &Self) {
-        let mut dst = to.data.borrow_mut();
-        let mut src = self.data.borrow();
-        array_mut_ref![dst, self.offset, Score::LEN].copy_from_slice(array_ref![
+    pub fn copy_to(&self, to: &mut [u8]) {
+        let src = self.data.borrow();
+        array_mut_ref![to, self.offset, InitializeRootArgs::LEN].copy_from_slice(array_ref![
             src,
             self.offset,
-            Score::LEN
+            InitializeRootArgs::LEN
         ]);
     }
+
+    // pub fn pack(
+    //     oracle_authority: &Pubkey
+    //     players: &[]
+    // ) -> [u8;InitializeRootArgs::LEN] {
+
+    // }
+}
+impl Clone for InitializeRootArgs<'_> {
+    fn clone(&self) -> Self { Self { data: self.data, offset: self.offset } }
 }
 
 // Pull in syscall stubs when building for non-BPF targets

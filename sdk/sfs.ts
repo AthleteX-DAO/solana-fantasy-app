@@ -3,7 +3,7 @@ import type { Connection } from '@solana/web3.js';
 
 import { sendAndConfirmTransaction } from './util/send-and-confirm-transaction';
 import { Player, Root, RootLayout } from './state';
-import { SfsInstruction } from './instruction';
+import { SfsInstruction, Player as PlayerInit } from './instruction';
 
 // The address of the special mint for wrapped native token.
 export const NATIVE_MINT: PublicKey = new PublicKey('So11111111111111111111111111111111111111112');
@@ -54,7 +54,7 @@ export class SFS {
     connection: Connection,
     payer: Account,
     oracleAuthority: PublicKey,
-    players: Player[],
+    players: PlayerInit[],
     programId: PublicKey
   ): Promise<SFS> {
     const rootAccount = new Account();
@@ -69,7 +69,7 @@ export class SFS {
         fromPubkey: payer.publicKey,
         newAccountPubkey: rootAccount.publicKey,
         lamports: balanceNeeded,
-        space: 5000000,
+        space: RootLayout.span,
         programId,
       })
     );

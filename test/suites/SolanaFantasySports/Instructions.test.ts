@@ -1,15 +1,13 @@
 import { Account } from '@solana/web3.js';
 import { deepStrictEqual, strictEqual } from 'assert';
 import { Buffer } from 'buffer';
-import { SfsInstruction } from '../../../sdk/instruction';
+import { SfsInstruction, Player, PlayerLayout } from '../../../sdk/instruction';
 import { SFS } from '../../../sdk/sfs';
 import {
   GAMES_COUNT,
-  Player,
   Position,
   Score,
   ScoreLayout,
-  PlayerLayout,
   TOTAL_PLAYERS_COUNT,
   PUB_KEY_LEN,
   RootLayout,
@@ -40,13 +38,13 @@ export const InstructionsTests = () =>
       (): Player => ({
         id: 1,
         position: Position.DB,
-        scores: Array.from({ length: GAMES_COUNT }).map(
-          (): Score => ({
-            score1: 1,
-            isInitialized: true,
-          })
-        ),
-        isInitialized: true,
+        // scores: Array.from({ length: GAMES_COUNT }).map(
+        //   (): Score => ({
+        //     score1: 1,
+        //     isInitialized: true,
+        //   })
+        // ),
+        // isInitialized: true,
       })
     );
 
@@ -60,7 +58,7 @@ export const InstructionsTests = () =>
     it('correctly serialize instruction', async () => {
       console.log(data.data);
       strictEqual(ScoreLayout.span, 2);
-      strictEqual(PlayerLayout.span, 2 + 1 + GAMES_COUNT * ScoreLayout.span + 1);
+      strictEqual(PlayerLayout.span, 2 + 1);
       strictEqual(data.data.length, 1 + PUB_KEY_LEN + PlayerLayout.span * TOTAL_PLAYERS_COUNT);
 
       // it('calls InitializeRoot on the program on the network', async () => {

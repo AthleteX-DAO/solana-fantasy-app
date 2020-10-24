@@ -17,18 +17,8 @@ pub struct Player<'a> {
 }
 impl<'a> Player<'a> {
     pub const LEN: usize = 2 + 1;
-    fn slice<'b>(
-        &self,
-        data: &'b [u8],
-    ) -> (
-        &'b [u8; 2],
-        &'b [u8; 1]
-    ) {
-        array_refs![
-            array_ref![data, self.offset, Player::LEN],
-            2,
-            1
-        ]
+    fn slice<'b>(&self, data: &'b [u8]) -> (&'b [u8; 2], &'b [u8; 1]) {
+        array_refs![array_ref![data, self.offset, Player::LEN], 2, 1]
     }
 
     pub fn get_id(&self) -> u16 {
@@ -41,14 +31,20 @@ impl<'a> Player<'a> {
             .unwrap()
     }
 
-    pub fn copy_to(&self, to: &Self) {
-        let mut dst = to.data.borrow_mut();
-        let mut src = self.data.borrow();
-        array_mut_ref![dst, self.offset, Player::LEN].copy_from_slice(array_ref![
+    pub fn copy_to(&self, to: &mut [u8]) {
+        let src = self.data.borrow();
+        array_mut_ref![to, self.offset, Player::LEN].copy_from_slice(array_ref![
             src,
             self.offset,
             Player::LEN
         ]);
+    }
+
+    pub fn pack(id: u16, position: Position) -> [u8; Player::LEN] {
+        let mut buf = [0u8; Player::LEN];
+        LittleEndian::write_u16(&mut buf, id);
+        buf[2] = position as u8;
+        buf
     }
 }
 

@@ -1,3 +1,5 @@
+//! State transition types
+
 pub mod structures;
 pub use structures::*;
 pub mod lists;

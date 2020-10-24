@@ -1,11 +1,13 @@
 // #![deny(missing_docs)]
 #![forbid(unsafe_code)]
-
+#![allow(unused_imports)]
+#![allow(unused_variables)]
+#![allow(dead_code)]
 //! A Solana Fantasy Sports program
 
 pub mod entrypoint;
 pub mod error;
-pub mod instruction;
+pub mod instructions;
 pub mod native_mint;
 pub mod processor;
 pub mod state;

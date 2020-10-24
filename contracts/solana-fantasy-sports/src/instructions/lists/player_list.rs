@@ -26,10 +26,9 @@ impl<'a> PlayerList<'a> {
         }
     }
 
-    pub fn copy_to(&self, to: &Self) {
-        let mut dst = to.data.borrow_mut();
-        let mut src = self.data.borrow();
-        array_mut_ref![dst, self.offset, PlayerList::LEN].copy_from_slice(array_ref![
+    pub fn copy_to(&self, to: &mut [u8]) {
+        let src = self.data.borrow();
+        array_mut_ref![to, self.offset, PlayerList::LEN].copy_from_slice(array_ref![
             src,
             self.offset,
             PlayerList::LEN

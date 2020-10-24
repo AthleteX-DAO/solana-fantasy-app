@@ -2,11 +2,22 @@ import { PublicKey, TransactionInstruction, SYSVAR_RENT_PUBKEY } from '@solana/w
 
 import * as Layout from './util/layout';
 import { BufferLayout } from './util/layout';
-import { Player, PlayerLayout, TOTAL_PLAYERS_COUNT } from './state';
+import { Position, TOTAL_PLAYERS_COUNT } from './state';
 
 enum Command {
+  Uninitialized,
   InitializeRoot,
 }
+
+export type Player = {
+  id: number;
+  position: Position;
+};
+
+export const PlayerLayout: typeof BufferLayout.Structure = BufferLayout.struct([
+  BufferLayout.u16('id'),
+  BufferLayout.u8('position'),
+]);
 
 export class SfsInstruction {
   /**
