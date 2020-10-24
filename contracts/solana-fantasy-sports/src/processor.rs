@@ -153,15 +153,19 @@ impl Processor {
         // 3. Write self pub key, give and want addr
 
         for i in 0..UserStateList::LEN {
-            if *other_account_info.key == root.leagues.list[*league as usize].user_states.list[i].pub_key {
-                for j in 0..SwapProposalsList::LEN {
-                    if(!root.leagues.list[*league as usize].user_states.list[i].swap_proposals.list[j].is_initialized) {
-                        root.leagues.list[*league as usize].user_states.list[i].swap_proposals.list[j].proposer_pub_key = *user_account_info.key;
-                        root.leagues.list[*league as usize].user_states.list[i].swap_proposals.list[j].give_player_id = *give_player_id;
-                        root.leagues.list[*league as usize].user_states.list[i].swap_proposals.list[j].want_player_id = *want_player_id;
-                        root.leagues.list[*league as usize].user_states.list[i].swap_proposals.list[j].is_initialized = true;
-                        break;
-                    }
+            if *user_account_info.key == root.leagues.list[*league as usize].user_states.list[i].pub_key {
+                // @TODO: Check how to assign the reference, may be this is wrong syntax
+                let mut swap_proposals = root.leagues.list[*league as usize].user_states.list[i].swap_proposals.list[
+                    root.leagues.list[*league as usize].user_states.list[i].swap_proposals.length as usize
+                ];
+                swap_proposals.give_player_id = *give_player_id;
+                swap_proposals.want_player_id = *want_player_id;
+                swap_proposals.is_initialized = true;
+                
+                root.leagues.list[*league as usize].user_states.list[i].swap_proposals.length += 1;
+                if(root.leagues.list[*league as usize].user_states.list[i].swap_proposals.length as usize > SwapProposalsList::LEN) {
+                    // @TODO: throw error some how
+                    // return Err(state::user_state::ProgramError::Custom);
                 }
                 break;
             }
