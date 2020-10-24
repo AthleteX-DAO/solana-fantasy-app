@@ -3,9 +3,10 @@ import { PublicKey } from '@solana/web3.js';
 
 import * as Layout from './util/layout';
 
-export const TOTAL_PLAYERS_COUNT = 10;
+export const MAX_PLAYERS_PER_INSTRUCTION = 255;
+export const PLAYERS_CAPACITY = 1000;
 export const GAMES_COUNT = 17;
-export const LEAGUES_COUNT = 1;
+export const LEAGUES_COUNT = 100;
 export const LEAGUE_USERS_COUNT = 10;
 export const ACTIVE_PLAYERS_COUNT = 8;
 export const BENCH_PLAYERS_COUNT = 8;
@@ -93,7 +94,8 @@ export type Root = {
 
 export const RootLayout: typeof BufferLayout.Structure = BufferLayout.struct([
   Layout.publicKey('oracleAuthority'),
-  BufferLayout.seq(PlayerLayout, TOTAL_PLAYERS_COUNT, 'players'),
+  BufferLayout.u16('playersCount'),
+  BufferLayout.seq(PlayerLayout, PLAYERS_CAPACITY, 'players'),
   BufferLayout.seq(LeagueLayout, LEAGUES_COUNT, 'lagues'),
   BufferLayout.u8('isInitialized'),
 ]);

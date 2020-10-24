@@ -34,6 +34,9 @@ pub enum SfsInstruction<'a> {
     InitializeRoot {
         args: InitializeRootArgs<'a>,
     },
+    AddPlayers {
+        args: AddPlayersArgs<'a>,
+    },
     UpdateLineup,
     /// Test
     ///
@@ -57,6 +60,12 @@ impl<'a> SfsInstruction<'a> {
                     offset: 1,
                 },
             },
+            2 => Self::AddPlayers {
+                args: AddPlayersArgs {
+                    data: input,
+                    offset: 1,
+                },
+            },
 
             _ => return Err(SfsError::InvalidInstruction.into()),
         })
@@ -74,11 +83,16 @@ impl<'a> SfsInstruction<'a> {
                 buf.extend_from_slice(&[0u8; InitializeRootArgs::LEN]);
                 args.copy_to(array_mut_ref![buf, 1, InitializeRootArgs::LEN]);
             }
-            Self::UpdateLineup => {
+            Self::AddPlayers { args } => {
                 buf.push(2);
+                buf.extend_from_slice(&[0u8; AddPlayersArgs::LEN]);
+                args.copy_to(array_mut_ref![buf, 1, AddPlayersArgs::LEN]);
+            }
+            Self::UpdateLineup => {
+                buf.push(3);
             }
             Self::TestMutate => {
-                buf.push(3);
+                buf.push(4);
             }
         };
         buf
@@ -92,6 +106,26 @@ pub fn initialize_root(
     args: InitializeRootArgs,
 ) -> Result<Instruction, ProgramError> {
     let data = SfsInstruction::InitializeRoot { args }.pack();
+
+    let accounts = vec![
+        AccountMeta::new(*root_pubkey, false),
+        AccountMeta::new_readonly(sysvar::rent::id(), false),
+    ];
+
+    Ok(Instruction {
+        program_id: *sfs_program_id,
+        accounts,
+        data,
+    })
+}
+
+/// Creates a `AddPlayers` instruction.
+pub fn add_players(
+    sfs_program_id: &Pubkey,
+    root_pubkey: &Pubkey,
+    args: AddPlayersArgs,
+) -> Result<Instruction, ProgramError> {
+    let data = SfsInstruction::AddPlayers { args }.pack();
 
     let accounts = vec![
         AccountMeta::new(*root_pubkey, false),

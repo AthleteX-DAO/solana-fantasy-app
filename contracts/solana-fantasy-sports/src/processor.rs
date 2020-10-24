@@ -40,6 +40,10 @@ impl Processor {
         let root_data_len = root_info.data_len();
         let rent = &Rent::from_account_info(next_account_info(account_info_iter)?)?;
 
+        if root_data_len != Root::LEN {
+            return Err(ProgramError::InvalidAccountData.into());
+        }
+
         let root = Root {
             data: &root_info.data,
             offset: 0,
@@ -53,17 +57,37 @@ impl Processor {
             return Err(SfsError::NotRentExempt.into());
         }
 
-        for i in 0..instructions::PlayerList::ITEM_COUNT {
-            let arg_player = args.get_players().get(i);
-            let state_player = root.get_players().get(i);
-
-            state_player.set_id(arg_player.get_id());
-            state_player.set_position(arg_player.get_position());
-            state_player.set_is_initialized(true);
-        }
-
         root.set_oracle_authority(args.get_oracle_authority());
         root.set_is_initialized(true);
+
+        Ok(())
+    }
+
+    /// Processes an [AddPlayers](enum.SfsInstruction.html) instruction.
+    pub fn process_add_players<'a>(
+        program_id: &Pubkey,
+        accounts: &'a [AccountInfo<'a>],
+        args: AddPlayersArgs,
+    ) -> ProgramResult {
+        let account_info_iter = &mut accounts.iter();
+        let root_info = next_account_info(account_info_iter)?;
+        let root_data_len = root_info.data_len();
+        let rent = &Rent::from_account_info(next_account_info(account_info_iter)?)?;
+
+        let root = Root {
+            data: &root_info.data,
+            offset: 0,
+        };
+
+        if root.get_is_initialized() {
+            return Err(SfsError::AlreadyInUse.into());
+        }
+
+        for i in 0..args.get_players().get_count() {
+            let arg_player = args.get_players().get(i);
+            root.get_players()
+                .add(arg_player.get_id(), arg_player.get_position());
+        }
 
         Ok(())
     }
@@ -141,6 +165,10 @@ impl Processor {
                 info!("Instruction: InitializeRoot");
                 Self::process_initialize_root(program_id, accounts, args)
             }
+            SfsInstruction::AddPlayers { args } => {
+                info!("Instruction: AddPlayers");
+                Self::process_add_players(program_id, accounts, args)
+            }
             // SfsInstruction::UpdateLineup {
             //     league,
             //     week,
@@ -211,7 +239,6 @@ mod tests {
 
         let mut args_data = Vec::<u8>::new();
         args_data.extend_from_slice(owner_key.as_ref());
-        args_data.extend_from_slice(&[0u8; PlayerList::LEN]);
 
         // let args_data =
         let args = InitializeRootArgs {
@@ -250,5 +277,46 @@ mod tests {
             offset: 0,
         };
         assert_eq!(root.get_oracle_authority(), owner_key);
+    }
+
+    #[test]
+    fn test_add_players() {
+        let program_id = pubkey_rand();
+        let root_key = pubkey_rand();
+        let mut root_account = SolanaAccount::new(42, Root::LEN, &program_id);
+        let mut rent_sysvar = rent_sysvar();
+
+        let mut args_data = Vec::<u8>::new();
+        args_data.extend_from_slice(&[5]);
+        args_data.extend_from_slice(&[0, 1, 1]);
+        args_data.extend_from_slice(&[0, 2, 2]);
+        args_data.extend_from_slice(&[0, 3, 3]);
+        args_data.extend_from_slice(&[0, 4, 4]);
+        args_data.extend_from_slice(&[0, 5, 5]);
+        args_data.extend_from_slice(&[0, 0, 0]);
+        args_data.extend_from_slice(&[0, 0, 0]);
+        args_data.extend_from_slice(&[0, 0, 0]);
+        args_data.extend_from_slice(&[0, 0, 0]);
+        args_data.extend_from_slice(&[0, 0, 0]);
+
+        // let args_data =
+        let args = AddPlayersArgs {
+            data: &RefCell::new(&args_data),
+            offset: 0,
+        };
+
+        // add players
+        do_process_instruction(
+            add_players(&program_id, &root_key, args.clone()).unwrap(),
+            vec![&mut root_account, &mut rent_sysvar],
+        )
+        .unwrap();
+
+        let root = Root {
+            data: &RefCell::new(&mut root_account.data),
+            offset: 0,
+        };
+        assert_eq!(root.get_players().get_count(), 5);
+        assert_eq!(root.get_is_initialized(), false);
     }
 }

@@ -1,7 +1,7 @@
 import { Account } from '@solana/web3.js';
 import { Player } from '../../../sdk/instruction';
 import { SFS } from '../../../sdk/sfs';
-import { GAMES_COUNT, Position, Score, TOTAL_PLAYERS_COUNT } from '../../../sdk/state';
+import { GAMES_COUNT, Position, Score, PLAYERS_CAPACITY } from '../../../sdk/state';
 
 const rootAccount = new Account();
 
@@ -14,9 +14,9 @@ export const InitializeRoot = () =>
         global.connection,
         global.payerAccount,
         global.payerAccount.publicKey,
-        Array.from({ length: TOTAL_PLAYERS_COUNT }).map(
-          (): Player => ({
-            id: 1,
+        Array.from({ length: PLAYERS_CAPACITY }).map(
+          (x, i): Player => ({
+            id: i,
             position: Position.DB,
             // scores: Array.from({ length: GAMES_COUNT }).map(
             //   (): Score => ({

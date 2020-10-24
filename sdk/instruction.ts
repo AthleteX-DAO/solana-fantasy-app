@@ -2,11 +2,12 @@ import { PublicKey, TransactionInstruction, SYSVAR_RENT_PUBKEY } from '@solana/w
 
 import * as Layout from './util/layout';
 import { BufferLayout } from './util/layout';
-import { Position, TOTAL_PLAYERS_COUNT } from './state';
+import { Position, PLAYERS_CAPACITY, MAX_PLAYERS_PER_INSTRUCTION } from './state';
 
 enum Command {
   Uninitialized,
   InitializeRoot,
+  AddPlayers,
 }
 
 export type Player = {
@@ -31,7 +32,6 @@ export class SfsInstruction {
     programId: PublicKey,
     root: PublicKey,
     oracleAuthority: PublicKey,
-    players: Player[]
   ): TransactionInstruction {
     let keys = [
       { pubkey: root, isSigner: false, isWritable: true },
@@ -40,19 +40,57 @@ export class SfsInstruction {
     const commandDataLayout = BufferLayout.struct([
       BufferLayout.u8('instruction'),
       Layout.publicKey('oracleAuthority'),
-      BufferLayout.seq(PlayerLayout, TOTAL_PLAYERS_COUNT, 'players'),
     ]);
-    let data = Buffer.alloc(1024);
+    let data = Buffer.alloc(commandDataLayout.span);
     {
       const encodeLength = commandDataLayout.encode(
         {
           instruction: Command.InitializeRoot,
           oracleAuthority: oracleAuthority.toBuffer(),
-          players: players,
         },
         data
       );
       data = data.slice(0, encodeLength);
+    }
+
+    return new TransactionInstruction({
+      keys,
+      programId,
+      data,
+    });
+  }
+
+  /**
+   * Construct an AddPlayers instruction
+   *
+   * @param programId SFS program account
+   * @param root SFS root account
+   * @param players players
+   */
+  static createAddPlayersInstruction(
+    programId: PublicKey,
+    root: PublicKey,
+    players: Player[]
+  ): TransactionInstruction {
+    let keys = [
+      { pubkey: root, isSigner: false, isWritable: true },
+      { pubkey: SYSVAR_RENT_PUBKEY, isSigner: false, isWritable: false },
+    ];
+    const commandDataLayout = BufferLayout.struct([
+      BufferLayout.u8('instruction'),
+      BufferLayout.u8('length'),
+      BufferLayout.seq(PlayerLayout, MAX_PLAYERS_PER_INSTRUCTION, 'players'),
+    ]);
+    let data = Buffer.alloc(commandDataLayout.span);
+    {
+      const encodeLength = commandDataLayout.encode(
+        {
+          instruction: Command.AddPlayers,
+          length: players.length,
+          players: players,
+        },
+        data
+      );
     }
 
     return new TransactionInstruction({

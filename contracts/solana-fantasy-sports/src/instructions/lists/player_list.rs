@@ -2,7 +2,8 @@
 
 use crate::instructions::*;
 use crate::state::consts::*;
-use arrayref::{array_mut_ref, array_ref};
+use arrayref::{array_mut_ref, array_ref, array_refs};
+use byteorder::{ByteOrder, LittleEndian};
 use solana_sdk::{
     program_error::ProgramError,
     program_pack::{Pack, Sealed},
@@ -16,13 +17,33 @@ pub struct PlayerList<'a> {
 }
 impl<'a> PlayerList<'a> {
     pub const ITEM_SIZE: usize = Player::LEN;
-    pub const ITEM_COUNT: usize = TOTAL_PLAYERS_COUNT;
-    pub const LEN: usize = PlayerList::ITEM_SIZE * PlayerList::ITEM_COUNT;
+    pub const ITEM_CAPACITY: usize = MAX_PLAYERS_PER_INSTRUCTION;
+    pub const LEN: usize = 1 + PlayerList::ITEM_SIZE * PlayerList::ITEM_CAPACITY;
+    fn slice<'b>(
+        &self,
+        data: &'b [u8],
+    ) -> (
+        &'b [u8; 1],
+        &'b [u8; PlayerList::ITEM_SIZE * PlayerList::ITEM_CAPACITY],
+    ) {
+        array_refs![
+            array_ref![data, self.offset, PlayerList::LEN],
+            1,
+            PlayerList::ITEM_SIZE * PlayerList::ITEM_CAPACITY
+        ]
+    }
 
-    pub fn get(&self, i: usize) -> Player<'a> {
+    pub fn get_count(&self) -> u8 {
+        self.slice(&self.data.borrow_mut()).0[0]
+    }
+
+    pub fn get(&self, i: u8) -> Player<'a> {
+        if i >= self.get_count().into() {
+            panic!("Attempt to access player out of bound");
+        }
         Player {
             data: self.data,
-            offset: self.offset + i * PlayerList::ITEM_SIZE,
+            offset: self.offset + 1 + i as usize * PlayerList::ITEM_SIZE,
         }
     }
 

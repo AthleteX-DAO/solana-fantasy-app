@@ -2,7 +2,7 @@ import { Account, PublicKey, SystemProgram, Transaction } from '@solana/web3.js'
 import type { Connection } from '@solana/web3.js';
 
 import { sendAndConfirmTransaction } from './util/send-and-confirm-transaction';
-import { Player, Root, RootLayout } from './state';
+import { MAX_PLAYERS_PER_INSTRUCTION, Player, Root, RootLayout } from './state';
 import { SfsInstruction, Player as PlayerInit } from './instruction';
 
 // The address of the special mint for wrapped native token.
@@ -63,29 +63,60 @@ export class SFS {
     // Allocate memory for the account
     const balanceNeeded = await SFS.getMinBalanceRentForExemptRoot(connection);
 
-    const transaction = new Transaction();
-    transaction.add(
-      SystemProgram.createAccount({
-        fromPubkey: payer.publicKey,
-        newAccountPubkey: rootAccount.publicKey,
-        lamports: balanceNeeded,
-        space: RootLayout.span,
-        programId,
-      })
+    let transaction = new Transaction()
+      .add(
+        SystemProgram.createAccount({
+          fromPubkey: payer.publicKey,
+          newAccountPubkey: rootAccount.publicKey,
+          lamports: balanceNeeded,
+          space: RootLayout.span,
+          programId,
+        })
+      );
+
+    await sendAndConfirmTransaction(
+      'Create account',
+      connection,
+      transaction,
+      payer,
+      rootAccount
     );
 
-    transaction.add(
-      SfsInstruction.createInitializeRootInstruction(
-        programId,
-        rootAccount.publicKey,
-        oracleAuthority,
-        players
-      )
-    );
+    for (let i = 0; i < players.length / MAX_PLAYERS_PER_INSTRUCTION; i++) {
+      // console.log(`Add players ${i * MAX_PLAYERS_PER_INSTRUCTION}-${(i+1) * MAX_PLAYERS_PER_INSTRUCTION} of ${players.length}`);
+      console.log(`Add players ${i * MAX_PLAYERS_PER_INSTRUCTION} of ${Math.min(players.length-1, (i + 1) * MAX_PLAYERS_PER_INSTRUCTION)}`);
+      transaction = new Transaction()
+        .add(
+          SfsInstruction.createAddPlayersInstruction(
+            programId,
+            rootAccount.publicKey,
+            players.slice(
+              i * MAX_PLAYERS_PER_INSTRUCTION,
+              (i + 1) * MAX_PLAYERS_PER_INSTRUCTION)
+          )
+        );
+
+      await sendAndConfirmTransaction(
+        `Add players ${i * MAX_PLAYERS_PER_INSTRUCTION}-${(i+1) * MAX_PLAYERS_PER_INSTRUCTION} of ${players.length}` ,
+        connection,
+        transaction,
+        payer,
+        rootAccount
+      );
+    }
+
+    transaction = new Transaction()
+      .add(
+        SfsInstruction.createInitializeRootInstruction(
+          programId,
+          rootAccount.publicKey,
+          oracleAuthority
+        )
+      );
 
     // Send the two instructions
     await sendAndConfirmTransaction(
-      'createAccount and InitializeRoot',
+      'Initialize root',
       connection,
       transaction,
       payer,

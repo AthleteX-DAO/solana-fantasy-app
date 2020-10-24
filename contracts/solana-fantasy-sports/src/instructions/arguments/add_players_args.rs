@@ -11,37 +11,30 @@ use solana_sdk::{
 use std::cell::RefCell;
 
 #[repr(C)]
-pub struct InitializeRootArgs<'a> {
+pub struct AddPlayersArgs<'a> {
     pub data: &'a RefCell<&'a [u8]>,
     pub offset: usize,
 }
-impl<'a> InitializeRootArgs<'a> {
-    pub const LEN: usize = PUB_KEY_LEN;
-    fn slice<'b>(&self, data: &'b [u8]) -> &'b [u8; PUB_KEY_LEN] {
-        array_ref![data, self.offset, InitializeRootArgs::LEN]
-    }
+impl<'a> AddPlayersArgs<'a> {
+    pub const LEN: usize = PlayerList::LEN;
 
-    pub fn get_oracle_authority(self) -> Pubkey {
-        Pubkey::new_from_array(*self.slice(&self.data.borrow()))
+    pub fn get_players(&self) -> PlayerList<'a> {
+        PlayerList {
+            data: self.data,
+            offset: self.offset,
+        }
     }
 
     pub fn copy_to(&self, to: &mut [u8]) {
         let src = self.data.borrow();
-        array_mut_ref![to, self.offset, InitializeRootArgs::LEN].copy_from_slice(array_ref![
+        array_mut_ref![to, self.offset, AddPlayersArgs::LEN].copy_from_slice(array_ref![
             src,
             self.offset,
-            InitializeRootArgs::LEN
+            AddPlayersArgs::LEN
         ]);
     }
-
-    // pub fn pack(
-    //     oracle_authority: &Pubkey
-    //     players: &[]
-    // ) -> [u8;InitializeRootArgs::LEN] {
-
-    // }
 }
-impl Clone for InitializeRootArgs<'_> {
+impl Clone for AddPlayersArgs<'_> {
     fn clone(&self) -> Self {
         Self {
             data: self.data,

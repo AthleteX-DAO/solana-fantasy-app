@@ -1,7 +1,8 @@
 //! State transition types
 
 use crate::state::*;
-use arrayref::{array_mut_ref, array_ref};
+use arrayref::{array_mut_ref, array_ref, mut_array_refs};
+use byteorder::{ByteOrder, LittleEndian};
 use solana_sdk::{
     program_error::ProgramError,
     program_pack::{Pack, Sealed},
@@ -15,14 +16,53 @@ pub struct PlayerList<'a> {
 }
 impl<'a> PlayerList<'a> {
     pub const ITEM_SIZE: usize = Player::LEN;
-    pub const ITEM_COUNT: usize = consts::TOTAL_PLAYERS_COUNT;
-    pub const LEN: usize = PlayerList::ITEM_SIZE * PlayerList::ITEM_COUNT;
+    pub const ITEM_CAPACITY: usize = consts::PLAYERS_CAPACITY;
+    pub const LEN: usize = 2 + PlayerList::ITEM_SIZE * PlayerList::ITEM_CAPACITY;
+    fn slice<'b>(
+        &self,
+        data: &'b mut [u8],
+    ) -> (
+        &'b mut [u8; 2],
+        &'b mut [u8; PlayerList::ITEM_SIZE * PlayerList::ITEM_CAPACITY],
+    ) {
+        mut_array_refs![
+            array_mut_ref![data, self.offset, PlayerList::LEN],
+            2,
+            PlayerList::ITEM_SIZE * PlayerList::ITEM_CAPACITY
+        ]
+    }
 
-    pub fn get(&self, i: usize) -> Player<'a> {
+    pub fn get_count(&self) -> u16 {
+        LittleEndian::read_u16(self.slice(&mut self.data.borrow_mut()).0)
+    }
+    fn set_count(&self, value: u16) {
+        LittleEndian::write_u16(self.slice(&mut self.data.borrow_mut()).0, value);
+    }
+
+    pub fn get(&self, i: u16) -> Player<'a> {
+        if i >= self.get_count() {
+            panic!("Attempt to access player out of bound");
+        }
         Player {
             data: self.data,
-            offset: self.offset + i * PlayerList::ITEM_SIZE,
+            offset: self.offset + 2 + i as usize * PlayerList::ITEM_SIZE,
         }
+    }
+
+    pub fn add(&self, id: u16, position: Position) {
+        if usize::from(self.get_count()) >= PlayerList::ITEM_CAPACITY {
+            panic!("No more players can be added");
+        }
+        // for i2 in 0..self.get_count() {
+        //     if self.get(i2).get_id() == id {
+        //         panic!("Player with such id already added");
+        //     }
+        // }
+        self.set_count(self.get_count() + 1);
+        let player = self.get(self.get_count() - 1);
+        player.set_id(id);
+        player.set_position(position);
+        player.set_is_initialized(true);
     }
 
     pub fn copy_to(&self, to: &Self) {

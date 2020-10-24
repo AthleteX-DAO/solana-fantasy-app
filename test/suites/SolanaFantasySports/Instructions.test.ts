@@ -8,7 +8,7 @@ import {
   Position,
   Score,
   ScoreLayout,
-  TOTAL_PLAYERS_COUNT,
+  PLAYERS_CAPACITY,
   PUB_KEY_LEN,
   RootLayout,
 } from '../../../sdk/state';
@@ -34,9 +34,9 @@ export const InstructionsTests = () =>
     // },a));
     // console.log(a);
     // throw a;
-    const players = Array.from({ length: TOTAL_PLAYERS_COUNT }).map(
-      (): Player => ({
-        id: 1,
+    const players = Array.from({ length: PLAYERS_CAPACITY }).map(
+      (x, i): Player => ({
+        id: i,
         position: Position.DB,
         // scores: Array.from({ length: GAMES_COUNT }).map(
         //   (): Score => ({
@@ -51,15 +51,14 @@ export const InstructionsTests = () =>
     const data = SfsInstruction.createInitializeRootInstruction(
       someAccount.publicKey,
       someAccount.publicKey,
-      someAccount.publicKey,
-      players
+      someAccount.publicKey
     );
 
     it('correctly serialize instruction', async () => {
       console.log(data.data);
       strictEqual(ScoreLayout.span, 2);
       strictEqual(PlayerLayout.span, 2 + 1);
-      strictEqual(data.data.length, 1 + PUB_KEY_LEN + PlayerLayout.span * TOTAL_PLAYERS_COUNT);
+      strictEqual(data.data.length, 1 + PUB_KEY_LEN);
 
       // it('calls InitializeRoot on the program on the network', async () => {
       //   const instruction = new TransactionInstruction({
