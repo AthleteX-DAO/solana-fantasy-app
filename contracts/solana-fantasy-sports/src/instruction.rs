@@ -60,7 +60,6 @@ pub enum SfsInstruction {
     ///
     ProposeSwap {
         league: u8,
-        week: u8, // must be the next week. This can be eliminated by having the week var 
         givePlayerId: u8,
         wantPlayerId: u8
     },
@@ -99,12 +98,10 @@ impl SfsInstruction {
             },
             2 => {
                 let (league, rest1) = Self::unpack_u8(rest)?;
-                let (week, rest2) = Self::unpack_u8(rest1)?;
-                let (givePlayerId, rest3) = Self::unpack_u8(rest2)?;
-                let (wantPlayerId, rest4) = Self::unpack_u8(rest3)?;
+                let (givePlayerId, rest2) = Self::unpack_u8(rest1)?;
+                let (wantPlayerId, rest3) = Self::unpack_u8(rest2)?;
                 Self::ProposeSwap {
                     league,
-                    week,
                     givePlayerId,
                     wantPlayerId
                 }
@@ -137,7 +134,6 @@ impl SfsInstruction {
             }
             &Self::ProposeSwap {
                 ref league,
-                ref week,
                 ref givePlayerId,
                 ref wantPlayerId
             } => {

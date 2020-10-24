@@ -120,7 +120,6 @@ impl Processor {
         program_id: &Pubkey,
         accounts: &[AccountInfo],
         league: &u8,
-        week: &u8,
         give_player_id: &u8,
         want_player_id: &u8
     ) -> ProgramResult {
@@ -210,11 +209,10 @@ impl Processor {
             }
             SfsInstruction::ProposeSwap {
                 league,
-                week,
                 givePlayerId,
                 wantPlayerId
             } => {
-                Self::process_propose_swap(program_id, accounts, &league, &week, &givePlayerId, &wantPlayerId)
+                Self::process_propose_swap(program_id, accounts, &league, &givePlayerId, &wantPlayerId)
             }
             SfsInstruction::TestMutate => {
                 info!("Instruction: TestMutate");
