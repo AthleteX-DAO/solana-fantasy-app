@@ -2,10 +2,8 @@
 
 // use crate::{
 //     error::SfsError,
-//     state::{
-//         consts::PUB_KEY_LEN,
-//         lists::{ActivePlayersList, PlayerList},
-//     },
+//     instructions::*,
+//     state::*,
 // };
 // use arrayref::{array_mut_ref, array_ref};
 // use byteorder::{ByteOrder, LittleEndian};
@@ -17,23 +15,14 @@
 //     pubkey::Pubkey,
 //     sysvar,
 // };
+// use std::cell::RefCell;
 // use std::convert::TryInto;
 // use std::mem::size_of;
 
 // /// Instructions supported by the token program.
 // #[repr(C)]
 // pub enum SfsInstruction<'a> {
-//     /// Initializes a new root.
-//     ///
-//     /// The `InitializeRoot` instruction requires no signers and MUST be included within
-//     /// the same Transaction as the system program's `CreateInstruction` that creates the account
-//     /// being initialized.  Otherwise another party can acquire ownership of the uninitialized account.
-//     ///
-//     /// Accounts expected by this instruction:
-//     ///
-//     ///   0. `[writable]` The root to initialize.
-//     ///   1. `[]` Rent sysvar
-//     ///
+
 //     InitializeRoot {
 //         /// The authority/multisignature to supply game scores.
 //         oracle_authority: Pubkey,
@@ -54,12 +43,13 @@
 // }
 // impl<'a> SfsInstruction<'a> {
 //     /// Unpacks a byte buffer into a [SfsInstruction](enum.SfsInstruction.html).
-//     pub fn unpack(input: &'a mut [u8]) -> Result<Self, ProgramError> {
-//         let (&tag, rest) = input.split_first().ok_or(SfsError::InvalidInstruction)?;
+//     pub fn unpack(input: &'a RefCell::<&'a mut [u8]>) -> Result<Self, ProgramError> {
+//         let (&tag, rest) = input.borrow().split_first().ok_or(SfsError::InvalidInstruction)?;
 
 //         Ok(match tag {
 //             0 => {
 //                 let (oracle_authority, _rest) = Self::unpack_pubkey(rest)?;
+//                 let data = RefCell::new(input);
 //                 // let mut players_src = Vec::<u8>::new<'a>();
 //                 // let mut players_src = Vec<'a>::new();//[0u8; PlayerList::LEN]);
 //                 // let mut players_src = 'a: [0u8; PlayerList::LEN];
@@ -67,7 +57,8 @@
 //                 Self::InitializeRoot {
 //                     oracle_authority,
 //                     players: PlayerList {
-//                         data: array_mut_ref![input, 0, PlayerList::LEN],
+//                         data: &data,
+//                         offset: 0
 //                     },
 //                 }
 //             }
@@ -80,7 +71,8 @@
 //                     league,
 //                     week,
 //                     lineup: ActivePlayersList {
-//                         data: array_mut_ref![input, 0, ActivePlayersList::LEN],
+//                         data: &RefCell::new(array_mut_ref![input, 0, ActivePlayersList::LEN]),
+//                         offset: 0
 //                     },
 //                 }
 //             }

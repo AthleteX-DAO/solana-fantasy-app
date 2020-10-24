@@ -1,7 +1,9 @@
 //! State transition types
 
-use super::helpers::*;
+use crate::instructions::*;
+use crate::state::consts::*;
 use arrayref::{array_mut_ref, array_ref, array_refs, mut_array_refs};
+use solana_sdk::pubkey::Pubkey;
 use solana_sdk::{
     program_error::ProgramError,
     program_pack::{IsInitialized, Pack, Sealed},
@@ -9,34 +11,41 @@ use solana_sdk::{
 use std::cell::RefCell;
 
 #[repr(C)]
-pub struct Score<'a> {
-    pub data: &'a RefCell<&'a mut [u8]>,
+pub struct InitializeRootArgs<'a> {
+    pub data: &'a RefCell<&'a [u8]>,
     pub offset: usize,
 }
-impl<'a> Score<'a> {
-    pub const LEN: usize = 1 + 1;
-    fn slice<'b>(&self, data: &'b mut [u8]) -> (&'b mut [u8; 1], &'b mut [u8; 1]) {
-        mut_array_refs![array_mut_ref![data, self.offset, Score::LEN], 1, 1]
+impl<'a> InitializeRootArgs<'a> {
+    pub const LEN: usize = PUB_KEY_LEN + PlayerList::LEN;
+    fn slice<'b>(
+        &self,
+        data: &'b [u8],
+    ) -> (
+        &'b [u8; PUB_KEY_LEN],
+        &'b [u8; PlayerList::LEN],
+    ) {
+        array_refs![
+            array_ref![data, self.offset, InitializeRoot::LEN],
+            PUB_KEY_LEN,
+            PlayerList::LEN
+        ]
     }
 
-    pub fn get_score1(&self) -> u8 {
-        self.slice(&mut self.data.borrow_mut()).0[0]
-    }
-    pub fn set_score1(&self, value: u8) {
-        self.slice(&mut self.data.borrow_mut()).0[0] = value;
+    pub fn get_oracle_authority(self) -> Pubkey {
+        Pubkey::new_from_array(*self.slice(&self.data.borrow()).0)
     }
 
-    pub fn get_is_initialized(&self) -> bool {
-        unpack_is_initialized(self.slice(&mut self.data.borrow_mut()).1).unwrap()
-    }
-    pub fn set_is_initialized(&self, value: bool) {
-        self.slice(&mut self.data.borrow_mut()).1[0] = value as u8;
+    pub fn get_player(&self) -> Player<'a> {
+        Player {
+            data: self.data,
+            offset: self.offset + PUB_KEY_LEN,
+        }
     }
 
     pub fn copy_to(&self, to: &Self) {
         let mut dst = to.data.borrow_mut();
-        let mut src = self.data.borrow_mut();
-        array_mut_ref![dst, self.offset, Score::LEN].copy_from_slice(array_mut_ref![
+        let mut src = self.data.borrow();
+        array_mut_ref![dst, self.offset, Score::LEN].copy_from_slice(array_ref![
             src,
             self.offset,
             Score::LEN

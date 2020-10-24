@@ -3,14 +3,9 @@
 #![cfg(feature = "program")]
 #![cfg(not(feature = "no-entrypoint"))]
 
-// use crate::{error::SfsError, processor::Processor};
-use crate::state::{
-    // League,
-    lists::{PlayerList, ScoreList},
-    Player,
-    Root,
-    Score,
-};
+use crate::{error::SfsError, processor::Processor};
+use crate::instructions::*;
+use crate::state::*;
 use arrayref::{array_mut_ref, array_ref};
 use solana_sdk::{
     account_info::next_account_info, account_info::AccountInfo, entrypoint,
@@ -25,35 +20,35 @@ fn process_instruction<'a>(
 ) -> ProgramResult {
     // let x = Root { buf: instruction_data };
 
-    let account_info_iter = &mut accounts.iter();
-    let root_info = next_account_info(account_info_iter)?;
-    let root_data_len = root_info.data_len();
+    // let account_info_iter = &mut accounts.iter();
+    // let root_info = next_account_info(account_info_iter)?;
+    // let root_data_len = root_info.data_len();
 
-    // let mut state = root_info.data.borrow_mut();
-    let mut root = Root {
-        data: &root_info.data,
-        offset: 0,
-    };
+    // // let mut state = root_info.data.borrow_mut();
+    // let mut root = Root {
+    //     data: &root_info.data,
+    //     offset: 0,
+    // };
 
-    // let x1 = root.
-    // {
+    // // let x1 = root.
+    // // {
 
-    //     if root.get_scores().get(0).get_is_initialized() {
-    //         return Ok(());
-    //     }
+    // //     if root.get_scores().get(0).get_is_initialized() {
+    // //         return Ok(());
+    // //     }
+    // // }
+
+    // root.set_is_initialized(true);
+    // root.set_is_initialized(false);
+    // root.set_is_initialized(true);
+    // root.set_is_initialized(true);
+
+    // if !root.get_is_initialized() {
+    //     return Ok(());
     // }
 
-    root.set_is_initialized(true);
-    root.set_is_initialized(false);
-    root.set_is_initialized(true);
-    root.set_is_initialized(true);
-
-    if !root.get_is_initialized() {
-        return Ok(());
-    }
-
-    root.set_is_initialized(true);
-    root.get_is_initialized();
+    // root.set_is_initialized(true);
+    // root.get_is_initialized();
 
     // let (&tag, rest) = instruction_data.split_first().ok_or(SfsError::InvalidInstruction)?;
     //  let mut root = Box::new(Root::default());
@@ -69,10 +64,10 @@ fn process_instruction<'a>(
     // let x = LeagueList::default();
     //    return Ok(());
 
-    // if let Err(error) = Processor::process(program_id, accounts, instruction_data) {
-    //     // catch the error so we can print it
-    //     error.print::<SfsError>();
-    //     return Err(error);
-    // }
+    if let Err(error) = Processor::process(program_id, accounts, instruction_data) {
+        // catch the error so we can print it
+        error.print::<SfsError>();
+        return Err(error);
+    }
     Ok(())
 }
