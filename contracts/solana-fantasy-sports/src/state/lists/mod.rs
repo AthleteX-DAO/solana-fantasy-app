@@ -10,5 +10,7 @@ pub mod player_list;
 pub use player_list::*;
 pub mod score_list;
 pub use score_list::*;
+pub mod swap_proposals_list;
+pub use swap_proposals_list::*;
 pub mod user_state_list;
 pub use user_state_list::*;

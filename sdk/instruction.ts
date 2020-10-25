@@ -8,6 +8,7 @@ enum Command {
   Uninitialized,
   InitializeRoot,
   AddPlayers,
+  ProposeSwaps
 }
 
 export type Player = {

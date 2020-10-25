@@ -14,7 +14,8 @@ pub struct UserState<'a> {
     pub offset: usize,
 }
 impl<'a> UserState<'a> {
-    pub const LEN: usize = PUB_KEY_LEN + BenchList::LEN + LineupList::LEN + 1;
+    pub const LEN: usize =
+        PUB_KEY_LEN + BenchList::LEN + LineupList::LEN + SwapProposalsList::LEN + 1;
     fn slice<'b>(
         &self,
         data: &'b mut [u8],
@@ -22,6 +23,7 @@ impl<'a> UserState<'a> {
         &'b mut [u8; PUB_KEY_LEN],
         &'b mut [u8; BenchList::LEN],
         &'b mut [u8; LineupList::LEN],
+        &'b mut [u8; SwapProposalsList::LEN],
         &'b mut [u8; 1],
     ) {
         mut_array_refs![
@@ -29,14 +31,15 @@ impl<'a> UserState<'a> {
             PUB_KEY_LEN,
             BenchList::LEN,
             LineupList::LEN,
+            SwapProposalsList::LEN,
             1
         ]
     }
 
-    pub fn get_pub_key(self) -> Pubkey {
+    pub fn get_pub_key(&self) -> Pubkey {
         Pubkey::new_from_array(*self.slice(&mut self.data.borrow_mut()).0)
     }
-    pub fn set_pub_key(self, value: Pubkey) {
+    pub fn set_pub_key(&self, value: Pubkey) {
         self.slice(&mut self.data.borrow_mut())
             .0
             .copy_from_slice(value.as_ref());
@@ -55,21 +58,27 @@ impl<'a> UserState<'a> {
             offset: self.offset + PUB_KEY_LEN + BenchList::LEN,
         }
     }
-
-    pub fn get_is_initialized(self) -> bool {
-        unpack_is_initialized(self.slice(&mut self.data.borrow_mut()).3).unwrap()
+    pub fn get_swap_proposals(&self) -> SwapProposalsList<'a> {
+        SwapProposalsList {
+            data: self.data,
+            offset: self.offset + PUB_KEY_LEN + BenchList::LEN + LineupList::LEN,
+        }
     }
-    pub fn set_is_initialized(self, value: bool) {
-        self.slice(&mut self.data.borrow_mut()).3[0] = value as u8;
+
+    pub fn get_is_initialized(&self) -> bool {
+        unpack_is_initialized(self.slice(&mut self.data.borrow_mut()).4).unwrap()
+    }
+    pub fn set_is_initialized(&self, value: bool) {
+        self.slice(&mut self.data.borrow_mut()).4[0] = value as u8;
     }
 
     pub fn copy_to(&self, to: &Self) {
         let mut dst = to.data.borrow_mut();
         let mut src = self.data.borrow_mut();
-        array_mut_ref![dst, self.offset, BenchList::LEN].copy_from_slice(array_mut_ref![
+        array_mut_ref![dst, self.offset, UserState::LEN].copy_from_slice(array_mut_ref![
             src,
             self.offset,
-            BenchList::LEN
+            UserState::LEN
         ]);
     }
 }

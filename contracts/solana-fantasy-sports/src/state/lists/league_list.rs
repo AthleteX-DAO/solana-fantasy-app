@@ -18,10 +18,10 @@ impl<'a> LeagueList<'a> {
     pub const ITEM_COUNT: usize = consts::LEAGUES_COUNT;
     pub const LEN: usize = LeagueList::ITEM_SIZE * LeagueList::ITEM_COUNT;
 
-    pub fn get(&self, i: usize) -> League<'a> {
+    pub fn get(&self, i: u16) -> League<'a> {
         League {
             data: self.data,
-            offset: self.offset + i * LeagueList::ITEM_SIZE,
+            offset: self.offset + i as usize * LeagueList::ITEM_SIZE,
         }
     }
 

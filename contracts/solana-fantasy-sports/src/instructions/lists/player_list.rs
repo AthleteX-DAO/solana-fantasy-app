@@ -34,7 +34,7 @@ impl<'a> PlayerList<'a> {
     }
 
     pub fn get_count(&self) -> u8 {
-        self.slice(&self.data.borrow_mut()).0[0]
+        self.slice(&self.data.borrow()).0[0]
     }
 
     pub fn get(&self, i: u8) -> Player<'a> {

@@ -25,6 +25,7 @@ use solana_sdk::{
     sysvar::{rent::Rent, Sysvar},
 };
 use std::cell::RefCell;
+use std::convert::TryInto;
 
 /// Program state handler.
 pub struct Processor {}
@@ -73,6 +74,10 @@ impl Processor {
         let root_info = next_account_info(account_info_iter)?;
         let root_data_len = root_info.data_len();
         let rent = &Rent::from_account_info(next_account_info(account_info_iter)?)?;
+
+        if root_data_len != Root::LEN {
+            return Err(ProgramError::InvalidAccountData.into());
+        }
 
         let root = Root {
             data: &root_info.data,
@@ -148,6 +153,50 @@ impl Processor {
     //     Ok(())
     // }
 
+    pub fn process_propose_swap<'a>(
+        program_id: &Pubkey,
+        accounts: &'a [AccountInfo<'a>],
+        args: ProposeSwapArgs,
+    ) -> ProgramResult {
+        let account_info_iter = &mut accounts.iter();
+        let root_info = next_account_info(account_info_iter)?;
+        let root_data_len = root_info.data_len();
+        let rent = &Rent::from_account_info(next_account_info(account_info_iter)?)?;
+
+        let root = Root {
+            data: &root_info.data,
+            offset: 0,
+        };
+
+        let user_account_info = next_account_info(account_info_iter)?;
+        let other_account_info = next_account_info(account_info_iter)?;
+
+        // @TODO: before mutating check if the condition of players bench is satisfied after the swap
+
+        // More checks:
+        // self user should own the "give" player
+        // receiving user should own the "want" player
+        // week should be the one after the current. if week is last then throw.
+
+        // Sudo code:
+        // 1. find the other user specified in second account be proposed in the array
+        // 2. Insert a proposal at the index of length, throw if length is equal to max length
+        // 3. Write self pub key, give and want addr
+
+        let league = root.get_leagues().get(args.get_league());
+        for i in 0..UserStateList::LEN {
+            let user_state = league.get_user_states().get(i);
+            if *user_account_info.key == user_state.get_pub_key() {
+                user_state
+                    .get_swap_proposals()
+                    .add(args.get_give_player_id(), args.get_want_player_id());
+                break;
+            }
+        }
+
+        Ok(())
+    }
+
     /// Processes an [Instruction](enum.Instruction.html).
     pub fn process<'a>(
         program_id: &Pubkey,
@@ -168,6 +217,10 @@ impl Processor {
             SfsInstruction::AddPlayers { args } => {
                 info!("Instruction: AddPlayers");
                 Self::process_add_players(program_id, accounts, args)
+            }
+            SfsInstruction::ProposeSwap { args } => {
+                info!("Instruction: ProposeSwap");
+                Self::process_propose_swap(program_id, accounts, args)
             }
             // SfsInstruction::UpdateLineup {
             //     league,
@@ -293,11 +346,9 @@ mod tests {
         args_data.extend_from_slice(&[0, 3, 3]);
         args_data.extend_from_slice(&[0, 4, 4]);
         args_data.extend_from_slice(&[0, 5, 5]);
-        args_data.extend_from_slice(&[0, 0, 0]);
-        args_data.extend_from_slice(&[0, 0, 0]);
-        args_data.extend_from_slice(&[0, 0, 0]);
-        args_data.extend_from_slice(&[0, 0, 0]);
-        args_data.extend_from_slice(&[0, 0, 0]);
+        for i in 0..MAX_PLAYERS_PER_INSTRUCTION - 5 {
+            args_data.extend_from_slice(&[0, 0, 0]);
+        }
 
         // let args_data =
         let args = AddPlayersArgs {

@@ -37,7 +37,22 @@ pub enum SfsInstruction<'a> {
     AddPlayers {
         args: AddPlayersArgs<'a>,
     },
+    ///
+    /// Updates lineup of a user
+    ///
+    /// Accounts expected by this instruction:
+    ///   0. `[user address]` // check if this is correct
+    ///
     UpdateLineup,
+    ///
+    /// Adds a swap proposal
+    ///
+    /// Accounts expected by this instruction:
+    ///   0. `[writable]` The root to initialize.
+    ///
+    ProposeSwap {
+        args: ProposeSwapArgs<'a>,
+    },
     /// Test
     ///
     /// Accounts expected by this instruction:
@@ -66,6 +81,12 @@ impl<'a> SfsInstruction<'a> {
                     offset: 1,
                 },
             },
+            3 => Self::ProposeSwap {
+                args: ProposeSwapArgs {
+                    data: input,
+                    offset: 1,
+                },
+            },
 
             _ => return Err(SfsError::InvalidInstruction.into()),
         })
@@ -88,11 +109,16 @@ impl<'a> SfsInstruction<'a> {
                 buf.extend_from_slice(&[0u8; AddPlayersArgs::LEN]);
                 args.copy_to(array_mut_ref![buf, 1, AddPlayersArgs::LEN]);
             }
-            Self::UpdateLineup => {
+            Self::ProposeSwap { args } => {
                 buf.push(3);
+                buf.extend_from_slice(&[0u8; ProposeSwapArgs::LEN]);
+                args.copy_to(array_mut_ref![buf, 1, ProposeSwapArgs::LEN]);
+            }
+            Self::UpdateLineup => {
+                buf.push(4);
             }
             Self::TestMutate => {
-                buf.push(4);
+                buf.push(5);
             }
         };
         buf
@@ -126,6 +152,26 @@ pub fn add_players(
     args: AddPlayersArgs,
 ) -> Result<Instruction, ProgramError> {
     let data = SfsInstruction::AddPlayers { args }.pack();
+
+    let accounts = vec![
+        AccountMeta::new(*root_pubkey, false),
+        AccountMeta::new_readonly(sysvar::rent::id(), false),
+    ];
+
+    Ok(Instruction {
+        program_id: *sfs_program_id,
+        accounts,
+        data,
+    })
+}
+
+/// Creates a `ProposeSwap` instruction.
+pub fn propose_swap(
+    sfs_program_id: &Pubkey,
+    root_pubkey: &Pubkey,
+    args: ProposeSwapArgs,
+) -> Result<Instruction, ProgramError> {
+    let data = SfsInstruction::ProposeSwap { args }.pack();
 
     let accounts = vec![
         AccountMeta::new(*root_pubkey, false),

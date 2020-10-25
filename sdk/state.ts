@@ -12,6 +12,7 @@ export const ACTIVE_PLAYERS_COUNT = 8;
 export const BENCH_PLAYERS_COUNT = 8;
 export const TEAM_PLAYERS_COUNT = ACTIVE_PLAYERS_COUNT + BENCH_PLAYERS_COUNT;
 export const LINEUP_LEN = 2 * ACTIVE_PLAYERS_COUNT;
+export const SWAP_PROPOSALS_CAPACITY = 20;
 
 export const PUB_KEY_LEN = 32;
 
@@ -67,17 +68,33 @@ export const ScoreLayout: typeof BufferLayout.Structure = BufferLayout.struct([
   BufferLayout.u8('isInitialized'),
 ]);
 
+
+export type SwapProposal = {
+  givePlayerId: number;
+  wantPlayerId: number;
+  isInitialized: boolean;
+};
+
+export const SwapProposalLayout: typeof BufferLayout.Structure = BufferLayout.struct([
+  BufferLayout.u16('givePlayerId'),
+  BufferLayout.u16('wantPlayerId'),
+  BufferLayout.u8('isInitialized'),
+]);
+
 export type Player = {
   id: number;
   position: Position;
   scores: Score[];
+  swapProposals: SwapProposal[];
   isInitialized: boolean;
 };
 
 export const PlayerLayout: typeof BufferLayout.Structure = BufferLayout.struct([
   BufferLayout.u16('id'),
   BufferLayout.u8('position'),
+  BufferLayout.u8('swapProposalsCount'),
   BufferLayout.seq(ScoreLayout, GAMES_COUNT, 'scores'),
+  BufferLayout.seq(SwapProposalLayout, SWAP_PROPOSALS_CAPACITY, 'swapProposals'),
   BufferLayout.u8('isInitialized'),
 ]);
 
