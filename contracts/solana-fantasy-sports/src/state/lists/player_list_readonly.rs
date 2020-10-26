@@ -16,7 +16,7 @@ pub struct PlayerListReadonly<'a> {
 impl<'a> PlayerListReadonly<'a> {
     pub const ITEM_SIZE: usize = Player::LEN;
     pub const ITEM_COUNT: usize = consts::TOTAL_PLAYERS_COUNT;
-    pub const LEN: usize = PlayerList::ITEM_SIZE * PlayerList::ITEM_COUNT;
+    pub const LEN: usize = PlayerList::ITEM_SIZE * PlayerList::ITEM_COUNT as usize;
 
     pub fn get(&self, i: usize) -> Player<'a> {
         Player {

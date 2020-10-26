@@ -12,3 +12,5 @@ pub mod user_state;
 pub use user_state::*;
 pub mod swap_proposal;
 pub use swap_proposal::*;
+pub mod stage;
+pub use stage::*;

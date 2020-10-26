@@ -17,19 +17,19 @@ pub struct PlayerList<'a> {
 }
 impl<'a> PlayerList<'a> {
     pub const ITEM_SIZE: usize = Player::LEN;
-    pub const ITEM_CAPACITY: usize = MAX_PLAYERS_PER_INSTRUCTION;
-    pub const LEN: usize = 1 + PlayerList::ITEM_SIZE * PlayerList::ITEM_CAPACITY;
+    pub const ITEM_CAPACITY: u16 = MAX_PLAYERS_PER_INSTRUCTION;
+    pub const LEN: usize = 1 + PlayerList::ITEM_SIZE * PlayerList::ITEM_CAPACITY as usize;
     fn slice<'b>(
         &self,
         data: &'b [u8],
     ) -> (
         &'b [u8; 1],
-        &'b [u8; PlayerList::ITEM_SIZE * PlayerList::ITEM_CAPACITY],
+        &'b [u8; PlayerList::ITEM_SIZE * PlayerList::ITEM_CAPACITY as usize],
     ) {
         array_refs![
             array_ref![data, self.offset, PlayerList::LEN],
             1,
-            PlayerList::ITEM_SIZE * PlayerList::ITEM_CAPACITY
+            PlayerList::ITEM_SIZE * PlayerList::ITEM_CAPACITY as usize
         ]
     }
 

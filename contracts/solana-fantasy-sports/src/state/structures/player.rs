@@ -15,46 +15,46 @@ pub struct Player<'a> {
     pub offset: usize,
 }
 impl<'a> Player<'a> {
-    pub const LEN: usize = 2 + 1 + ScoreList::LEN + 1;
+    pub const LEN: usize = ScoreList::LEN + 2 + 1 + 1;
     fn slice<'b>(
         &self,
         data: &'b mut [u8],
     ) -> (
+        &'b mut [u8; ScoreList::LEN],
         &'b mut [u8; 2],
         &'b mut [u8; 1],
-        &'b mut [u8; ScoreList::LEN],
         &'b mut [u8; 1],
     ) {
         mut_array_refs![
             array_mut_ref![data, self.offset, Player::LEN],
+            ScoreList::LEN,
             2,
             1,
-            ScoreList::LEN,
             1
         ]
-    }
-
-    pub fn get_id(&self) -> u16 {
-        LittleEndian::read_u16(self.slice(&mut self.data.borrow_mut()).0)
-    }
-    pub fn set_id(&self, value: u16) {
-        LittleEndian::write_u16(self.slice(&mut self.data.borrow_mut()).0, value);
-    }
-
-    pub fn get_position(&self) -> Position {
-        Position::try_from_primitive(self.slice(&mut self.data.borrow_mut()).1[0])
-            .or(Err(ProgramError::InvalidAccountData))
-            .unwrap()
-    }
-    pub fn set_position(&self, value: Position) {
-        self.slice(&mut self.data.borrow_mut()).1[0] = value as u8;
     }
 
     pub fn get_scores(&self) -> ScoreList<'a> {
         ScoreList {
             data: self.data,
-            offset: self.offset + 2 + 1,
+            offset: self.offset,
         }
+    }
+
+    fn get_external_id(&self) -> u16 {
+        LittleEndian::read_u16(self.slice(&mut self.data.borrow_mut()).1)
+    }
+    pub fn set_external_id(&self, value: u16) {
+        LittleEndian::write_u16(self.slice(&mut self.data.borrow_mut()).1, value);
+    }
+
+    pub fn get_position(&self) -> Position {
+        Position::try_from_primitive(self.slice(&mut self.data.borrow_mut()).2[0])
+            .or(Err(ProgramError::InvalidAccountData))
+            .unwrap()
+    }
+    pub fn set_position(&self, value: Position) {
+        self.slice(&mut self.data.borrow_mut()).2[0] = value as u8;
     }
 
     pub fn get_is_initialized(&self) -> bool {

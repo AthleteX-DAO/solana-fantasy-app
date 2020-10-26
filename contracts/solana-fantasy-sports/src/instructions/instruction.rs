@@ -20,6 +20,9 @@ use std::mem::size_of;
 pub enum SfsInstruction<'a> {
     /// Not yet initialized
     Uninitialized,
+    AddPlayers {
+        args: AddPlayersArgs<'a>,
+    },
     /// Initializes a new root.
     ///
     /// The `InitializeRoot` instruction requires no signers and MUST be included within
@@ -34,9 +37,11 @@ pub enum SfsInstruction<'a> {
     InitializeRoot {
         args: InitializeRootArgs<'a>,
     },
-    AddPlayers {
-        args: AddPlayersArgs<'a>,
+    StartDraftSelection {
+        args: StartDraftSelectionArgs<'a>,
     },
+    StartSeason,
+    // CompleteSeason,
     ///
     /// Updates lineup of a user
     ///
@@ -52,6 +57,9 @@ pub enum SfsInstruction<'a> {
     ///
     ProposeSwap {
         args: ProposeSwapArgs<'a>,
+    },
+    PickPlayer {
+        args: PickPlayerArgs<'a>,
     },
     /// Test
     ///
@@ -69,19 +77,33 @@ impl<'a> SfsInstruction<'a> {
             .ok_or(SfsError::InvalidInstruction)?;
 
         Ok(match tag {
-            1 => Self::InitializeRoot {
-                args: InitializeRootArgs {
-                    data: input,
-                    offset: 1,
-                },
-            },
-            2 => Self::AddPlayers {
+            1 => Self::AddPlayers {
                 args: AddPlayersArgs {
                     data: input,
                     offset: 1,
                 },
             },
-            3 => Self::ProposeSwap {
+            2 => Self::InitializeRoot {
+                args: InitializeRootArgs {
+                    data: input,
+                    offset: 1,
+                },
+            },
+            3 => Self::StartDraftSelection {
+                args: StartDraftSelectionArgs {
+                    data: input,
+                    offset: 1,
+                },
+            },
+            4 => Self::StartSeason,
+
+            5 => Self::PickPlayer {
+                args: PickPlayerArgs {
+                    data: input,
+                    offset: 1,
+                },
+            },
+            6 => Self::ProposeSwap {
                 args: ProposeSwapArgs {
                     data: input,
                     offset: 1,
@@ -99,30 +121,65 @@ impl<'a> SfsInstruction<'a> {
             Self::Uninitialized => {
                 buf.push(0);
             }
-            Self::InitializeRoot { args } => {
-                buf.push(1);
-                buf.extend_from_slice(&[0u8; InitializeRootArgs::LEN]);
-                args.copy_to(array_mut_ref![buf, 1, InitializeRootArgs::LEN]);
-            }
             Self::AddPlayers { args } => {
-                buf.push(2);
+                buf.push(1);
                 buf.extend_from_slice(&[0u8; AddPlayersArgs::LEN]);
                 args.copy_to(array_mut_ref![buf, 1, AddPlayersArgs::LEN]);
             }
-            Self::ProposeSwap { args } => {
+            Self::InitializeRoot { args } => {
+                buf.push(2);
+                buf.extend_from_slice(&[0u8; InitializeRootArgs::LEN]);
+                args.copy_to(array_mut_ref![buf, 1, InitializeRootArgs::LEN]);
+            }
+            Self::StartDraftSelection { args } => {
                 buf.push(3);
+                buf.extend_from_slice(&[0u8; StartDraftSelectionArgs::LEN]);
+                args.copy_to(array_mut_ref![buf, 1, StartDraftSelectionArgs::LEN]);
+            }
+            Self::StartSeason => {
+                buf.push(4);
+            }
+
+            Self::PickPlayer { args } => {
+                buf.push(5);
+                buf.extend_from_slice(&[0u8; PickPlayerArgs::LEN]);
+                args.copy_to(array_mut_ref![buf, 1, PickPlayerArgs::LEN]);
+            }
+            Self::ProposeSwap { args } => {
+                buf.push(6);
                 buf.extend_from_slice(&[0u8; ProposeSwapArgs::LEN]);
                 args.copy_to(array_mut_ref![buf, 1, ProposeSwapArgs::LEN]);
             }
+
             Self::UpdateLineup => {
-                buf.push(4);
+                buf.push(7);
             }
             Self::TestMutate => {
-                buf.push(5);
+                buf.push(8);
             }
         };
         buf
     }
+}
+
+/// Creates a `AddPlayers` instruction.
+pub fn add_players(
+    sfs_program_id: &Pubkey,
+    root_pubkey: &Pubkey,
+    args: AddPlayersArgs,
+) -> Result<Instruction, ProgramError> {
+    let data = SfsInstruction::AddPlayers { args }.pack();
+
+    let accounts = vec![
+        AccountMeta::new(*root_pubkey, false),
+        AccountMeta::new_readonly(sysvar::rent::id(), false),
+    ];
+
+    Ok(Instruction {
+        program_id: *sfs_program_id,
+        accounts,
+        data,
+    })
 }
 
 /// Creates a `InitializeRoot` instruction.
@@ -145,13 +202,46 @@ pub fn initialize_root(
     })
 }
 
-/// Creates a `AddPlayers` instruction.
-pub fn add_players(
+/// Creates a `StartDraftSelection` instruction.
+pub fn start_draft_selection(
     sfs_program_id: &Pubkey,
     root_pubkey: &Pubkey,
-    args: AddPlayersArgs,
+    args: StartDraftSelectionArgs,
 ) -> Result<Instruction, ProgramError> {
-    let data = SfsInstruction::AddPlayers { args }.pack();
+    let data = SfsInstruction::StartDraftSelection { args }.pack();
+
+    let accounts = vec![AccountMeta::new(*root_pubkey, false)];
+
+    Ok(Instruction {
+        program_id: *sfs_program_id,
+        accounts,
+        data,
+    })
+}
+
+/// Creates a `StartSeason` instruction.
+pub fn start_season(
+    sfs_program_id: &Pubkey,
+    root_pubkey: &Pubkey,
+) -> Result<Instruction, ProgramError> {
+    let data = SfsInstruction::StartSeason.pack();
+
+    let accounts = vec![AccountMeta::new(*root_pubkey, false)];
+
+    Ok(Instruction {
+        program_id: *sfs_program_id,
+        accounts,
+        data,
+    })
+}
+
+/// Creates a `PickPlayer` instruction.
+pub fn pick_player(
+    sfs_program_id: &Pubkey,
+    root_pubkey: &Pubkey,
+    args: PickPlayerArgs,
+) -> Result<Instruction, ProgramError> {
+    let data = SfsInstruction::PickPlayer { args }.pack();
 
     let accounts = vec![
         AccountMeta::new(*root_pubkey, false),

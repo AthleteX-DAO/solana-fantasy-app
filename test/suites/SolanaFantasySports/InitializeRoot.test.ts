@@ -16,7 +16,7 @@ export const InitializeRoot = () =>
         global.payerAccount.publicKey,
         Array.from({ length: PLAYERS_CAPACITY }).map(
           (x, i): Player => ({
-            id: i,
+            externalId: i,
             position: Position.DB,
             // scores: Array.from({ length: GAMES_COUNT }).map(
             //   (): Score => ({

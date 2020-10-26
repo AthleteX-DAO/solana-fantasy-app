@@ -16,13 +16,13 @@ pub struct ScoreList<'a> {
 }
 impl<'a> ScoreList<'a> {
     pub const ITEM_SIZE: usize = Score::LEN;
-    pub const ITEM_COUNT: usize = consts::GAMES_COUNT;
-    pub const LEN: usize = ScoreList::ITEM_SIZE * ScoreList::ITEM_COUNT;
+    pub const ITEM_COUNT: u8 = consts::GAMES_COUNT;
+    pub const LEN: usize = ScoreList::ITEM_SIZE * ScoreList::ITEM_COUNT as usize;
 
-    pub fn get(&self, i: usize) -> Score<'a> {
+    pub fn get(&self, i: u8) -> Score<'a> {
         Score {
             data: self.data,
-            offset: self.offset + i * ScoreList::ITEM_SIZE,
+            offset: self.offset + i as usize * ScoreList::ITEM_SIZE,
         }
     }
 

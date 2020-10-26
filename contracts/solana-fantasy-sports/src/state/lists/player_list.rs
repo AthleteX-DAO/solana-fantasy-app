@@ -16,19 +16,19 @@ pub struct PlayerList<'a> {
 }
 impl<'a> PlayerList<'a> {
     pub const ITEM_SIZE: usize = Player::LEN;
-    pub const ITEM_CAPACITY: usize = consts::PLAYERS_CAPACITY;
-    pub const LEN: usize = 2 + PlayerList::ITEM_SIZE * PlayerList::ITEM_CAPACITY;
+    pub const ITEM_CAPACITY: u16 = consts::PLAYERS_CAPACITY;
+    pub const LEN: usize = 2 + PlayerList::ITEM_SIZE * PlayerList::ITEM_CAPACITY as usize;
     fn slice<'b>(
         &self,
         data: &'b mut [u8],
     ) -> (
         &'b mut [u8; 2],
-        &'b mut [u8; PlayerList::ITEM_SIZE * PlayerList::ITEM_CAPACITY],
+        &'b mut [u8; PlayerList::ITEM_SIZE * PlayerList::ITEM_CAPACITY as usize],
     ) {
         mut_array_refs![
             array_mut_ref![data, self.offset, PlayerList::LEN],
             2,
-            PlayerList::ITEM_SIZE * PlayerList::ITEM_CAPACITY
+            PlayerList::ITEM_SIZE * PlayerList::ITEM_CAPACITY as usize
         ]
     }
 
@@ -49,18 +49,18 @@ impl<'a> PlayerList<'a> {
         }
     }
 
-    pub fn add(&self, id: u16, position: Position) {
-        if usize::from(self.get_count()) >= PlayerList::ITEM_CAPACITY {
+    pub fn add(&self, external_id: u16, position: Position) {
+        if self.get_count() >= PlayerList::ITEM_CAPACITY {
             panic!("No more players can be added");
         }
-        // for i2 in 0..self.get_count() {
-        //     if self.get(i2).get_id() == id {
-        //         panic!("Player with such id already added");
+        // for i in 0..self.get_count() {
+        //     if self.get(i).set_external_id() == external_id {
+        //         panic!("Player with such external id already added");
         //     }
         // }
         self.set_count(self.get_count() + 1);
         let player = self.get(self.get_count() - 1);
-        player.set_id(id);
+        player.set_external_id(external_id);
         player.set_position(position);
         player.set_is_initialized(true);
     }

@@ -15,37 +15,28 @@ pub struct UserState<'a> {
 }
 impl<'a> UserState<'a> {
     pub const LEN: usize =
-        PUB_KEY_LEN + BenchList::LEN + LineupList::LEN + SwapProposalsList::LEN + 1;
+        BenchList::LEN + LineupList::LEN + SwapProposalsList::LEN + PUB_KEY_LEN + 1;
     fn slice<'b>(
         &self,
         data: &'b mut [u8],
     ) -> (
-        &'b mut [u8; PUB_KEY_LEN],
         &'b mut [u8; BenchList::LEN],
         &'b mut [u8; LineupList::LEN],
         &'b mut [u8; SwapProposalsList::LEN],
+        &'b mut [u8; PUB_KEY_LEN],
         &'b mut [u8; 1],
     ) {
         mut_array_refs![
             array_mut_ref![data, self.offset, UserState::LEN],
-            PUB_KEY_LEN,
             BenchList::LEN,
             LineupList::LEN,
             SwapProposalsList::LEN,
+            PUB_KEY_LEN,
             1
         ]
     }
 
-    pub fn get_pub_key(&self) -> Pubkey {
-        Pubkey::new_from_array(*self.slice(&mut self.data.borrow_mut()).0)
-    }
-    pub fn set_pub_key(&self, value: Pubkey) {
-        self.slice(&mut self.data.borrow_mut())
-            .0
-            .copy_from_slice(value.as_ref());
-    }
-
-    pub fn get_scores(&self) -> BenchList<'a> {
+    pub fn get_bench(&self) -> BenchList<'a> {
         BenchList {
             data: self.data,
             offset: self.offset + PUB_KEY_LEN,
@@ -58,11 +49,21 @@ impl<'a> UserState<'a> {
             offset: self.offset + PUB_KEY_LEN + BenchList::LEN,
         }
     }
+
     pub fn get_swap_proposals(&self) -> SwapProposalsList<'a> {
         SwapProposalsList {
             data: self.data,
             offset: self.offset + PUB_KEY_LEN + BenchList::LEN + LineupList::LEN,
         }
+    }
+
+    pub fn get_pub_key(&self) -> Pubkey {
+        Pubkey::new_from_array(*self.slice(&mut self.data.borrow_mut()).3)
+    }
+    pub fn set_pub_key(&self, value: Pubkey) {
+        self.slice(&mut self.data.borrow_mut())
+            .3
+            .copy_from_slice(value.as_ref());
     }
 
     pub fn get_is_initialized(&self) -> bool {

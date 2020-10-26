@@ -1,10 +1,12 @@
 //! State transition types
 
 use crate::state::*;
-use arrayref::{array_mut_ref, array_ref};
+use arrayref::{array_mut_ref, array_ref, mut_array_refs};
+use byteorder::{ByteOrder, LittleEndian};
 use solana_sdk::{
     program_error::ProgramError,
     program_pack::{Pack, Sealed},
+    pubkey::Pubkey,
 };
 use std::cell::RefCell;
 
@@ -15,14 +17,52 @@ pub struct UserStateList<'a> {
 }
 impl<'a> UserStateList<'a> {
     pub const ITEM_SIZE: usize = UserState::LEN;
-    pub const ITEM_COUNT: usize = consts::LEAGUE_USERS_COUNT;
-    pub const LEN: usize = UserStateList::ITEM_SIZE * UserStateList::ITEM_COUNT;
+    pub const ITEM_CAPACITY: u8 = consts::LEAGUE_USERS_CAPACITY;
+    pub const LEN: usize = 1 + UserStateList::ITEM_SIZE * UserStateList::ITEM_CAPACITY as usize;
+    fn slice<'b>(
+        &self,
+        data: &'b mut [u8],
+    ) -> (
+        &'b mut [u8; 1],
+        &'b mut [u8; UserStateList::ITEM_SIZE * UserStateList::ITEM_CAPACITY as usize],
+    ) {
+        mut_array_refs![
+            array_mut_ref![data, self.offset, UserStateList::LEN],
+            1,
+            UserStateList::ITEM_SIZE * UserStateList::ITEM_CAPACITY as usize
+        ]
+    }
 
-    pub fn get(&self, i: usize) -> UserState<'a> {
+    pub fn get_count(&self) -> u8 {
+        self.slice(&mut self.data.borrow_mut()).0[0]
+    }
+    fn set_count(&self, value: u8) {
+        self.slice(&mut self.data.borrow_mut()).0[0] = value;
+    }
+
+    pub fn get(&self, i: u8) -> UserState<'a> {
+        if i >= self.get_count() {
+            panic!("Attempt to access user state out of bound");
+        }
         UserState {
             data: self.data,
-            offset: self.offset + i * UserStateList::ITEM_SIZE,
+            offset: self.offset + 1 + i as usize * UserStateList::ITEM_SIZE,
         }
+    }
+
+    pub fn add(&self, pubkey: Pubkey) {
+        if self.get_count() >= UserStateList::ITEM_CAPACITY {
+            panic!("No more users can be added");
+        }
+        for i in 0..self.get_count() {
+            if self.get(i).get_pub_key() == pubkey {
+                panic!("Player with such pubkey already added");
+            }
+        }
+        self.set_count(self.get_count() + 1);
+        let user_state = self.get(self.get_count() - 1);
+        user_state.set_pub_key(pubkey);
+        user_state.set_is_initialized(true);
     }
 
     pub fn copy_to(&self, to: &Self) {

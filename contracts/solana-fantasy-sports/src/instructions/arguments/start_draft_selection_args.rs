@@ -3,7 +3,6 @@
 use crate::instructions::*;
 use crate::state::consts::*;
 use arrayref::{array_mut_ref, array_ref, array_refs, mut_array_refs};
-use byteorder::{ByteOrder, LittleEndian};
 use solana_sdk::pubkey::Pubkey;
 use solana_sdk::{
     program_error::ProgramError,
@@ -12,48 +11,30 @@ use solana_sdk::{
 use std::cell::RefCell;
 
 #[repr(C)]
-pub struct ProposeSwapArgs<'a> {
+pub struct StartDraftSelectionArgs<'a> {
     pub data: &'a RefCell<&'a [u8]>,
     pub offset: usize,
 }
-impl<'a> ProposeSwapArgs<'a> {
-    pub const LEN: usize = 2 + 1 + 2 + 2;
-    fn slice<'b>(&self, data: &'b [u8]) -> (&'b [u8; 2], &'b [u8; 1], &'b [u8; 2], &'b [u8; 2]) {
-        array_refs![
-            array_ref![data, self.offset, ProposeSwapArgs::LEN],
-            2,
-            1,
-            2,
-            2
-        ]
-    }
+impl<'a> StartDraftSelectionArgs<'a> {
+    pub const LEN: usize = PickOrderList::LEN;
 
-    pub fn get_league_id(&self) -> u16 {
-        LittleEndian::read_u16(self.slice(&mut self.data.borrow()).0)
-    }
-
-    pub fn get_user_id(&self) -> u8 {
-        self.slice(&mut self.data.borrow()).1[0]
-    }
-
-    pub fn get_give_player_id(&self) -> u16 {
-        LittleEndian::read_u16(self.slice(&mut self.data.borrow()).2)
-    }
-
-    pub fn get_want_player_id(&self) -> u16 {
-        LittleEndian::read_u16(self.slice(&mut self.data.borrow()).3)
+    pub fn get_pick_order(&self) -> PickOrderList<'a> {
+        PickOrderList {
+            data: self.data,
+            offset: self.offset,
+        }
     }
 
     pub fn copy_to(&self, to: &mut [u8]) {
         let src = self.data.borrow();
-        array_mut_ref![to, self.offset, ProposeSwapArgs::LEN].copy_from_slice(array_ref![
+        array_mut_ref![to, self.offset, StartDraftSelectionArgs::LEN].copy_from_slice(array_ref![
             src,
             self.offset,
-            ProposeSwapArgs::LEN
+            StartDraftSelectionArgs::LEN
         ]);
     }
 }
-impl Clone for ProposeSwapArgs<'_> {
+impl Clone for StartDraftSelectionArgs<'_> {
     fn clone(&self) -> Self {
         Self {
             data: self.data,

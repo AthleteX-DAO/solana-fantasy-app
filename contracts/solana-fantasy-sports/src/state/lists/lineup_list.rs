@@ -15,13 +15,13 @@ pub struct LineupList<'a> {
 }
 impl<'a> LineupList<'a> {
     pub const ITEM_SIZE: usize = lists::ActivePlayersList::LEN;
-    pub const ITEM_COUNT: usize = consts::GAMES_COUNT;
-    pub const LEN: usize = LineupList::ITEM_SIZE * LineupList::ITEM_COUNT;
+    pub const ITEM_COUNT: u8 = consts::GAMES_COUNT;
+    pub const LEN: usize = LineupList::ITEM_SIZE * LineupList::ITEM_COUNT as usize;
 
-    pub fn get(&self, i: usize) -> ActivePlayersList<'a> {
+    pub fn get(&self, i: u8) -> ActivePlayersList<'a> {
         ActivePlayersList {
             data: self.data,
-            offset: self.offset + i * ActivePlayersList::ITEM_SIZE,
+            offset: self.offset + i as usize * ActivePlayersList::ITEM_SIZE,
         }
     }
 

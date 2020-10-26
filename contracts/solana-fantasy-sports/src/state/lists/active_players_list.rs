@@ -9,9 +9,6 @@ use solana_sdk::{
 };
 use std::cell::RefCell;
 
-const ITEM_SIZE: usize = 2;
-const ITEM_COUNT: usize = consts::ACTIVE_PLAYERS_COUNT;
-
 #[repr(C)]
 pub struct ActivePlayersList<'a> {
     pub data: &'a RefCell<&'a mut [u8]>,
@@ -19,20 +16,20 @@ pub struct ActivePlayersList<'a> {
 }
 impl<'a> ActivePlayersList<'a> {
     pub const ITEM_SIZE: usize = 2;
-    pub const ITEM_COUNT: usize = consts::ACTIVE_PLAYERS_COUNT;
-    pub const LEN: usize = ActivePlayersList::ITEM_SIZE * ActivePlayersList::ITEM_COUNT;
-    fn slice<'b>(&self, data: &'b mut [u8], i: usize) -> &'b mut [u8; 2] {
+    pub const ITEM_COUNT: u8 = consts::ACTIVE_PLAYERS_COUNT;
+    pub const LEN: usize = ActivePlayersList::ITEM_SIZE * ActivePlayersList::ITEM_COUNT as usize;
+    fn slice<'b>(&self, data: &'b mut [u8], i: u8) -> &'b mut [u8; 2] {
         array_mut_ref![
             data,
-            self.offset + i * ActivePlayersList::ITEM_COUNT,
+            self.offset + i as usize * ActivePlayersList::ITEM_COUNT as usize,
             ActivePlayersList::ITEM_SIZE
         ]
     }
 
-    pub fn get(&self, i: usize) -> u16 {
+    pub fn get(&self, i: u8) -> u16 {
         LittleEndian::read_u16(self.slice(&mut self.data.borrow_mut(), i))
     }
-    pub fn set(&self, i: usize, value: u16) {
+    pub fn set(&self, i: u8, value: u16) {
         LittleEndian::write_u16(self.slice(&mut self.data.borrow_mut(), i), value);
     }
 

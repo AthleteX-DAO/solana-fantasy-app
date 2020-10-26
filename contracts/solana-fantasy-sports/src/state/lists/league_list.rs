@@ -15,8 +15,8 @@ pub struct LeagueList<'a> {
 }
 impl<'a> LeagueList<'a> {
     pub const ITEM_SIZE: usize = League::LEN;
-    pub const ITEM_COUNT: usize = consts::LEAGUES_COUNT;
-    pub const LEN: usize = LeagueList::ITEM_SIZE * LeagueList::ITEM_COUNT;
+    pub const ITEM_CAPACITY: u16 = consts::LEAGUES_CAPACITY;
+    pub const LEN: usize = 2 + LeagueList::ITEM_SIZE * LeagueList::ITEM_CAPACITY as usize;
 
     pub fn get(&self, i: u16) -> League<'a> {
         League {

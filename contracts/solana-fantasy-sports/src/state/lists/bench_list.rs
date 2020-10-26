@@ -16,20 +16,20 @@ pub struct BenchList<'a> {
 }
 impl<'a> BenchList<'a> {
     pub const ITEM_SIZE: usize = 2;
-    pub const ITEM_COUNT: usize = consts::TEAM_PLAYERS_COUNT;
-    pub const LEN: usize = BenchList::ITEM_SIZE * BenchList::ITEM_COUNT;
-    fn slice<'b>(&self, data: &'b mut [u8], i: usize) -> &'b mut [u8; 2] {
+    pub const ITEM_COUNT: u8 = consts::TEAM_PLAYERS_COUNT;
+    pub const LEN: usize = BenchList::ITEM_SIZE * BenchList::ITEM_COUNT as usize;
+    fn slice<'b>(&self, data: &'b mut [u8], i: u8) -> &'b mut [u8; 2] {
         array_mut_ref![
             data,
-            self.offset + i * BenchList::ITEM_COUNT,
+            self.offset + i as usize * BenchList::ITEM_COUNT as usize,
             BenchList::ITEM_SIZE
         ]
     }
 
-    pub fn get(&self, i: usize) -> u16 {
+    pub fn get(&self, i: u8) -> u16 {
         LittleEndian::read_u16(self.slice(&mut self.data.borrow_mut(), i))
     }
-    pub fn set(&self, i: usize, value: u16) {
+    pub fn set(&self, i: u8, value: u16) {
         LittleEndian::write_u16(self.slice(&mut self.data.borrow_mut(), i), value);
     }
 

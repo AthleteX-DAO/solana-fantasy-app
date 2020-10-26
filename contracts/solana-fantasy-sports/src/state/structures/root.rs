@@ -14,53 +14,80 @@ pub struct Root<'a> {
     pub offset: usize,
 }
 impl<'a> Root<'a> {
-    pub const LEN: usize = PUB_KEY_LEN + PlayerList::LEN + LeagueList::LEN + 1;
+    pub const LEN: usize =
+        PlayerList::LEN + LeagueList::LEN + PickOrderList::LEN + 1 + 1 + PUB_KEY_LEN;
     fn slice<'b>(
         &self,
         data: &'b mut [u8],
     ) -> (
-        &'b mut [u8; PUB_KEY_LEN],
         &'b mut [u8; PlayerList::LEN],
         &'b mut [u8; LeagueList::LEN],
+        &'b mut [u8; PickOrderList::LEN],
         &'b mut [u8; 1],
+        &'b mut [u8; 1],
+        &'b mut [u8; PUB_KEY_LEN],
     ) {
         mut_array_refs![
             array_mut_ref![data, self.offset, Root::LEN],
-            PUB_KEY_LEN,
             PlayerList::LEN,
             LeagueList::LEN,
-            1
+            PickOrderList::LEN,
+            1,
+            1,
+            PUB_KEY_LEN
         ]
-    }
-
-    pub fn get_oracle_authority(&self) -> Pubkey {
-        Pubkey::new_from_array(*self.slice(&mut self.data.borrow_mut()).0)
-    }
-    pub fn set_oracle_authority(&self, value: Pubkey) {
-        self.slice(&mut self.data.borrow_mut())
-            .0
-            .copy_from_slice(value.as_ref());
     }
 
     pub fn get_players(&self) -> PlayerList<'a> {
         PlayerList {
             data: self.data,
-            offset: self.offset + PUB_KEY_LEN,
+            offset: self.offset,
         }
     }
 
     pub fn get_leagues(&self) -> LeagueList<'a> {
         LeagueList {
             data: self.data,
-            offset: self.offset + PUB_KEY_LEN + PlayerList::LEN,
+            offset: self.offset + PlayerList::LEN,
         }
     }
 
-    pub fn get_is_initialized(&self) -> bool {
-        unpack_is_initialized(self.slice(&mut self.data.borrow_mut()).3).unwrap()
+    pub fn get_pick_order(&self) -> PickOrderList<'a> {
+        PickOrderList {
+            data: self.data,
+            offset: self.offset + PlayerList::LEN + LeagueList::LEN,
+        }
     }
-    pub fn set_is_initialized(&self, value: bool) {
+
+    pub fn get_stage(&self) -> Result<Stage, ProgramError> {
+        let stage = match self.slice(&mut self.data.borrow_mut()).3 {
+            [0] => Stage::Uninitialized,
+            [1] => Stage::Join,
+            [2] => Stage::DraftSelection,
+            [3] => Stage::SeasonOpen,
+            [4] => Stage::SeasonComplete,
+            _ => return Err(ProgramError::InvalidAccountData),
+        };
+        return Ok(stage);
+    }
+    pub fn set_stage(&self, value: Stage) {
         self.slice(&mut self.data.borrow_mut()).3[0] = value as u8;
+    }
+
+    pub fn get_current_week(&self) -> u8 {
+        self.slice(&mut self.data.borrow_mut()).4[0]
+    }
+    pub fn set_current_week(&self, value: u8) {
+        self.slice(&mut self.data.borrow_mut()).4[0] = value;
+    }
+
+    pub fn get_oracle_authority(&self) -> Pubkey {
+        Pubkey::new_from_array(*self.slice(&mut self.data.borrow_mut()).5)
+    }
+    pub fn set_oracle_authority(&self, value: Pubkey) {
+        self.slice(&mut self.data.borrow_mut())
+            .5
+            .copy_from_slice(value.as_ref());
     }
 
     pub fn copy_to(&self, to: &Self) {

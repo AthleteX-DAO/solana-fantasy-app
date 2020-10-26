@@ -1,6 +1,7 @@
 //! State transition types
 use crate::state::*;
 use arrayref::{array_mut_ref, array_ref, array_refs, mut_array_refs};
+use byteorder::{ByteOrder, LittleEndian};
 use solana_sdk::{
     program_error::ProgramError,
     program_pack::{IsInitialized, Pack, Sealed},
@@ -13,28 +14,23 @@ pub struct League<'a> {
     pub offset: usize,
 }
 impl<'a> League<'a> {
-    pub const LEN: usize = 1 + UserStateList::LEN + 1;
+    pub const LEN: usize = UserStateList::LEN + 1 + 2 + 1;
     fn slice<'b>(
         &self,
         data: &'b mut [u8],
     ) -> (
-        &'b mut [u8; 1],
         &'b mut [u8; UserStateList::LEN],
+        &'b mut [u8; 1],
+        &'b mut [u8; 2],
         &'b mut [u8; 1],
     ) {
         mut_array_refs![
             array_mut_ref![data, self.offset, League::LEN],
-            1,
             UserStateList::LEN,
+            1,
+            2,
             1
         ]
-    }
-
-    pub fn get_bid(&self) -> u8 {
-        self.slice(&mut self.data.borrow_mut()).0[0]
-    }
-    pub fn set_bid(&self, value: u8) {
-        self.slice(&mut self.data.borrow_mut()).0[0] = value;
     }
 
     pub fn get_user_states(&self) -> UserStateList<'a> {
@@ -44,11 +40,25 @@ impl<'a> League<'a> {
         }
     }
 
+    pub fn get_bid(&self) -> u8 {
+        self.slice(&mut self.data.borrow_mut()).1[0]
+    }
+    pub fn set_bid(&self, value: u8) {
+        self.slice(&mut self.data.borrow_mut()).1[0] = value;
+    }
+
+    pub fn get_current_pick(&self) -> u16 {
+        LittleEndian::read_u16(self.slice(&mut self.data.borrow_mut()).2)
+    }
+    pub fn set_current_pick(&self, value: u16) {
+        LittleEndian::write_u16(self.slice(&mut self.data.borrow_mut()).2, value);
+    }
+
     pub fn get_is_initialized(&self) -> bool {
-        unpack_is_initialized(self.slice(&mut self.data.borrow_mut()).2).unwrap()
+        unpack_is_initialized(self.slice(&mut self.data.borrow_mut()).3).unwrap()
     }
     pub fn set_is_initialized(&self, value: bool) {
-        self.slice(&mut self.data.borrow_mut()).2[0] = value as u8;
+        self.slice(&mut self.data.borrow_mut()).3[0] = value as u8;
     }
 
     pub fn copy_to(&self, to: &Self) {

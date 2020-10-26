@@ -6,18 +6,23 @@ import { Position, PLAYERS_CAPACITY, MAX_PLAYERS_PER_INSTRUCTION } from './state
 
 enum Command {
   Uninitialized,
-  InitializeRoot,
   AddPlayers,
-  ProposeSwaps
+  InitializeRoot,
+  StartDraftSelection,
+  StartSeason,
+  UpdateLineup,
+  ProposeSwaps,
+  PickPlayer,
+  TestMutate
 }
 
 export type Player = {
-  id: number;
+  externalId: number;
   position: Position;
 };
 
 export const PlayerLayout: typeof BufferLayout.Structure = BufferLayout.struct([
-  BufferLayout.u16('id'),
+  BufferLayout.u16('externalId'),
   BufferLayout.u8('position'),
 ]);
 

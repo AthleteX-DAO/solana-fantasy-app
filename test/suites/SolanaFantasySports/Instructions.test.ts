@@ -36,7 +36,7 @@ export const InstructionsTests = () =>
     // throw a;
     const players = Array.from({ length: PLAYERS_CAPACITY }).map(
       (x, i): Player => ({
-        id: i,
+        externalId: i,
         position: Position.DB,
         // scores: Array.from({ length: GAMES_COUNT }).map(
         //   (): Score => ({

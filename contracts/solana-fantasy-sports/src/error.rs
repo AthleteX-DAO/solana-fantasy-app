@@ -33,6 +33,9 @@ pub enum SfsError {
     /// Operation overflowed
     #[error("Operation overflowed")]
     Overflow,
+    /// Opertaion is not permitted for current stage
+    #[error("Opertaion is not permitted for current stage")]
+    InvalidStage,
 }
 impl From<SfsError> for ProgramError {
     fn from(e: SfsError) -> Self {
@@ -57,6 +60,7 @@ impl PrintProgramError for SfsError {
             SfsError::InvalidInstruction => info!("Error: Invalid instruction"),
             SfsError::InvalidState => info!("Error: Invalid account state for operation"),
             SfsError::Overflow => info!("Error: Operation overflowed"),
+            SfsError::InvalidStage => info!("Error: Opertaion is not permitted for current stage"),
         }
     }
 }

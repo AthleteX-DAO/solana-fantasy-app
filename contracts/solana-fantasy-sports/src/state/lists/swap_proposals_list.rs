@@ -9,9 +9,6 @@ use solana_sdk::{
 use std::cell::RefCell;
 use std::ops::{Index, IndexMut};
 
-const ITEM_SIZE: usize = SwapProposal::LEN;
-const ITEM_COUNT: usize = consts::SWAP_PROPOSALS_CAPACITY;
-
 #[repr(C)]
 pub struct SwapProposalsList<'a> {
     pub data: &'a RefCell<&'a mut [u8]>,
@@ -19,19 +16,19 @@ pub struct SwapProposalsList<'a> {
 }
 impl<'a> SwapProposalsList<'a> {
     pub const ITEM_SIZE: usize = SwapProposal::LEN;
-    pub const ITEM_CAPACITY: usize = consts::SWAP_PROPOSALS_CAPACITY;
-    pub const LEN: usize = 1 + SwapProposalsList::ITEM_SIZE * SwapProposalsList::ITEM_CAPACITY;
+    pub const ITEM_CAPACITY: u8 = consts::SWAP_PROPOSALS_CAPACITY;
+    pub const LEN: usize = 1 + SwapProposalsList::ITEM_SIZE * SwapProposalsList::ITEM_CAPACITY as usize;
     fn slice<'b>(
         &self,
         data: &'b mut [u8],
     ) -> (
         &'b mut [u8; 1],
-        &'b mut [u8; SwapProposalsList::ITEM_SIZE * SwapProposalsList::ITEM_CAPACITY],
+        &'b mut [u8; SwapProposalsList::ITEM_SIZE * SwapProposalsList::ITEM_CAPACITY as usize],
     ) {
         mut_array_refs![
             array_mut_ref![data, self.offset, SwapProposalsList::LEN],
             1,
-            SwapProposalsList::ITEM_SIZE * SwapProposalsList::ITEM_CAPACITY
+            SwapProposalsList::ITEM_SIZE * SwapProposalsList::ITEM_CAPACITY as usize
         ]
     }
 
@@ -53,7 +50,7 @@ impl<'a> SwapProposalsList<'a> {
     }
 
     pub fn add(&self, give_player_id: u16, want_player_id: u16) {
-        if usize::from(self.get_count()) >= SwapProposalsList::ITEM_CAPACITY {
+        if self.get_count() >= SwapProposalsList::ITEM_CAPACITY {
             panic!("No more proposal can be added");
         }
         self.set_count(self.get_count() + 1);
