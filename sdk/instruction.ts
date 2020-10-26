@@ -8,7 +8,7 @@ enum Command {
   Uninitialized,
   InitializeRoot,
   AddPlayers,
-  ProposeSwaps
+  ProposeSwaps,
 }
 
 export type Player = {
@@ -32,7 +32,7 @@ export class SfsInstruction {
   static createInitializeRootInstruction(
     programId: PublicKey,
     root: PublicKey,
-    oracleAuthority: PublicKey,
+    oracleAuthority: PublicKey
   ): TransactionInstruction {
     let keys = [
       { pubkey: root, isSigner: false, isWritable: true },

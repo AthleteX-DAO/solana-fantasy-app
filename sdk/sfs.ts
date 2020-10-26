@@ -63,41 +63,38 @@ export class SFS {
     // Allocate memory for the account
     const balanceNeeded = await SFS.getMinBalanceRentForExemptRoot(connection);
 
-    let transaction = new Transaction()
-      .add(
-        SystemProgram.createAccount({
-          fromPubkey: payer.publicKey,
-          newAccountPubkey: rootAccount.publicKey,
-          lamports: balanceNeeded,
-          space: RootLayout.span,
-          programId,
-        })
-      );
-
-    await sendAndConfirmTransaction(
-      'Create account',
-      connection,
-      transaction,
-      payer,
-      rootAccount
+    let transaction = new Transaction().add(
+      SystemProgram.createAccount({
+        fromPubkey: payer.publicKey,
+        newAccountPubkey: rootAccount.publicKey,
+        lamports: balanceNeeded,
+        space: RootLayout.span,
+        programId,
+      })
     );
+
+    await sendAndConfirmTransaction('Create account', connection, transaction, payer, rootAccount);
 
     for (let i = 0; i < players.length / MAX_PLAYERS_PER_INSTRUCTION; i++) {
       // console.log(`Add players ${i * MAX_PLAYERS_PER_INSTRUCTION}-${(i+1) * MAX_PLAYERS_PER_INSTRUCTION} of ${players.length}`);
-      console.log(`Add players ${i * MAX_PLAYERS_PER_INSTRUCTION} of ${Math.min(players.length-1, (i + 1) * MAX_PLAYERS_PER_INSTRUCTION)}`);
-      transaction = new Transaction()
-        .add(
-          SfsInstruction.createAddPlayersInstruction(
-            programId,
-            rootAccount.publicKey,
-            players.slice(
-              i * MAX_PLAYERS_PER_INSTRUCTION,
-              (i + 1) * MAX_PLAYERS_PER_INSTRUCTION)
-          )
-        );
+      console.log(
+        `Add players ${i * MAX_PLAYERS_PER_INSTRUCTION} of ${Math.min(
+          players.length - 1,
+          (i + 1) * MAX_PLAYERS_PER_INSTRUCTION
+        )}`
+      );
+      transaction = new Transaction().add(
+        SfsInstruction.createAddPlayersInstruction(
+          programId,
+          rootAccount.publicKey,
+          players.slice(i * MAX_PLAYERS_PER_INSTRUCTION, (i + 1) * MAX_PLAYERS_PER_INSTRUCTION)
+        )
+      );
 
       await sendAndConfirmTransaction(
-        `Add players ${i * MAX_PLAYERS_PER_INSTRUCTION}-${(i+1) * MAX_PLAYERS_PER_INSTRUCTION} of ${players.length}` ,
+        `Add players ${i * MAX_PLAYERS_PER_INSTRUCTION}-${
+          (i + 1) * MAX_PLAYERS_PER_INSTRUCTION
+        } of ${players.length}`,
         connection,
         transaction,
         payer,
@@ -105,23 +102,16 @@ export class SFS {
       );
     }
 
-    transaction = new Transaction()
-      .add(
-        SfsInstruction.createInitializeRootInstruction(
-          programId,
-          rootAccount.publicKey,
-          oracleAuthority
-        )
-      );
+    transaction = new Transaction().add(
+      SfsInstruction.createInitializeRootInstruction(
+        programId,
+        rootAccount.publicKey,
+        oracleAuthority
+      )
+    );
 
     // Send the two instructions
-    await sendAndConfirmTransaction(
-      'Initialize root',
-      connection,
-      transaction,
-      payer,
-      rootAccount
-    );
+    await sendAndConfirmTransaction('Initialize root', connection, transaction, payer, rootAccount);
 
     return sfs;
   }

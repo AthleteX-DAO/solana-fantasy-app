@@ -68,7 +68,6 @@ export const ScoreLayout: typeof BufferLayout.Structure = BufferLayout.struct([
   BufferLayout.u8('isInitialized'),
 ]);
 
-
 export type SwapProposal = {
   givePlayerId: number;
   wantPlayerId: number;
