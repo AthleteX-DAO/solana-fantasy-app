@@ -49,6 +49,9 @@ pub enum SfsInstruction<'a> {
     ///   0. `[user address]` // check if this is correct
     ///
     UpdateLineup,
+    PickPlayer {
+        args: PickPlayerArgs<'a>,
+    },
     ///
     /// Adds a swap proposal
     ///
@@ -58,16 +61,15 @@ pub enum SfsInstruction<'a> {
     ProposeSwap {
         args: ProposeSwapArgs<'a>,
     },
-    PickPlayer {
-        args: PickPlayerArgs<'a>,
-    },
-    /// Test
+    ///
+    /// Accepts a swap proposal
     ///
     /// Accounts expected by this instruction:
+    ///   0. `[writable]` The root to initialize.
     ///
-    ///   0. `[writable]`  The root account.
-    ///   1. `[]` The latest state account.
-    TestMutate,
+    AcceptSwap {
+        args: AcceptSwapArgs<'a>,
+    },
 }
 impl<'a> SfsInstruction<'a> {
     pub fn unpack(input: &'a RefCell<&'a [u8]>) -> Result<Self, ProgramError> {
@@ -87,12 +89,16 @@ impl<'a> SfsInstruction<'a> {
                 args: StartDraftSelectionArgs::new(input, 1)?,
             },
             4 => Self::StartSeason,
+            5 => Self::UpdateLineup,
 
-            5 => Self::PickPlayer {
+            6 => Self::PickPlayer {
                 args: PickPlayerArgs::new(input, 1)?,
             },
-            6 => Self::ProposeSwap {
+            7 => Self::ProposeSwap {
                 args: ProposeSwapArgs::new(input, 1)?,
+            },
+            8 => Self::AcceptSwap {
+                args: AcceptSwapArgs::new(input, 1)?,
             },
 
             _ => return Err(SfsError::InvalidInstruction.into()),
@@ -125,22 +131,23 @@ impl<'a> SfsInstruction<'a> {
                 buf.push(4);
             }
 
-            Self::PickPlayer { args } => {
+            Self::UpdateLineup => {
                 buf.push(5);
+            }
+            Self::PickPlayer { args } => {
+                buf.push(6);
                 buf.extend_from_slice(&[0u8; PickPlayerArgs::LEN]);
                 args.copy_to(array_mut_ref![buf, 1, PickPlayerArgs::LEN]);
             }
             Self::ProposeSwap { args } => {
-                buf.push(6);
+                buf.push(7);
                 buf.extend_from_slice(&[0u8; ProposeSwapArgs::LEN]);
                 args.copy_to(array_mut_ref![buf, 1, ProposeSwapArgs::LEN]);
             }
-
-            Self::UpdateLineup => {
-                buf.push(7);
-            }
-            Self::TestMutate => {
+            Self::AcceptSwap { args } => {
                 buf.push(8);
+                buf.extend_from_slice(&[0u8; AcceptSwapArgs::LEN]);
+                args.copy_to(array_mut_ref![buf, 1, AcceptSwapArgs::LEN]);
             }
         };
         buf
@@ -247,6 +254,26 @@ pub fn propose_swap(
     args: ProposeSwapArgs,
 ) -> Result<Instruction, ProgramError> {
     let data = SfsInstruction::ProposeSwap { args }.pack();
+
+    let accounts = vec![
+        AccountMeta::new(*root_pubkey, false),
+        AccountMeta::new_readonly(sysvar::rent::id(), false),
+    ];
+
+    Ok(Instruction {
+        program_id: *sfs_program_id,
+        accounts,
+        data,
+    })
+}
+
+/// Creates a `AcceptSwap` instruction.
+pub fn accept_swap(
+    sfs_program_id: &Pubkey,
+    root_pubkey: &Pubkey,
+    args: AcceptSwapArgs,
+) -> Result<Instruction, ProgramError> {
+    let data = SfsInstruction::AcceptSwap { args }.pack();
 
     let accounts = vec![
         AccountMeta::new(*root_pubkey, false),

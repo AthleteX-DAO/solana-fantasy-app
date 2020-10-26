@@ -8,6 +8,7 @@ use solana_sdk::{
     program_pack::{Pack, Sealed},
 };
 use std::cell::RefCell;
+use std::io::{Error, ErrorKind};
 
 #[repr(C)]
 pub struct BenchList<'a> {
@@ -31,6 +32,20 @@ impl<'a> BenchList<'a> {
     }
     pub fn set(&self, i: u8, value: u16) {
         LittleEndian::write_u16(self.slice(&mut self.data.borrow_mut(), i), value);
+    }
+
+    pub fn contains_player_id(&self, player_id: u16) -> bool {
+        return self.index_of(player_id).is_ok()
+    }
+
+    pub fn index_of(&self, player_id: u16) -> Result<u8, ()> {
+        for i in 0..BenchList::LEN {
+            if self.get(i as u8) == player_id {
+                return Ok(i as u8);
+            }
+        }
+
+        return Err(());
     }
 
     pub fn copy_to(&self, to: &Self) {

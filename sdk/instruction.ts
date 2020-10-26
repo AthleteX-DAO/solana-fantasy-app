@@ -11,9 +11,9 @@ enum Command {
   StartDraftSelection,
   StartSeason,
   UpdateLineup,
-  ProposeSwaps,
   PickPlayer,
-  TestMutate
+  ProposeSwaps,
+  AcceptSwap,
 }
 
 export type Player = {
@@ -37,7 +37,7 @@ export class SfsInstruction {
   static createInitializeRootInstruction(
     programId: PublicKey,
     root: PublicKey,
-    oracleAuthority: PublicKey,
+    oracleAuthority: PublicKey
   ): TransactionInstruction {
     let keys = [
       { pubkey: root, isSigner: false, isWritable: true },

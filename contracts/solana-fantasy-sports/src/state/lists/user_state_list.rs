@@ -8,7 +8,7 @@ use solana_sdk::{
     program_pack::{Pack, Sealed},
     pubkey::Pubkey,
 };
-use std::cell::RefCell;
+use std::{cell::RefCell, io};
 
 #[repr(C)]
 pub struct UserStateList<'a> {
@@ -64,6 +64,16 @@ impl<'a> UserStateList<'a> {
         user_state.set_pub_key(pubkey);
         user_state.set_is_initialized(true);
         Ok(())
+    }
+
+    pub fn get_by_pub_key(&self, pub_key: Pubkey) -> Result<UserState<'a>, ProgramError> {
+        for i in 0..UserStateList::LEN {
+            let user_state = self.get(i as u8)?;
+            if pub_key == user_state.get_pub_key() {
+                return Ok(user_state);
+            }
+        }
+        Err(ProgramError::InvalidAccountData)
     }
 
     pub fn copy_to(&self, to: &Self) {
