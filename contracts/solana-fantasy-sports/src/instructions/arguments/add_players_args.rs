@@ -12,17 +12,14 @@ use std::cell::RefCell;
 
 #[repr(C)]
 pub struct AddPlayersArgs<'a> {
-    pub data: &'a RefCell<&'a [u8]>,
-    pub offset: usize,
+    data: &'a RefCell<&'a [u8]>,
+    offset: usize,
 }
 impl<'a> AddPlayersArgs<'a> {
     pub const LEN: usize = PlayerList::LEN;
 
-    pub fn get_players(&self) -> PlayerList<'a> {
-        PlayerList {
-            data: self.data,
-            offset: self.offset,
-        }
+    pub fn get_players(&self) -> Result<PlayerList<'a>, ProgramError> {
+        PlayerList::new(self.data, self.offset)
     }
 
     pub fn copy_to(&self, to: &mut [u8]) {
@@ -32,6 +29,13 @@ impl<'a> AddPlayersArgs<'a> {
             self.offset,
             AddPlayersArgs::LEN
         ]);
+    }
+
+    pub fn new(data: &'a RefCell<&'a [u8]>, offset: usize) -> Result<AddPlayersArgs, ProgramError> {
+        if data.borrow().len() < Self::LEN + offset {
+            return Err(ProgramError::InvalidInstructionData);
+        }
+        Ok(AddPlayersArgs { data, offset })
     }
 }
 impl Clone for AddPlayersArgs<'_> {

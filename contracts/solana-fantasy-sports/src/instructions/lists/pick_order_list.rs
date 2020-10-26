@@ -12,8 +12,8 @@ use std::cell::RefCell;
 
 #[repr(C)]
 pub struct PickOrderList<'a> {
-    pub data: &'a RefCell<&'a [u8]>,
-    pub offset: usize,
+    data: &'a RefCell<&'a [u8]>,
+    offset: usize,
 }
 impl<'a> PickOrderList<'a> {
     pub const ITEM_SIZE: usize = 1;
@@ -38,6 +38,13 @@ impl<'a> PickOrderList<'a> {
             self.offset,
             PickOrderList::LEN
         ]);
+    }
+
+    pub fn new(data: &'a RefCell<&'a [u8]>, offset: usize) -> Result<PickOrderList, ProgramError> {
+        if data.borrow().len() < Self::LEN + offset {
+            return Err(ProgramError::InvalidInstructionData);
+        }
+        Ok(PickOrderList { data, offset })
     }
 }
 

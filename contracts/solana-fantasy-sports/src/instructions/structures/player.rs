@@ -12,8 +12,8 @@ use std::cell::RefCell;
 
 #[repr(C)]
 pub struct Player<'a> {
-    pub data: &'a RefCell<&'a [u8]>,
-    pub offset: usize,
+    data: &'a RefCell<&'a [u8]>,
+    offset: usize,
 }
 impl<'a> Player<'a> {
     pub const LEN: usize = 2 + 1;
@@ -25,10 +25,9 @@ impl<'a> Player<'a> {
         LittleEndian::read_u16(self.slice(&mut self.data.borrow()).0)
     }
 
-    pub fn get_position(&self) -> Position {
+    pub fn get_position(&self) -> Result<Position, ProgramError> {
         Position::try_from_primitive(self.slice(&mut self.data.borrow()).1[0])
-            .or(Err(ProgramError::InvalidAccountData))
-            .unwrap()
+            .or(Err(ProgramError::InvalidInstructionData))
     }
 
     pub fn copy_to(&self, to: &mut [u8]) {
@@ -45,6 +44,13 @@ impl<'a> Player<'a> {
         LittleEndian::write_u16(&mut buf, id);
         buf[2] = position as u8;
         buf
+    }
+
+    pub fn new(data: &'a RefCell<&'a [u8]>, offset: usize) -> Result<Player, ProgramError> {
+        if data.borrow().len() < Self::LEN + offset {
+            return Err(ProgramError::InvalidInstructionData);
+        }
+        Ok(Player { data, offset })
     }
 }
 

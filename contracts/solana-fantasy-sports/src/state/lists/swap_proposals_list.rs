@@ -11,13 +11,14 @@ use std::ops::{Index, IndexMut};
 
 #[repr(C)]
 pub struct SwapProposalsList<'a> {
-    pub data: &'a RefCell<&'a mut [u8]>,
-    pub offset: usize,
+    data: &'a RefCell<&'a mut [u8]>,
+    offset: usize,
 }
 impl<'a> SwapProposalsList<'a> {
     pub const ITEM_SIZE: usize = SwapProposal::LEN;
     pub const ITEM_CAPACITY: u8 = consts::SWAP_PROPOSALS_CAPACITY;
-    pub const LEN: usize = 1 + SwapProposalsList::ITEM_SIZE * SwapProposalsList::ITEM_CAPACITY as usize;
+    pub const LEN: usize =
+        1 + SwapProposalsList::ITEM_SIZE * SwapProposalsList::ITEM_CAPACITY as usize;
     fn slice<'b>(
         &self,
         data: &'b mut [u8],
@@ -39,41 +40,43 @@ impl<'a> SwapProposalsList<'a> {
         self.slice(&mut self.data.borrow_mut()).0[0] = value;
     }
 
-    pub fn get(&self, i: u8) -> SwapProposal<'a> {
+    pub fn get(&self, i: u8) -> Result<SwapProposal<'a>, ProgramError> {
         if i >= self.get_count() {
-            panic!("Attempt to access player out of bound");
+            return Err(ProgramError::InvalidAccountData);
         }
-        SwapProposal {
-            data: self.data,
-            offset: self.offset + 1 + i as usize * SwapProposalsList::ITEM_SIZE,
-        }
+        SwapProposal::new(
+            self.data,
+            self.offset + 1 + i as usize * SwapProposalsList::ITEM_SIZE,
+        )
     }
 
-    pub fn add(&self, give_player_id: u16, want_player_id: u16) {
+    pub fn add(&self, give_player_id: u16, want_player_id: u16) -> Result<(), ProgramError> {
         if self.get_count() >= SwapProposalsList::ITEM_CAPACITY {
-            panic!("No more proposal can be added");
+            return Err(ProgramError::InvalidAccountData);
         }
         self.set_count(self.get_count() + 1);
-        let proposal = self.get(self.get_count() - 1);
+        let proposal = self.get(self.get_count() - 1)?;
         proposal.set_give_player_id(give_player_id);
         proposal.set_want_player_id(want_player_id);
         proposal.set_is_initialized(true);
+        Ok(())
     }
 
-    pub fn remove(&self, i: u8) {
+    pub fn remove(&self, i: u8) -> Result<(), ProgramError> {
         if i >= self.get_count() {
-            panic!("Index out of bounds");
+            return Err(ProgramError::InvalidAccountData);
         }
         for i2 in i..self.get_count() - 1 {
-            let proposal = self.get(i2);
-            let next = self.get(i2 + 1);
+            let proposal = self.get(i2)?;
+            let next = self.get(i2 + 1)?;
             next.copy_to(&proposal);
         }
-        let last = self.get(self.get_count() - 1);
+        let last = self.get(self.get_count() - 1)?;
         last.set_give_player_id(0);
         last.set_want_player_id(0);
         last.set_is_initialized(false);
         self.set_count(self.get_count() - 1);
+        Ok(())
     }
 
     pub fn copy_to(&self, to: &Self) {
@@ -84,6 +87,16 @@ impl<'a> SwapProposalsList<'a> {
             self.offset,
             SwapProposalsList::LEN
         ]);
+    }
+
+    pub fn new(
+        data: &'a RefCell<&'a mut [u8]>,
+        offset: usize,
+    ) -> Result<SwapProposalsList, ProgramError> {
+        if data.borrow().len() < Self::LEN + offset {
+            return Err(ProgramError::InvalidAccountData);
+        }
+        Ok(SwapProposalsList { data, offset })
     }
 }
 

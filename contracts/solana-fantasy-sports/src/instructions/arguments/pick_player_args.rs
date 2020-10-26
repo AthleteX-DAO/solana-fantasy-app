@@ -13,8 +13,8 @@ use std::cell::RefCell;
 
 #[repr(C)]
 pub struct PickPlayerArgs<'a> {
-    pub data: &'a RefCell<&'a [u8]>,
-    pub offset: usize,
+    data: &'a RefCell<&'a [u8]>,
+    offset: usize,
 }
 impl<'a> PickPlayerArgs<'a> {
     pub const LEN: usize = 2 + 1 + 2;
@@ -41,6 +41,13 @@ impl<'a> PickPlayerArgs<'a> {
             self.offset,
             PickPlayerArgs::LEN
         ]);
+    }
+
+    pub fn new(data: &'a RefCell<&'a [u8]>, offset: usize) -> Result<PickPlayerArgs, ProgramError> {
+        if data.borrow().len() < Self::LEN + offset {
+            return Err(ProgramError::InvalidInstructionData);
+        }
+        Ok(PickPlayerArgs { data, offset })
     }
 }
 impl Clone for PickPlayerArgs<'_> {

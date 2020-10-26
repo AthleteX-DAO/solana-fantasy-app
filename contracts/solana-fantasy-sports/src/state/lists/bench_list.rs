@@ -11,8 +11,8 @@ use std::cell::RefCell;
 
 #[repr(C)]
 pub struct BenchList<'a> {
-    pub data: &'a RefCell<&'a mut [u8]>,
-    pub offset: usize,
+    data: &'a RefCell<&'a mut [u8]>,
+    offset: usize,
 }
 impl<'a> BenchList<'a> {
     pub const ITEM_SIZE: usize = 2;
@@ -41,6 +41,12 @@ impl<'a> BenchList<'a> {
             self.offset,
             BenchList::LEN
         ]);
+    }
+    pub fn new(data: &'a RefCell<&'a mut [u8]>, offset: usize) -> Result<BenchList, ProgramError> {
+        if data.borrow().len() < Self::LEN + offset {
+            return Err(ProgramError::InvalidAccountData);
+        }
+        Ok(BenchList { data, offset })
     }
 }
 

@@ -78,36 +78,21 @@ impl<'a> SfsInstruction<'a> {
 
         Ok(match tag {
             1 => Self::AddPlayers {
-                args: AddPlayersArgs {
-                    data: input,
-                    offset: 1,
-                },
+                args: AddPlayersArgs::new(input, 1)?,
             },
             2 => Self::InitializeRoot {
-                args: InitializeRootArgs {
-                    data: input,
-                    offset: 1,
-                },
+                args: InitializeRootArgs::new(input, 1)?,
             },
             3 => Self::StartDraftSelection {
-                args: StartDraftSelectionArgs {
-                    data: input,
-                    offset: 1,
-                },
+                args: StartDraftSelectionArgs::new(input, 1)?,
             },
             4 => Self::StartSeason,
 
             5 => Self::PickPlayer {
-                args: PickPlayerArgs {
-                    data: input,
-                    offset: 1,
-                },
+                args: PickPlayerArgs::new(input, 1)?,
             },
             6 => Self::ProposeSwap {
-                args: ProposeSwapArgs {
-                    data: input,
-                    offset: 1,
-                },
+                args: ProposeSwapArgs::new(input, 1)?,
             },
 
             _ => return Err(SfsError::InvalidInstruction.into()),

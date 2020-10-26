@@ -11,8 +11,8 @@ use std::cell::RefCell;
 
 #[repr(C)]
 pub struct PlayerList<'a> {
-    pub data: &'a RefCell<&'a mut [u8]>,
-    pub offset: usize,
+    data: &'a RefCell<&'a mut [u8]>,
+    offset: usize,
 }
 impl<'a> PlayerList<'a> {
     pub const ITEM_SIZE: usize = Player::LEN;
@@ -39,30 +39,26 @@ impl<'a> PlayerList<'a> {
         LittleEndian::write_u16(self.slice(&mut self.data.borrow_mut()).0, value);
     }
 
-    pub fn get(&self, i: u16) -> Player<'a> {
+    pub fn get(&self, i: u16) -> Result<Player<'a>, ProgramError> {
         if i >= self.get_count() {
-            panic!("Attempt to access player out of bound");
+            return Err(ProgramError::InvalidAccountData);
         }
-        Player {
-            data: self.data,
-            offset: self.offset + 2 + i as usize * PlayerList::ITEM_SIZE,
-        }
+        Player::new(
+            self.data,
+            self.offset + 2 + i as usize * PlayerList::ITEM_SIZE,
+        )
     }
 
-    pub fn add(&self, external_id: u16, position: Position) {
+    pub fn add(&self, external_id: u16, position: Position) -> Result<(), ProgramError> {
         if self.get_count() >= PlayerList::ITEM_CAPACITY {
-            panic!("No more players can be added");
+            return Err(ProgramError::InvalidAccountData);
         }
-        // for i in 0..self.get_count() {
-        //     if self.get(i).set_external_id() == external_id {
-        //         panic!("Player with such external id already added");
-        //     }
-        // }
         self.set_count(self.get_count() + 1);
-        let player = self.get(self.get_count() - 1);
+        let player = self.get(self.get_count() - 1)?;
         player.set_external_id(external_id);
         player.set_position(position);
         player.set_is_initialized(true);
+        Ok(())
     }
 
     pub fn copy_to(&self, to: &Self) {
@@ -73,6 +69,13 @@ impl<'a> PlayerList<'a> {
             self.offset,
             PlayerList::LEN
         ]);
+    }
+
+    pub fn new(data: &'a RefCell<&'a mut [u8]>, offset: usize) -> Result<PlayerList, ProgramError> {
+        if data.borrow().len() < Self::LEN + offset {
+            return Err(ProgramError::InvalidAccountData);
+        }
+        Ok(PlayerList { data, offset })
     }
 }
 

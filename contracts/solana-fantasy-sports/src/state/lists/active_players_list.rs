@@ -11,8 +11,8 @@ use std::cell::RefCell;
 
 #[repr(C)]
 pub struct ActivePlayersList<'a> {
-    pub data: &'a RefCell<&'a mut [u8]>,
-    pub offset: usize,
+    data: &'a RefCell<&'a mut [u8]>,
+    offset: usize,
 }
 impl<'a> ActivePlayersList<'a> {
     pub const ITEM_SIZE: usize = 2;
@@ -41,6 +41,16 @@ impl<'a> ActivePlayersList<'a> {
             self.offset,
             ActivePlayersList::LEN
         ]);
+    }
+
+    pub fn new(
+        data: &'a RefCell<&'a mut [u8]>,
+        offset: usize,
+    ) -> Result<ActivePlayersList, ProgramError> {
+        if data.borrow().len() < Self::LEN + offset {
+            return Err(ProgramError::InvalidAccountData);
+        }
+        Ok(ActivePlayersList { data, offset })
     }
 }
 

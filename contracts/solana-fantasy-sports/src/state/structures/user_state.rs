@@ -10,8 +10,8 @@ use std::cell::RefCell;
 
 #[repr(C)]
 pub struct UserState<'a> {
-    pub data: &'a RefCell<&'a mut [u8]>,
-    pub offset: usize,
+    data: &'a RefCell<&'a mut [u8]>,
+    offset: usize,
 }
 impl<'a> UserState<'a> {
     pub const LEN: usize =
@@ -36,25 +36,19 @@ impl<'a> UserState<'a> {
         ]
     }
 
-    pub fn get_bench(&self) -> BenchList<'a> {
-        BenchList {
-            data: self.data,
-            offset: self.offset + PUB_KEY_LEN,
-        }
+    pub fn get_bench(&self) -> Result<BenchList<'a>, ProgramError> {
+        BenchList::new(self.data, self.offset + PUB_KEY_LEN)
     }
 
-    pub fn get_lineups(&self) -> LineupList<'a> {
-        LineupList {
-            data: self.data,
-            offset: self.offset + PUB_KEY_LEN + BenchList::LEN,
-        }
+    pub fn get_lineups(&self) -> Result<LineupList<'a>, ProgramError> {
+        LineupList::new(self.data, self.offset + PUB_KEY_LEN + BenchList::LEN)
     }
 
-    pub fn get_swap_proposals(&self) -> SwapProposalsList<'a> {
-        SwapProposalsList {
-            data: self.data,
-            offset: self.offset + PUB_KEY_LEN + BenchList::LEN + LineupList::LEN,
-        }
+    pub fn get_swap_proposals(&self) -> Result<SwapProposalsList<'a>, ProgramError> {
+        SwapProposalsList::new(
+            self.data,
+            self.offset + PUB_KEY_LEN + BenchList::LEN + LineupList::LEN,
+        )
     }
 
     pub fn get_pub_key(&self) -> Pubkey {
@@ -66,8 +60,8 @@ impl<'a> UserState<'a> {
             .copy_from_slice(value.as_ref());
     }
 
-    pub fn get_is_initialized(&self) -> bool {
-        unpack_is_initialized(self.slice(&mut self.data.borrow_mut()).4).unwrap()
+    pub fn get_is_initialized(&self) -> Result<bool, ProgramError> {
+        unpack_is_initialized(self.slice(&mut self.data.borrow_mut()).4)
     }
     pub fn set_is_initialized(&self, value: bool) {
         self.slice(&mut self.data.borrow_mut()).4[0] = value as u8;
@@ -81,6 +75,13 @@ impl<'a> UserState<'a> {
             self.offset,
             UserState::LEN
         ]);
+    }
+
+    pub fn new(data: &'a RefCell<&'a mut [u8]>, offset: usize) -> Result<UserState, ProgramError> {
+        if data.borrow().len() < Self::LEN + offset {
+            return Err(ProgramError::InvalidAccountData);
+        }
+        Ok(UserState { data, offset })
     }
 }
 

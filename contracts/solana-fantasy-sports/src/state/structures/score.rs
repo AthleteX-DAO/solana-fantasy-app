@@ -10,8 +10,8 @@ use std::cell::RefCell;
 
 #[repr(C)]
 pub struct Score<'a> {
-    pub data: &'a RefCell<&'a mut [u8]>,
-    pub offset: usize,
+    data: &'a RefCell<&'a mut [u8]>,
+    offset: usize,
 }
 impl<'a> Score<'a> {
     pub const LEN: usize = 1 + 1;
@@ -26,8 +26,8 @@ impl<'a> Score<'a> {
         self.slice(&mut self.data.borrow_mut()).0[0] = value;
     }
 
-    pub fn get_is_initialized(&self) -> bool {
-        unpack_is_initialized(self.slice(&mut self.data.borrow_mut()).1).unwrap()
+    pub fn get_is_initialized(&self) -> Result<bool, ProgramError> {
+        unpack_is_initialized(self.slice(&mut self.data.borrow_mut()).1)
     }
     pub fn set_is_initialized(&self, value: bool) {
         self.slice(&mut self.data.borrow_mut()).1[0] = value as u8;
@@ -41,6 +41,13 @@ impl<'a> Score<'a> {
             self.offset,
             Score::LEN
         ]);
+    }
+
+    pub fn new(data: &'a RefCell<&'a mut [u8]>, offset: usize) -> Result<Score, ProgramError> {
+        if data.borrow().len() < Self::LEN + offset {
+            return Err(ProgramError::InvalidAccountData);
+        }
+        Ok(Score { data, offset })
     }
 }
 

@@ -12,8 +12,8 @@ use std::cell::RefCell;
 
 #[repr(C)]
 pub struct PlayerList<'a> {
-    pub data: &'a RefCell<&'a [u8]>,
-    pub offset: usize,
+    data: &'a RefCell<&'a [u8]>,
+    offset: usize,
 }
 impl<'a> PlayerList<'a> {
     pub const ITEM_SIZE: usize = Player::LEN;
@@ -37,14 +37,14 @@ impl<'a> PlayerList<'a> {
         self.slice(&self.data.borrow()).0[0]
     }
 
-    pub fn get(&self, i: u8) -> Player<'a> {
+    pub fn get(&self, i: u8) -> Result<Player<'a>, ProgramError> {
         if i >= self.get_count().into() {
-            panic!("Attempt to access player out of bound");
+            return Err(ProgramError::InvalidInstructionData);
         }
-        Player {
-            data: self.data,
-            offset: self.offset + 1 + i as usize * PlayerList::ITEM_SIZE,
-        }
+        Player::new(
+            self.data,
+            self.offset + 1 + i as usize * PlayerList::ITEM_SIZE,
+        )
     }
 
     pub fn copy_to(&self, to: &mut [u8]) {
@@ -54,6 +54,13 @@ impl<'a> PlayerList<'a> {
             self.offset,
             PlayerList::LEN
         ]);
+    }
+
+    pub fn new(data: &'a RefCell<&'a [u8]>, offset: usize) -> Result<PlayerList, ProgramError> {
+        if data.borrow().len() < Self::LEN + offset {
+            return Err(ProgramError::InvalidInstructionData);
+        }
+        Ok(PlayerList { data, offset })
     }
 }
 

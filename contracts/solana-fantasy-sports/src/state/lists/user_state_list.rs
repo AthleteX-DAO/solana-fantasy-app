@@ -12,7 +12,7 @@ use std::cell::RefCell;
 
 #[repr(C)]
 pub struct UserStateList<'a> {
-    pub data: &'a RefCell<&'a mut [u8]>,
+    data: &'a RefCell<&'a mut [u8]>,
     pub offset: usize,
 }
 impl<'a> UserStateList<'a> {
@@ -40,29 +40,30 @@ impl<'a> UserStateList<'a> {
         self.slice(&mut self.data.borrow_mut()).0[0] = value;
     }
 
-    pub fn get(&self, i: u8) -> UserState<'a> {
+    pub fn get(&self, i: u8) -> Result<UserState<'a>, ProgramError> {
         if i >= self.get_count() {
-            panic!("Attempt to access user state out of bound");
+            return Err(ProgramError::InvalidAccountData);
         }
-        UserState {
-            data: self.data,
-            offset: self.offset + 1 + i as usize * UserStateList::ITEM_SIZE,
-        }
+        UserState::new(
+            self.data,
+            self.offset + 1 + i as usize * UserStateList::ITEM_SIZE,
+        )
     }
 
-    pub fn add(&self, pubkey: Pubkey) {
+    pub fn add(&self, pubkey: Pubkey) -> Result<(), ProgramError> {
         if self.get_count() >= UserStateList::ITEM_CAPACITY {
-            panic!("No more users can be added");
+            return Err(ProgramError::InvalidAccountData);
         }
         for i in 0..self.get_count() {
-            if self.get(i).get_pub_key() == pubkey {
-                panic!("Player with such pubkey already added");
+            if self.get(i)?.get_pub_key() == pubkey {
+                return Err(ProgramError::InvalidAccountData);
             }
         }
         self.set_count(self.get_count() + 1);
-        let user_state = self.get(self.get_count() - 1);
+        let user_state = self.get(self.get_count() - 1)?;
         user_state.set_pub_key(pubkey);
         user_state.set_is_initialized(true);
+        Ok(())
     }
 
     pub fn copy_to(&self, to: &Self) {
@@ -73,6 +74,15 @@ impl<'a> UserStateList<'a> {
             self.offset,
             UserStateList::LEN
         ]);
+    }
+    pub fn new(
+        data: &'a RefCell<&'a mut [u8]>,
+        offset: usize,
+    ) -> Result<UserStateList, ProgramError> {
+        if data.borrow().len() < Self::LEN + offset {
+            return Err(ProgramError::InvalidAccountData);
+        }
+        Ok(UserStateList { data, offset })
     }
 }
 

@@ -11,8 +11,8 @@ use std::cell::RefCell;
 
 #[repr(C)]
 pub struct SwapProposal<'a> {
-    pub data: &'a RefCell<&'a mut [u8]>,
-    pub offset: usize,
+    data: &'a RefCell<&'a mut [u8]>,
+    offset: usize,
 }
 impl<'a> SwapProposal<'a> {
     pub const LEN: usize = 2 + 2 + 1;
@@ -39,8 +39,8 @@ impl<'a> SwapProposal<'a> {
         LittleEndian::write_u16(self.slice(&mut self.data.borrow_mut()).1, value);
     }
 
-    pub fn get_is_initialized(&self) -> bool {
-        unpack_is_initialized(self.slice(&mut self.data.borrow_mut()).2).unwrap()
+    pub fn get_is_initialized(&self) -> Result<bool, ProgramError> {
+        unpack_is_initialized(self.slice(&mut self.data.borrow_mut()).2)
     }
     pub fn set_is_initialized(&self, value: bool) {
         self.slice(&mut self.data.borrow_mut()).2[0] = value as u8;
@@ -54,6 +54,16 @@ impl<'a> SwapProposal<'a> {
             self.offset,
             SwapProposal::LEN
         ]);
+    }
+
+    pub fn new(
+        data: &'a RefCell<&'a mut [u8]>,
+        offset: usize,
+    ) -> Result<SwapProposal, ProgramError> {
+        if data.borrow().len() < Self::LEN + offset {
+            return Err(ProgramError::InvalidAccountData);
+        }
+        Ok(SwapProposal { data, offset })
     }
 }
 

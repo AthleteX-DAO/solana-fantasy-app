@@ -10,8 +10,8 @@ use std::cell::RefCell;
 
 #[repr(C)]
 pub struct League<'a> {
-    pub data: &'a RefCell<&'a mut [u8]>,
-    pub offset: usize,
+    data: &'a RefCell<&'a mut [u8]>,
+    offset: usize,
 }
 impl<'a> League<'a> {
     pub const LEN: usize = UserStateList::LEN + 1 + 2 + 1;
@@ -33,11 +33,8 @@ impl<'a> League<'a> {
         ]
     }
 
-    pub fn get_user_states(&self) -> UserStateList<'a> {
-        UserStateList {
-            data: self.data,
-            offset: self.offset + 1,
-        }
+    pub fn get_user_states(&self) -> Result<UserStateList<'a>, ProgramError> {
+        UserStateList::new(self.data, self.offset + 1)
     }
 
     pub fn get_bid(&self) -> u8 {
@@ -54,8 +51,8 @@ impl<'a> League<'a> {
         LittleEndian::write_u16(self.slice(&mut self.data.borrow_mut()).2, value);
     }
 
-    pub fn get_is_initialized(&self) -> bool {
-        unpack_is_initialized(self.slice(&mut self.data.borrow_mut()).3).unwrap()
+    pub fn get_is_initialized(&self) -> Result<bool, ProgramError> {
+        unpack_is_initialized(self.slice(&mut self.data.borrow_mut()).3)
     }
     pub fn set_is_initialized(&self, value: bool) {
         self.slice(&mut self.data.borrow_mut()).3[0] = value as u8;
@@ -69,6 +66,13 @@ impl<'a> League<'a> {
             self.offset,
             League::LEN
         ]);
+    }
+
+    pub fn new(data: &'a RefCell<&'a mut [u8]>, offset: usize) -> Result<League, ProgramError> {
+        if data.borrow().len() < Self::LEN + offset {
+            return Err(ProgramError::InvalidAccountData);
+        }
+        Ok(League { data, offset })
     }
 }
 

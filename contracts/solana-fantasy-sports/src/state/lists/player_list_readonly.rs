@@ -10,19 +10,16 @@ use std::cell::RefCell;
 
 #[repr(C)]
 pub struct PlayerListReadonly<'a> {
-    pub data: &'a RefCell<&'a mut [u8]>,
-    pub offset: usize,
+    data: &'a RefCell<&'a mut [u8]>,
+    offset: usize,
 }
 impl<'a> PlayerListReadonly<'a> {
     pub const ITEM_SIZE: usize = Player::LEN;
     pub const ITEM_COUNT: usize = consts::TOTAL_PLAYERS_COUNT;
     pub const LEN: usize = PlayerList::ITEM_SIZE * PlayerList::ITEM_COUNT as usize;
 
-    pub fn get(&self, i: usize) -> Player<'a> {
-        Player {
-            data: self.data,
-            offset: self.offset + i * PlayerList::ITEM_SIZE,
-        }
+    pub fn get(&self, i: usize) -> Result<Player<'a>, ProgramError> {
+        Player::new(self.data, self.offset + i * PlayerList::ITEM_SIZE)
     }
 
     pub fn copy_to(&self, to: &Self) {
@@ -33,6 +30,16 @@ impl<'a> PlayerListReadonly<'a> {
             self.offset,
             PlayerList::LEN
         ]);
+    }
+
+    pub fn new(
+        data: &'a RefCell<&'a [u8]>,
+        offset: usize,
+    ) -> Result<PlayerListReadonly, ProgramError> {
+        if data.borrow().len() < Self::LEN + offset {
+            return Err(ProgramError::InvalidAccountData);
+        }
+        Ok(PlayerListReadonly { data, offset })
     }
 }
 

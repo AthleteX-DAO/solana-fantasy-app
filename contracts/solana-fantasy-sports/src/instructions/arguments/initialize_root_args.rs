@@ -12,8 +12,8 @@ use std::cell::RefCell;
 
 #[repr(C)]
 pub struct InitializeRootArgs<'a> {
-    pub data: &'a RefCell<&'a [u8]>,
-    pub offset: usize,
+    data: &'a RefCell<&'a [u8]>,
+    offset: usize,
 }
 impl<'a> InitializeRootArgs<'a> {
     pub const LEN: usize = PUB_KEY_LEN;
@@ -34,12 +34,15 @@ impl<'a> InitializeRootArgs<'a> {
         ]);
     }
 
-    // pub fn pack(
-    //     oracle_authority: &Pubkey
-    //     players: &[]
-    // ) -> [u8;InitializeRootArgs::LEN] {
-
-    // }
+    pub fn new(
+        data: &'a RefCell<&'a [u8]>,
+        offset: usize,
+    ) -> Result<InitializeRootArgs, ProgramError> {
+        if data.borrow().len() < Self::LEN + offset {
+            return Err(ProgramError::InvalidInstructionData);
+        }
+        Ok(InitializeRootArgs { data, offset })
+    }
 }
 impl Clone for InitializeRootArgs<'_> {
     fn clone(&self) -> Self {

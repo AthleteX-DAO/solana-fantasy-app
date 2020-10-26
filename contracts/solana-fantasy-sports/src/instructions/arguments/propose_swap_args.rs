@@ -13,7 +13,7 @@ use std::cell::RefCell;
 
 #[repr(C)]
 pub struct ProposeSwapArgs<'a> {
-    pub data: &'a RefCell<&'a [u8]>,
+    data: &'a RefCell<&'a [u8]>,
     pub offset: usize,
 }
 impl<'a> ProposeSwapArgs<'a> {
@@ -51,6 +51,16 @@ impl<'a> ProposeSwapArgs<'a> {
             self.offset,
             ProposeSwapArgs::LEN
         ]);
+    }
+
+    pub fn new(
+        data: &'a RefCell<&'a [u8]>,
+        offset: usize,
+    ) -> Result<ProposeSwapArgs, ProgramError> {
+        if data.borrow().len() < Self::LEN + offset {
+            return Err(ProgramError::InvalidInstructionData);
+        }
+        Ok(ProposeSwapArgs { data, offset })
     }
 }
 impl Clone for ProposeSwapArgs<'_> {

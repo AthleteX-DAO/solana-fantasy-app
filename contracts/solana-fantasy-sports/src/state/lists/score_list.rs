@@ -11,19 +11,16 @@ use std::ops::{Index, IndexMut};
 
 #[repr(C)]
 pub struct ScoreList<'a> {
-    pub data: &'a RefCell<&'a mut [u8]>,
-    pub offset: usize,
+    data: &'a RefCell<&'a mut [u8]>,
+    offset: usize,
 }
 impl<'a> ScoreList<'a> {
     pub const ITEM_SIZE: usize = Score::LEN;
     pub const ITEM_COUNT: u8 = consts::GAMES_COUNT;
     pub const LEN: usize = ScoreList::ITEM_SIZE * ScoreList::ITEM_COUNT as usize;
 
-    pub fn get(&self, i: u8) -> Score<'a> {
-        Score {
-            data: self.data,
-            offset: self.offset + i as usize * ScoreList::ITEM_SIZE,
-        }
+    pub fn get(&self, i: u8) -> Result<Score<'a>, ProgramError> {
+        Score::new(self.data, self.offset + i as usize * ScoreList::ITEM_SIZE)
     }
 
     pub fn copy_to(&self, to: &Self) {
@@ -34,6 +31,13 @@ impl<'a> ScoreList<'a> {
             self.offset,
             ScoreList::LEN
         ]);
+    }
+
+    pub fn new(data: &'a RefCell<&'a mut [u8]>, offset: usize) -> Result<ScoreList, ProgramError> {
+        if data.borrow().len() < Self::LEN + offset {
+            return Err(ProgramError::InvalidAccountData);
+        }
+        Ok(ScoreList { data, offset })
     }
 }
 

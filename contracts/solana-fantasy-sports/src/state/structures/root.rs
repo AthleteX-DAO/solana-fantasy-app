@@ -10,8 +10,8 @@ use std::cell::RefCell;
 
 #[repr(C)]
 pub struct Root<'a> {
-    pub data: &'a RefCell<&'a mut [u8]>,
-    pub offset: usize,
+    data: &'a RefCell<&'a mut [u8]>,
+    offset: usize,
 }
 impl<'a> Root<'a> {
     pub const LEN: usize =
@@ -38,25 +38,16 @@ impl<'a> Root<'a> {
         ]
     }
 
-    pub fn get_players(&self) -> PlayerList<'a> {
-        PlayerList {
-            data: self.data,
-            offset: self.offset,
-        }
+    pub fn get_players(&self) -> Result<PlayerList<'a>, ProgramError> {
+        PlayerList::new(self.data, self.offset)
     }
 
-    pub fn get_leagues(&self) -> LeagueList<'a> {
-        LeagueList {
-            data: self.data,
-            offset: self.offset + PlayerList::LEN,
-        }
+    pub fn get_leagues(&self) -> Result<LeagueList<'a>, ProgramError> {
+        LeagueList::new(self.data, self.offset + PlayerList::LEN)
     }
 
-    pub fn get_pick_order(&self) -> PickOrderList<'a> {
-        PickOrderList {
-            data: self.data,
-            offset: self.offset + PlayerList::LEN + LeagueList::LEN,
-        }
+    pub fn get_pick_order(&self) -> Result<PickOrderList<'a>, ProgramError> {
+        PickOrderList::new(self.data, self.offset + PlayerList::LEN + LeagueList::LEN)
     }
 
     pub fn get_stage(&self) -> Result<Stage, ProgramError> {
@@ -98,6 +89,13 @@ impl<'a> Root<'a> {
             self.offset,
             Root::LEN
         ]);
+    }
+
+    pub fn new(data: &'a RefCell<&'a mut [u8]>) -> Result<Root, ProgramError> {
+        if data.borrow().len() != Self::LEN {
+            return Err(ProgramError::InvalidAccountData);
+        }
+        Ok(Root { data, offset: 0 })
     }
 }
 

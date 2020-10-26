@@ -11,8 +11,8 @@ use std::cell::RefCell;
 
 #[repr(C)]
 pub struct Player<'a> {
-    pub data: &'a RefCell<&'a mut [u8]>,
-    pub offset: usize,
+    data: &'a RefCell<&'a mut [u8]>,
+    offset: usize,
 }
 impl<'a> Player<'a> {
     pub const LEN: usize = ScoreList::LEN + 2 + 1 + 1;
@@ -34,11 +34,8 @@ impl<'a> Player<'a> {
         ]
     }
 
-    pub fn get_scores(&self) -> ScoreList<'a> {
-        ScoreList {
-            data: self.data,
-            offset: self.offset,
-        }
+    pub fn get_scores(&self) -> Result<ScoreList<'a>, ProgramError> {
+        ScoreList::new(self.data, self.offset)
     }
 
     fn get_external_id(&self) -> u16 {
@@ -48,17 +45,16 @@ impl<'a> Player<'a> {
         LittleEndian::write_u16(self.slice(&mut self.data.borrow_mut()).1, value);
     }
 
-    pub fn get_position(&self) -> Position {
+    pub fn get_position(&self) -> Result<Position, ProgramError> {
         Position::try_from_primitive(self.slice(&mut self.data.borrow_mut()).2[0])
             .or(Err(ProgramError::InvalidAccountData))
-            .unwrap()
     }
     pub fn set_position(&self, value: Position) {
         self.slice(&mut self.data.borrow_mut()).2[0] = value as u8;
     }
 
-    pub fn get_is_initialized(&self) -> bool {
-        unpack_is_initialized(self.slice(&mut self.data.borrow_mut()).3).unwrap()
+    pub fn get_is_initialized(&self) -> Result<bool, ProgramError> {
+        unpack_is_initialized(self.slice(&mut self.data.borrow_mut()).3)
     }
     pub fn set_is_initialized(&self, value: bool) {
         self.slice(&mut self.data.borrow_mut()).3[0] = value as u8;
@@ -72,6 +68,13 @@ impl<'a> Player<'a> {
             self.offset,
             Player::LEN
         ]);
+    }
+
+    pub fn new(data: &'a RefCell<&'a mut [u8]>, offset: usize) -> Result<Player, ProgramError> {
+        if data.borrow().len() < Self::LEN + offset {
+            return Err(ProgramError::InvalidAccountData);
+        }
+        Ok(Player { data, offset })
     }
 }
 

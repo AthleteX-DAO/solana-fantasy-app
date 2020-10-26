@@ -38,26 +38,17 @@ impl Processor {
     ) -> ProgramResult {
         let account_info_iter = &mut accounts.iter();
         let root_info = next_account_info(account_info_iter)?;
-        let root_data_len = root_info.data_len();
-        let rent = &Rent::from_account_info(next_account_info(account_info_iter)?)?;
-
-        if root_data_len != Root::LEN {
-            return Err(ProgramError::InvalidAccountData.into());
-        }
-
-        let root = Root {
-            data: &root_info.data,
-            offset: 0,
-        };
+        let root = Root::new(&root_info.data)?;
 
         if root.get_stage()? != Stage::Uninitialized {
             return Err(SfsError::InvalidStage.into());
         }
 
-        for i in 0..args.get_players().get_count() {
-            let arg_player = args.get_players().get(i);
-            root.get_players()
-                .add(arg_player.get_external_id(), arg_player.get_position());
+        let players_args = args.get_players()?;
+        let players_root = root.get_players()?;
+        for i in 0..players_args.get_count() {
+            let arg_player = players_args.get(i)?;
+            players_root.add(arg_player.get_external_id(), arg_player.get_position()?)?;
         }
 
         Ok(())
@@ -73,15 +64,7 @@ impl Processor {
         let root_info = next_account_info(account_info_iter)?;
         let root_data_len = root_info.data_len();
         let rent = &Rent::from_account_info(next_account_info(account_info_iter)?)?;
-
-        if root_data_len != Root::LEN {
-            return Err(ProgramError::InvalidAccountData.into());
-        }
-
-        let root = Root {
-            data: &root_info.data,
-            offset: 0,
-        };
+        let root = Root::new(&root_info.data)?;
 
         if root.get_stage()? != Stage::Uninitialized {
             return Err(SfsError::InvalidStage.into());
@@ -105,24 +88,14 @@ impl Processor {
     ) -> ProgramResult {
         let account_info_iter = &mut accounts.iter();
         let root_info = next_account_info(account_info_iter)?;
-        let root_data_len = root_info.data_len();
-        let rent = &Rent::from_account_info(next_account_info(account_info_iter)?)?;
-
-        if root_data_len != Root::LEN {
-            return Err(ProgramError::InvalidAccountData.into());
-        }
-
-        let root = Root {
-            data: &root_info.data,
-            offset: 0,
-        };
+        let root = Root::new(&root_info.data)?;
 
         if root.get_stage()? != Stage::Join {
             return Err(SfsError::InvalidStage.into());
         }
 
-        let pick_order_args = args.get_pick_order();
-        let pick_order_root = root.get_pick_order();
+        let pick_order_args = args.get_pick_order()?;
+        let pick_order_root = root.get_pick_order()?;
 
         for i in 0..PickOrderList::ITEM_COUNT {
             pick_order_root.set(i, pick_order_args.get(i));
@@ -140,17 +113,7 @@ impl Processor {
     ) -> ProgramResult {
         let account_info_iter = &mut accounts.iter();
         let root_info = next_account_info(account_info_iter)?;
-        let root_data_len = root_info.data_len();
-        let rent = &Rent::from_account_info(next_account_info(account_info_iter)?)?;
-
-        if root_data_len != Root::LEN {
-            return Err(ProgramError::InvalidAccountData.into());
-        }
-
-        let root = Root {
-            data: &root_info.data,
-            offset: 0,
-        };
+        let root = Root::new(&root_info.data)?;
 
         if root.get_stage()? != Stage::DraftSelection {
             return Err(SfsError::InvalidStage.into());
@@ -169,17 +132,8 @@ impl Processor {
     ) -> ProgramResult {
         let account_info_iter = &mut accounts.iter();
         let root_info = next_account_info(account_info_iter)?;
-        let root_data_len = root_info.data_len();
+        let root = Root::new(&root_info.data)?;
         let user_account = next_account_info(account_info_iter)?;
-
-        if root_data_len != Root::LEN {
-            return Err(ProgramError::InvalidAccountData.into());
-        }
-
-        let root = Root {
-            data: &root_info.data,
-            offset: 0,
-        };
 
         if root.get_stage()? != Stage::DraftSelection {
             return Err(SfsError::InvalidStage.into());
@@ -187,20 +141,20 @@ impl Processor {
 
         let player_id = args.get_player_id();
 
-        if player_id >= root.get_players().get_count() {
+        if player_id >= root.get_players()?.get_count() {
             return Err(SfsError::InvalidState.into());
         }
 
-        let league = root.get_leagues().get(args.get_league_id());
-        let user_state = league.get_user_states().get(args.get_user_id());
+        let league = root.get_leagues()?.get(args.get_league_id())?;
+        let user_state = league.get_user_states()?.get(args.get_user_id())?;
 
         Self::validate_owner(program_id, &user_state.get_pub_key(), user_account)?;
 
-        let users_count = league.get_user_states().get_count();
+        let users_count = league.get_user_states()?.get_count();
 
         let mut league_pick_order = Vec::<u8>::with_capacity(users_count as usize);
         for i in 0..PickOrderList::ITEM_COUNT {
-            let pick = root.get_pick_order().get(i);
+            let pick = root.get_pick_order()?.get(i);
             if pick < users_count {
                 league_pick_order.push(pick);
                 if league_pick_order.len() == users_count as usize {
@@ -225,14 +179,14 @@ impl Processor {
         }
         let next_week = root.get_current_week() + 1;
         for i in 0..users_count {
-            let user_state = league.get_user_states().get(i);
+            let user_state = league.get_user_states()?.get(i)?;
             for i2 in 0..BenchList::ITEM_COUNT {
-                if user_state.get_bench().get(i2) == player_id {
+                if user_state.get_bench()?.get(i2) == player_id {
                     return Err(SfsError::AlreadyInUse.into());
                 }
             }
             for i2 in 0..ActivePlayersList::ITEM_COUNT {
-                if user_state.get_lineups().get(next_week - 1).get(i2) == player_id {
+                if user_state.get_lineups()?.get(next_week - 1)?.get(i2) == player_id {
                     return Err(SfsError::AlreadyInUse.into());
                 }
             }
@@ -240,11 +194,11 @@ impl Processor {
 
         if round > ActivePlayersList::ITEM_COUNT {
             user_state
-                .get_lineups()
-                .get(next_week - 1)
+                .get_lineups()?
+                .get(next_week - 1)?
                 .set(round - BenchList::ITEM_COUNT, player_id);
         } else {
-            user_state.get_bench().set(round, player_id);
+            user_state.get_bench()?.set(round, player_id);
         }
 
         league.set_current_pick(league.get_current_pick() + 1);
@@ -315,13 +269,7 @@ impl Processor {
     ) -> ProgramResult {
         let account_info_iter = &mut accounts.iter();
         let root_info = next_account_info(account_info_iter)?;
-        let root_data_len = root_info.data_len();
-        let rent = &Rent::from_account_info(next_account_info(account_info_iter)?)?;
-
-        let root = Root {
-            data: &root_info.data,
-            offset: 0,
-        };
+        let root = Root::new(&root_info.data)?;
 
         let user_account_info = next_account_info(account_info_iter)?;
         let other_account_info = next_account_info(account_info_iter)?;
@@ -338,12 +286,12 @@ impl Processor {
         // 2. Insert a proposal at the index of length, throw if length is equal to max length
         // 3. Write self pub key, give and want addr
 
-        let league = root.get_leagues().get(args.get_league_id());
-        let user_state = league.get_user_states().get(args.get_user_id());
+        let league = root.get_leagues()?.get(args.get_league_id())?;
+        let user_state = league.get_user_states()?.get(args.get_user_id())?;
         if *user_account_info.key == user_state.get_pub_key() {
             user_state
-                .get_swap_proposals()
-                .add(args.get_give_player_id(), args.get_want_player_id());
+                .get_swap_proposals()?
+                .add(args.get_give_player_id(), args.get_want_player_id())?;
         }
 
         Ok(())
@@ -473,11 +421,8 @@ mod tests {
         let mut args_data = Vec::<u8>::new();
         args_data.extend_from_slice(owner_key.as_ref());
 
-        // let args_data =
-        let args = InitializeRootArgs {
-            data: &RefCell::new(&args_data),
-            offset: 0,
-        };
+        let args_data = &RefCell::new(args_data.as_slice());
+        let args = InitializeRootArgs::new(args_data, 0).unwrap();
 
         // root is not rent exempt
         assert_eq!(
@@ -505,10 +450,8 @@ mod tests {
             )
         );
 
-        let root = Root {
-            data: &RefCell::new(&mut root_account.data),
-            offset: 0,
-        };
+        let root_data = &RefCell::new(&mut *root_account.data);
+        let root = Root::new(root_data).unwrap();
         assert_eq!(root.get_oracle_authority(), owner_key);
     }
 
@@ -530,11 +473,8 @@ mod tests {
             args_data.extend_from_slice(&[0, 0, 0]);
         }
 
-        // let args_data =
-        let args = AddPlayersArgs {
-            data: &RefCell::new(&args_data),
-            offset: 0,
-        };
+        let args_data = &RefCell::new(args_data.as_slice());
+        let args = AddPlayersArgs::new(args_data, 0).unwrap();
 
         // add players
         do_process_instruction(
@@ -543,11 +483,9 @@ mod tests {
         )
         .unwrap();
 
-        let root = Root {
-            data: &RefCell::new(&mut root_account.data),
-            offset: 0,
-        };
-        assert_eq!(root.get_players().get_count(), 5);
+        let root_data = &RefCell::new(&mut *root_account.data);
+        let root = Root::new(root_data).unwrap();
+        assert_eq!(root.get_players().unwrap().get_count(), 5);
         assert_eq!(root.get_stage(), Ok(Stage::Uninitialized));
     }
 }
