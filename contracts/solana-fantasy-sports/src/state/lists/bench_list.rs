@@ -33,6 +33,20 @@ impl<'a> BenchList<'a> {
         LittleEndian::write_u16(self.slice(&mut self.data.borrow_mut(), i), value);
     }
 
+    pub fn contains_player_id(&self, player_id: u16) -> bool {
+        return self.index_of(player_id) != std::u16::MAX as usize;
+    }
+
+    pub fn index_of(&self, player_id: u16) -> usize {
+        for i in 0..BenchList::LEN {
+            if self.get(i) == player_id {
+                return i;
+            }
+        }
+
+        return std::u16::MAX as usize; // -1
+    }
+
     pub fn copy_to(&self, to: &Self) {
         let mut dst = to.data.borrow_mut();
         let mut src = self.data.borrow_mut();

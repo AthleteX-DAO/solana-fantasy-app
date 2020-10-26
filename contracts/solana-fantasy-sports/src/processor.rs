@@ -196,6 +196,75 @@ impl Processor {
 
         Ok(())
     }
+   
+    pub fn process_accept_swap<'a>(
+        program_id: &Pubkey,
+        accounts: &'a [AccountInfo<'a>],
+        args: AcceptSwapArgs,
+    ) -> ProgramResult {
+        let account_info_iter = &mut accounts.iter();
+        let root_info = next_account_info(account_info_iter)?;
+        let root_data_len = root_info.data_len();
+        let rent = &Rent::from_account_info(next_account_info(account_info_iter)?)?;
+
+        let root = Root {
+            data: &root_info.data,
+            offset: 0,
+        };
+
+        let user_account_info = next_account_info(account_info_iter)?;
+        // let other_account_info = next_account_info(account_info_iter)?;
+
+        // @TODO: before mutating check if the condition of players bench is satisfied after the swap
+
+        // Sudo code
+        // 1. Get the swap proposal
+        // 2. Check if the want player exists with self user
+        // 3. If it does then 
+
+        let league = root.get_leagues().get(args.get_league());
+
+        // Getting the swap proposal to work with
+        let proposing_user = league.get_user_states().get(args.get_user_arr_index() as usize);
+
+        if(!proposing_user.get_is_initialized()) {
+            // throw that proposing user doesnot exist at that index
+        }
+
+        // @TODO: I feel the data type of indexes are messed up: u8, u16, usize are used in different places.
+        // Probably having one type every where could be nice.
+        let swap_proposal = proposing_user.get_swap_proposals().get(args.get_proposal_arr_index() as u8);
+        
+        if(!swap_proposal.get_is_initialized()) {
+            // throw that a proposal doesnot exist at given index
+        }
+       
+        let self_user = league.get_user_states().get_by_pub_key(*user_account_info.key);
+        let self_user = match self_user {
+            Ok(self_user) => self_user,
+            Err(error) => panic!("There was error: {:?}", error),
+        };
+
+        let want_player_id = swap_proposal.get_want_player_id();
+        let want_player_index_self_user = self_user.get_bench_list().index_of(want_player_id);
+
+        if(want_player_index_self_user == std::u16::MAX as usize) {
+            // throw that self user doesnt own the want player
+        }
+
+        let give_player_id = swap_proposal.get_give_player_id();
+        let give_player_index_proposing_user = proposing_user.get_bench_list().index_of(want_player_id);
+
+        if(give_player_index_proposing_user == std::u16::MAX as usize) {
+            // throw that proposing user doesnt own the give player
+        }
+
+        // Executing the swap
+        self_user.get_bench_list().set(want_player_index_self_user, give_player_id);
+        proposing_user.get_bench_list().set(give_player_index_proposing_user, want_player_id);
+
+        Ok(())
+    }
 
     /// Processes an [Instruction](enum.Instruction.html).
     pub fn process<'a>(
@@ -221,6 +290,10 @@ impl Processor {
             SfsInstruction::ProposeSwap { args } => {
                 info!("Instruction: ProposeSwap");
                 Self::process_propose_swap(program_id, accounts, args)
+            }
+            SfsInstruction::AcceptSwap { args } => {
+                info!("Instruction: AcceptSwap");
+                Self::process_accept_swap(program_id, accounts, args)
             }
             // SfsInstruction::UpdateLineup {
             //     league,

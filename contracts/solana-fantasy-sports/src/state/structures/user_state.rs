@@ -51,6 +51,15 @@ impl<'a> UserState<'a> {
             offset: self.offset + PUB_KEY_LEN,
         }
     }
+    
+    // @TODO: Rename get_scores to get_bench_list
+    // temporarily adding duplicate of above function to prevent possible breaking with other code
+    pub fn get_bench_list(&self) -> BenchList<'a> {
+        BenchList {
+            data: self.data,
+            offset: self.offset + PUB_KEY_LEN,
+        }
+    }
 
     pub fn get_lineups(&self) -> LineupList<'a> {
         LineupList {

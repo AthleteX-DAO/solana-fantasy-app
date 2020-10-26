@@ -4,3 +4,5 @@ pub mod add_players_args;
 pub use add_players_args::*;
 pub mod propose_swap_args;
 pub use propose_swap_args::*;
+pub mod accept_swap_args;
+pub use accept_swap_args::*;

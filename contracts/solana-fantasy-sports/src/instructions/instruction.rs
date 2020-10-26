@@ -53,6 +53,15 @@ pub enum SfsInstruction<'a> {
     ProposeSwap {
         args: ProposeSwapArgs<'a>,
     },
+    ///
+    /// Accepts a swap proposal
+    ///
+    /// Accounts expected by this instruction:
+    ///   0. `[writable]` The root to initialize.
+    ///
+    AcceptSwap {
+        args: AcceptSwapArgs<'a>,
+    },
     /// Test
     ///
     /// Accounts expected by this instruction:
@@ -87,7 +96,12 @@ impl<'a> SfsInstruction<'a> {
                     offset: 1,
                 },
             },
-
+            4 => Self::AcceptSwap {
+                args: AcceptSwapArgs {
+                    data: input,
+                    offset: 1,
+                },
+            },
             _ => return Err(SfsError::InvalidInstruction.into()),
         })
     }
@@ -114,11 +128,16 @@ impl<'a> SfsInstruction<'a> {
                 buf.extend_from_slice(&[0u8; ProposeSwapArgs::LEN]);
                 args.copy_to(array_mut_ref![buf, 1, ProposeSwapArgs::LEN]);
             }
-            Self::UpdateLineup => {
+            Self::AcceptSwap { args } => {
                 buf.push(4);
+                buf.extend_from_slice(&[0u8; AcceptSwapArgs::LEN]);
+                args.copy_to(array_mut_ref![buf, 1, AcceptSwapArgs::LEN]);
+            }
+            Self::UpdateLineup => {
+                buf.push(5);
             }
             Self::TestMutate => {
-                buf.push(5);
+                buf.push(6);
             }
         };
         buf

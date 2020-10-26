@@ -5,8 +5,9 @@ use arrayref::{array_mut_ref, array_ref};
 use solana_sdk::{
     program_error::ProgramError,
     program_pack::{Pack, Sealed},
+    pubkey::Pubkey,
 };
-use std::cell::RefCell;
+use std::{cell::RefCell, io};
 
 #[repr(C)]
 pub struct UserStateList<'a> {
@@ -23,6 +24,18 @@ impl<'a> UserStateList<'a> {
             data: self.data,
             offset: self.offset + i * UserStateList::ITEM_SIZE,
         }
+    }
+
+    pub fn get_by_pub_key(&self, pub_key: Pubkey) -> Result<UserState<'a>, io::Error> {
+        for i in 0..UserStateList::LEN {
+            let user_state = self.get(i);
+            if pub_key == user_state.get_pub_key() {
+                return Ok(user_state);
+            }
+        }
+    
+        // @TODO: Throw that the user for the pub key doesnot exist
+        Err(std::io::Error::new(std::io::ErrorKind::Other, "User does not exist"))
     }
 
     pub fn copy_to(&self, to: &Self) {
