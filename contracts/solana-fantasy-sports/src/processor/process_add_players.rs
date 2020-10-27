@@ -1,0 +1,146 @@
+//! Program state processor
+
+#![cfg(feature = "program")]
+use crate::{
+    error::SfsError,
+    instructions,
+    instructions::{arguments::*, instruction::*},
+    processor,
+    processor::helpers,
+    state::*,
+};
+use arrayref::{array_mut_ref, array_ref, array_refs, mut_array_refs};
+use num_traits::FromPrimitive;
+use solana_sdk::program::invoke;
+use solana_sdk::program::invoke_signed;
+use solana_sdk::{
+    account_info::{next_account_info, AccountInfo},
+    decode_error::DecodeError,
+    entrypoint::ProgramResult,
+    info,
+    instruction::{AccountMeta, Instruction},
+    program_error::{PrintProgramError, ProgramError},
+    program_option::COption,
+    program_pack::{IsInitialized, Pack},
+    pubkey::Pubkey,
+    system_instruction::SystemInstruction,
+    sysvar::{rent::Rent, Sysvar},
+};
+use std::cell::RefCell;
+use std::convert::TryInto;
+
+/// Processes an [AddPlayers](enum.SfsInstruction.html) instruction.
+pub fn process_add_players<'a>(
+    program_id: &Pubkey,
+    accounts: &'a [AccountInfo<'a>],
+    args: AddPlayersArgs,
+) -> ProgramResult {
+    let account_info_iter = &mut accounts.iter();
+    let root_info = next_account_info(account_info_iter)?;
+    let root = Root::new(&root_info.data)?;
+
+    if root.get_stage()? != Stage::Uninitialized {
+        return Err(SfsError::InvalidStage.into());
+    }
+
+    let players_args = args.get_players()?;
+    let players_root = root.get_players()?;
+    for i in 0..players_args.get_count() {
+        let arg_player = players_args.get(i)?;
+        players_root.add(arg_player.get_external_id(), arg_player.get_position()?)?;
+    }
+    Ok(())
+}
+
+// Pull in syscall stubs when building for non-BPF targets
+#[cfg(not(target_arch = "bpf"))]
+solana_sdk::program_stubs!();
+
+#[cfg(test)]
+mod tests {
+    use super::helpers::tests::*;
+    use super::*;
+    use solana_sdk::{
+        account::Account as SolanaAccount, account_info::create_is_signer_account_infos,
+        clock::Epoch, instruction::Instruction, sysvar::rent,
+    };
+
+    #[test]
+    fn test_initialize_root() {
+        let program_id = pubkey_rand();
+        let owner_key = pubkey_rand();
+        let root_key = pubkey_rand();
+        let mut root_account = SolanaAccount::new(42, Root::LEN, &program_id);
+        let mut rent_sysvar = rent_sysvar();
+
+        let mut args_data = Vec::<u8>::new();
+        args_data.extend_from_slice(owner_key.as_ref());
+
+        let args_data = &RefCell::new(args_data.as_slice());
+        let args = InitializeRootArgs::new(args_data, 0).unwrap();
+
+        // root is not rent exempt
+        assert_eq!(
+            Err(SfsError::NotRentExempt.into()),
+            do_process_instruction(
+                initialize_root(&program_id, &root_key, args.clone()).unwrap(),
+                vec![&mut root_account, &mut rent_sysvar]
+            )
+        );
+        root_account.lamports = root_minimum_balance();
+
+        // create new root
+        do_process_instruction(
+            initialize_root(&program_id, &root_key, args.clone()).unwrap(),
+            vec![&mut root_account, &mut rent_sysvar],
+        )
+        .unwrap();
+
+        // create twice
+        assert_eq!(
+            Err(SfsError::InvalidStage.into()),
+            do_process_instruction(
+                initialize_root(&program_id, &root_key, args.clone()).unwrap(),
+                vec![&mut root_account, &mut rent_sysvar],
+            )
+        );
+
+        let root_data = &RefCell::new(&mut *root_account.data);
+        let root = Root::new(root_data).unwrap();
+        assert_eq!(root.get_oracle_authority(), owner_key);
+    }
+
+    #[test]
+    fn test_add_players() {
+        let program_id = pubkey_rand();
+        let root_key = pubkey_rand();
+        let mut root_account = SolanaAccount::new(42, Root::LEN, &program_id);
+        let mut rent_sysvar = rent_sysvar();
+
+        let mut args_data = Vec::<u8>::new();
+        args_data.extend_from_slice(&[5]);
+        args_data.extend_from_slice(&[0, 1, 1]);
+        args_data.extend_from_slice(&[0, 2, 2]);
+        args_data.extend_from_slice(&[0, 3, 3]);
+        args_data.extend_from_slice(&[0, 4, 4]);
+        args_data.extend_from_slice(&[0, 5, 5]);
+        for _ in 0..MAX_PLAYERS_PER_INSTRUCTION - 5 {
+            args_data.extend_from_slice(&[0, 0, 0]);
+        }
+
+        let args_data = &RefCell::new(args_data.as_slice());
+        let args = AddPlayersArgs::new(args_data, 0).unwrap();
+
+        // add players
+        do_process_instruction(
+            add_players(&program_id, &root_key, args.clone()).unwrap(),
+            vec![&mut root_account, &mut rent_sysvar],
+        )
+        .unwrap();
+
+        let root_data = &RefCell::new(&mut *root_account.data);
+        let root = Root::new(root_data).unwrap();
+        assert_eq!(root.get_players().unwrap().get_count(), 5);
+        assert_eq!(root.get_stage(), Ok(Stage::Uninitialized));
+    }
+}

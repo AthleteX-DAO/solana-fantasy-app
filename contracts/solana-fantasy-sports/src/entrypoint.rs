@@ -2,7 +2,7 @@
 #![cfg(feature = "program")]
 #![cfg(not(feature = "no-entrypoint"))]
 
-use crate::{error::SfsError, processor::Processor};
+use crate::{error::SfsError, processor};
 use arrayref::{array_mut_ref, array_ref};
 use solana_sdk::{
     account_info::next_account_info, account_info::AccountInfo, entrypoint,
@@ -15,7 +15,7 @@ fn process_instruction<'a>(
     accounts: &'a [AccountInfo<'a>],
     instruction_data: &'a [u8],
 ) -> ProgramResult {
-    if let Err(error) = Processor::process(program_id, accounts, instruction_data) {
+    if let Err(error) = processor::process(program_id, accounts, instruction_data) {
         // catch the error so we can print it
         error.print::<SfsError>();
         return Err(error);
