@@ -142,7 +142,7 @@ impl Processor {
         let player_id = args.get_player_id();
 
         if player_id >= root.get_players()?.get_count() {
-            return Err(SfsError::InvalidState.into());
+            return Err(SfsError::IndexOutOfRange.into());
         }
 
         let league = root.get_leagues()?.get(args.get_league_id())?;
@@ -536,7 +536,7 @@ mod tests {
         args_data.extend_from_slice(&[0, 3, 3]);
         args_data.extend_from_slice(&[0, 4, 4]);
         args_data.extend_from_slice(&[0, 5, 5]);
-        for i in 0..MAX_PLAYERS_PER_INSTRUCTION - 5 {
+        for _ in 0..MAX_PLAYERS_PER_INSTRUCTION - 5 {
             args_data.extend_from_slice(&[0, 0, 0]);
         }
 

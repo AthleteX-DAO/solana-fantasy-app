@@ -1,6 +1,7 @@
 //! State transition types
 
 use crate::state::*;
+use crate::error::SfsError;
 use arrayref::{array_mut_ref, array_ref, mut_array_refs};
 use solana_sdk::{
     program_error::ProgramError,
@@ -42,7 +43,7 @@ impl<'a> SwapProposalsList<'a> {
 
     pub fn get(&self, i: u8) -> Result<SwapProposal<'a>, ProgramError> {
         if i >= self.get_count() {
-            return Err(ProgramError::InvalidAccountData);
+            return Err(SfsError::IndexOutOfRange.into());
         }
         SwapProposal::new(
             self.data,
@@ -52,7 +53,7 @@ impl<'a> SwapProposalsList<'a> {
 
     pub fn add(&self, give_player_id: u16, want_player_id: u16) -> Result<(), ProgramError> {
         if self.get_count() >= SwapProposalsList::ITEM_CAPACITY {
-            return Err(ProgramError::InvalidAccountData);
+            return Err(SfsError::OutOfCapacity.into());
         }
         self.set_count(self.get_count() + 1);
         let proposal = self.get(self.get_count() - 1)?;
@@ -64,7 +65,7 @@ impl<'a> SwapProposalsList<'a> {
 
     pub fn remove(&self, i: u8) -> Result<(), ProgramError> {
         if i >= self.get_count() {
-            return Err(ProgramError::InvalidAccountData);
+            return Err(SfsError::IndexOutOfRange.into());
         }
         for i2 in i..self.get_count() - 1 {
             let proposal = self.get(i2)?;

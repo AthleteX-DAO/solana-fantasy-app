@@ -36,6 +36,10 @@ pub enum SfsError {
     /// Opertaion is not permitted for current stage
     #[error("Opertaion is not permitted for current stage")]
     InvalidStage,
+    #[error("Index is out of array bounds")]
+    IndexOutOfRange,
+    #[error("Array has no more capacity")]
+    OutOfCapacity,
 }
 impl From<SfsError> for ProgramError {
     fn from(e: SfsError) -> Self {
@@ -61,6 +65,8 @@ impl PrintProgramError for SfsError {
             SfsError::InvalidState => info!("Error: Invalid account state for operation"),
             SfsError::Overflow => info!("Error: Operation overflowed"),
             SfsError::InvalidStage => info!("Error: Opertaion is not permitted for current stage"),
+            SfsError::IndexOutOfRange => info!("Index is out of array bounds"),
+            SfsError::OutOfCapacity => info!("Array has no more capacity"),
         }
     }
 }

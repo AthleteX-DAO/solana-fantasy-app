@@ -1,5 +1,6 @@
 //! State transition types
 
+use crate::error::SfsError;
 use crate::state::*;
 use arrayref::{array_mut_ref, array_ref, mut_array_refs};
 use byteorder::{ByteOrder, LittleEndian};
@@ -41,7 +42,7 @@ impl<'a> PlayerList<'a> {
 
     pub fn get(&self, i: u16) -> Result<Player<'a>, ProgramError> {
         if i >= self.get_count() {
-            return Err(ProgramError::InvalidAccountData);
+            return Err(SfsError::IndexOutOfRange.into());
         }
         Player::new(
             self.data,
@@ -51,7 +52,7 @@ impl<'a> PlayerList<'a> {
 
     pub fn add(&self, external_id: u16, position: Position) -> Result<(), ProgramError> {
         if self.get_count() >= PlayerList::ITEM_CAPACITY {
-            return Err(ProgramError::InvalidAccountData);
+            return Err(SfsError::OutOfCapacity.into());
         }
         self.set_count(self.get_count() + 1);
         let player = self.get(self.get_count() - 1)?;

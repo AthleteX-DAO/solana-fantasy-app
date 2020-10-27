@@ -1,5 +1,6 @@
 //! State transition types
 
+use crate::error::SfsError;
 use crate::instructions::*;
 use crate::state::consts::*;
 use arrayref::{array_mut_ref, array_ref, array_refs};
@@ -39,7 +40,7 @@ impl<'a> PlayerList<'a> {
 
     pub fn get(&self, i: u8) -> Result<Player<'a>, ProgramError> {
         if i >= self.get_count().into() {
-            return Err(ProgramError::InvalidInstructionData);
+            return Err(SfsError::IndexOutOfRange.into());
         }
         Player::new(
             self.data,
@@ -58,7 +59,7 @@ impl<'a> PlayerList<'a> {
 
     pub fn new(data: &'a RefCell<&'a [u8]>, offset: usize) -> Result<PlayerList, ProgramError> {
         if data.borrow().len() < Self::LEN + offset {
-            return Err(ProgramError::InvalidInstructionData);
+            return Err(ProgramError::InvalidInstructionData.into());
         }
         Ok(PlayerList { data, offset })
     }

@@ -1,6 +1,7 @@
 //! State transition types
 
 use crate::state::*;
+use crate::error::SfsError;
 use arrayref::{array_mut_ref, array_ref, mut_array_refs};
 use byteorder::{ByteOrder, LittleEndian};
 use solana_sdk::{
@@ -42,7 +43,7 @@ impl<'a> UserStateList<'a> {
 
     pub fn get(&self, i: u8) -> Result<UserState<'a>, ProgramError> {
         if i >= self.get_count() {
-            return Err(ProgramError::InvalidAccountData);
+            return Err(SfsError::IndexOutOfRange.into());
         }
         UserState::new(
             self.data,
@@ -52,11 +53,11 @@ impl<'a> UserStateList<'a> {
 
     pub fn add(&self, pubkey: Pubkey) -> Result<(), ProgramError> {
         if self.get_count() >= UserStateList::ITEM_CAPACITY {
-            return Err(ProgramError::InvalidAccountData);
+            return Err(SfsError::OutOfCapacity.into());
         }
         for i in 0..self.get_count() {
             if self.get(i)?.get_pub_key() == pubkey {
-                return Err(ProgramError::InvalidAccountData);
+                return Err(SfsError::AlreadyInUse.into());
             }
         }
         self.set_count(self.get_count() + 1);
