@@ -10,3 +10,5 @@ pub mod pick_player_args;
 pub use pick_player_args::*;
 pub mod start_draft_selection_args;
 pub use start_draft_selection_args::*;
+pub mod update_lineup_args;
+pub use update_lineup_args::*;

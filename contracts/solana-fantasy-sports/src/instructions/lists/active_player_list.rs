@@ -1,7 +1,8 @@
 //! State transition types
 
-use crate::state::*;
-use arrayref::{array_mut_ref, array_ref};
+use crate::instructions::*;
+use crate::state::consts::*;
+use arrayref::{array_mut_ref, array_ref, array_refs};
 use byteorder::{ByteOrder, LittleEndian};
 use solana_sdk::{
     program_error::ProgramError,
@@ -11,15 +12,15 @@ use std::cell::RefCell;
 
 #[repr(C)]
 pub struct ActivePlayersList<'a> {
-    data: &'a RefCell<&'a mut [u8]>,
+    data: &'a RefCell<&'a [u8]>,
     offset: usize,
 }
 impl<'a> ActivePlayersList<'a> {
     pub const ITEM_SIZE: usize = 2;
-    pub const ITEM_COUNT: u8 = consts::ACTIVE_PLAYERS_COUNT;
+    pub const ITEM_COUNT: u8 = LEAGUE_USERS_CAPACITY;
     pub const LEN: usize = ActivePlayersList::ITEM_SIZE * ActivePlayersList::ITEM_COUNT as usize;
-    fn slice<'b>(&self, data: &'b mut [u8], i: u8) -> &'b mut [u8; 2] {
-        array_mut_ref![
+    fn slice<'b>(&self, data: &'b [u8], i: u8) -> &'b [u8; 2] {
+        array_ref![
             data,
             self.offset + i as usize * ActivePlayersList::ITEM_COUNT as usize,
             ActivePlayersList::ITEM_SIZE
@@ -27,10 +28,7 @@ impl<'a> ActivePlayersList<'a> {
     }
 
     pub fn get(&self, i: u8) -> u16 {
-        LittleEndian::read_u16(self.slice(&mut self.data.borrow_mut(), i))
-    }
-    pub fn set(&self, i: u8, value: u16) {
-        LittleEndian::write_u16(self.slice(&mut self.data.borrow_mut(), i), value);
+        LittleEndian::read_u16(self.slice(&self.data.borrow(), i))
     }
 
     pub fn contains(&self, player_id: u16) -> bool {
@@ -47,22 +45,18 @@ impl<'a> ActivePlayersList<'a> {
         return Err(());
     }
 
-    pub fn copy_to(&self, to: &Self) {
-        let mut dst = to.data.borrow_mut();
-        let mut src = self.data.borrow_mut();
-        array_mut_ref![dst, self.offset, ActivePlayersList::LEN].copy_from_slice(array_mut_ref![
+    pub fn copy_to(&self, to: &mut [u8]) {
+        let src = self.data.borrow();
+        array_mut_ref![to, self.offset, ActivePlayersList::LEN].copy_from_slice(array_ref![
             src,
             self.offset,
             ActivePlayersList::LEN
         ]);
     }
 
-    pub fn new(
-        data: &'a RefCell<&'a mut [u8]>,
-        offset: usize,
-    ) -> Result<ActivePlayersList, ProgramError> {
+    pub fn new(data: &'a RefCell<&'a [u8]>, offset: usize) -> Result<ActivePlayersList, ProgramError> {
         if data.borrow().len() < Self::LEN + offset {
-            return Err(ProgramError::InvalidAccountData);
+            return Err(ProgramError::InvalidInstructionData);
         }
         Ok(ActivePlayersList { data, offset })
     }
@@ -79,7 +73,7 @@ mod tests {
     // #[test]
     // fn test_pack_unpack() {
     //     let check = ActivePlayersList {
-    //         list: [0u16; ITEM_COUNT],
+    //         list: [Player::default(); ITEM_COUNT],
     //     };
     //     let mut packed = vec![0; ActivePlayersList::get_packed_len() + 1];
     //     assert_eq!(
@@ -96,7 +90,7 @@ mod tests {
     //     let expect = vec![0u8; ITEM_SIZE * ITEM_COUNT];
     //     assert_eq!(packed, expect);
     //     let unpacked = ActivePlayersList::unpack_unchecked(&packed).unwrap();
-    //     assert_eq!(unpacked, check.clone());
+    //     assert_eq!(unpacked, check);
 
     //     let size = ActivePlayersList::get_packed_len();
     //     assert!(size < 100, "too large size, {} bytes", size);

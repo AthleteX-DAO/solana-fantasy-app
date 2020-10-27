@@ -177,90 +177,68 @@ impl Processor {
         if args.get_user_id() != current_pick_user_id {
             return Err(SfsError::InvalidState.into());
         }
-        let next_week = root.get_current_week() + 1;
         for i in 0..users_count {
-            let user_state = league.get_user_states()?.get(i)?;
-            for i2 in 0..BenchList::ITEM_COUNT {
-                if user_state.get_bench()?.get(i2) == player_id {
-                    return Err(SfsError::AlreadyInUse.into());
-                }
-            }
-            for i2 in 0..ActivePlayersList::ITEM_COUNT {
-                if user_state.get_lineups()?.get(next_week - 1)?.get(i2) == player_id {
-                    return Err(SfsError::AlreadyInUse.into());
-                }
+            let user_players = league.get_user_states()?.get(i)?.get_user_players()?;
+            if user_players.contains(player_id) {
+                return Err(SfsError::AlreadyInUse.into());
             }
         }
 
-        if round > ActivePlayersList::ITEM_COUNT {
-            user_state
-                .get_lineups()?
-                .get(next_week - 1)?
-                .set(round - BenchList::ITEM_COUNT, player_id);
-        } else {
-            user_state.get_bench()?.set(round, player_id);
-        }
-
+        user_state.get_user_players()?.set(round, player_id);
         league.set_current_pick(league.get_current_pick() + 1);
 
         Ok(())
     }
 
-    // pub fn process_update_lineup(
-    //     program_id: &Pubkey,
-    //     accounts: &[AccountInfo],
-    //     league: &u8,
-    //     week: &u8,
-    //     lineup: ActivePlayersList,
-    // ) -> ProgramResult {
-    //     let account_info_iter = &mut accounts.iter();
-    //     let root_info = next_account_info(account_info_iter)?;
-    //     let root_data_len = root_info.data_len();
-    //     let rent = &Rent::from_account_info(next_account_info(account_info_iter)?)?;
+    pub fn process_update_lineup<'a>(
+        program_id: &Pubkey,
+        accounts: &'a [AccountInfo<'a>],
+        args: UpdateLineupArgs,
+    ) -> ProgramResult {
+        let account_info_iter = &mut accounts.iter();
+        let root_info = next_account_info(account_info_iter)?;
+        let root = Root::new(&root_info.data)?;
+        let user_account_info = next_account_info(account_info_iter)?;
 
-    //     let mut state = root_info.data.borrow_mut();
-    //     let root = Root {
-    //         buf: array_mut_ref![state, 0, Root::LEN],
-    //     };
+        if root.get_stage()? != Stage::DraftSelection || root.get_stage()? != Stage::SeasonOpen {
+            return Err(SfsError::InvalidStage.into());
+        }
 
-    //     if root.get_is_initialized() {
-    //         return Err(SfsError::InvalidState.into());
-    //     }
+        let user_account_info = next_account_info(account_info_iter)?;
 
-    //     let user_account_info = next_account_info(account_info_iter)?;
+        let league = root.get_leagues()?.get(args.get_league_id())?;
+        let user_state = league.get_user_states()?.get(args.get_user_id())?;
 
-    //     // @TODO: before mutating check if league and week values entered from user input are authorized
+        Self::validate_owner(program_id, &user_state.get_pub_key(), user_account_info)?;
 
-    //     for i in 0..UserStateList::LEN {
-    //         let user_state = root
-    //             .get_leagues()
-    //             .get(*league as usize)
-    //             .get_user_states()
-    //             .get(i);
-    //         if *user_account_info.key == user_state.get_pub_key() {
-    //             lineup.copy_to(user_state.get_lineups().get(*week as usize));
-    //             break;
-    //         }
-    //     }
+        let round =
+            (league.get_current_pick() / league.get_user_states()?.get_count() as u16) as u8;
+        // Checking if draft selection complete for this league
+        if round < TEAM_PLAYERS_COUNT {
+            return Err(SfsError::InvalidState.into());
+        }
 
-    //     Ok(())
-    // }
+        let user_players = user_state.get_user_players()?;
+        for i in 0..ActivePlayersList::ITEM_COUNT {
+            let player_id = args.get_active_players()?.get(i);
+            if !user_players.contains(player_id) {
+                return Err(SfsError::OwnerMismatch.into());
+            }
+        }
 
-    // /// Processes an [InitializeAccount](enum.SfsInstruction.html) instruction.
-    // pub fn process_test_mutate(program_id: &Pubkey, accounts: &[AccountInfo]) -> ProgramResult {
-    //     let account_info_iter = &mut accounts.iter();
-    //     let root_info = next_account_info(account_info_iter)?;
-    //     // let mut root = Root::unpack(&root_info.data.borrow())?;
+        let week = args.get_week();
+        if week <= root.get_current_week() {
+            return Err(SfsError::InvalidState.into());
+        }
 
-    //     // let state_info = next_account_info(account_info_iter)?;
-    //     // let state_data_len = state_info.data_len();
-    //     // if state_info.key != &root.latest_state_account {
-    //     //     return Err(SfsError::InvalidState.into());
-    //     // }
+        let lineup = user_state.get_lineups()?.get(week)?;
+        for i in 0..ActivePlayersList::ITEM_COUNT {
+            let player_id = args.get_active_players()?.get(i);
+            lineup.set(i, player_id);
+        }
 
-    //     // Root::pack(root, &mut root_info.data.borrow_mut())?;
-    //     Ok(())
-    // }
+        Ok(())
+    }
 
     pub fn process_propose_swap<'a>(
         program_id: &Pubkey,
@@ -336,26 +314,44 @@ impl Processor {
             .get(args.get_proposal_id())?;
 
         let want_player_id = swap_proposal.get_want_player_id();
-        let want_player_index_accepting_user =
-            accepting_user_state.get_bench()?.index_of(want_player_id);
+        let want_player_index_accepting_user = accepting_user_state
+            .get_user_players()?
+            .index_of(want_player_id);
 
         if want_player_index_accepting_user.is_err() {
             return Err(SfsError::OwnerMismatch.into());
         }
 
+        if accepting_user_state
+            .get_lineups()?
+            .get(root.get_current_week())?
+            .contains(want_player_id)
+        {
+            return Err(SfsError::AlreadyInUse.into());
+        }
+
         let give_player_id = swap_proposal.get_give_player_id();
-        let give_player_index_proposing_user = proposing_user.get_bench()?.index_of(give_player_id);
+        let give_player_index_proposing_user =
+            proposing_user.get_user_players()?.index_of(give_player_id);
 
         if give_player_index_proposing_user.is_err() {
             return Err(SfsError::OwnerMismatch.into());
         }
 
+        if proposing_user
+            .get_lineups()?
+            .get(root.get_current_week())?
+            .contains(give_player_id)
+        {
+            return Err(SfsError::AlreadyInUse.into());
+        }
+
         // Executing the swap
         accepting_user_state
-            .get_bench()?
+            .get_user_players()?
             .set(want_player_index_accepting_user.unwrap(), give_player_id);
         proposing_user
-            .get_bench()?
+            .get_user_players()?
             .set(give_player_index_proposing_user.unwrap(), want_player_id);
 
         Ok(())
@@ -369,9 +365,6 @@ impl Processor {
     ) -> ProgramResult {
         let instruction_data = &RefCell::new(instruction_data);
         let instruction = SfsInstruction::unpack(instruction_data)?;
-        // let mut input_copy = Vec::<u8>::with_capacity(input.len());
-        // input_copy.extend_from_slice(input);
-        // let instruction = SfsInstruction::unpack(&mut input_copy)?;
 
         match instruction {
             SfsInstruction::AddPlayers { args } => {
@@ -390,6 +383,10 @@ impl Processor {
                 info!("Instruction: StartSeason");
                 Self::process_start_season(program_id, accounts)
             }
+            SfsInstruction::UpdateLineup { args } => {
+                info!("Instruction: UpdateLineup");
+                Self::process_update_lineup(program_id, accounts, args)
+            }
             SfsInstruction::PickPlayer { args } => {
                 info!("Instruction: PickPlayer");
                 Self::process_pick_player(program_id, accounts, args)
@@ -402,15 +399,7 @@ impl Processor {
                 info!("Instruction: AcceptSwap");
                 Self::process_accept_swap(program_id, accounts, args)
             }
-            // SfsInstruction::UpdateLineup {
-            //     league,
-            //     week,
-            //     lineup,
-            // } => Self::process_update_lineup(program_id, accounts, &league, &week, lineup),
-            // SfsInstruction::TestMutate => {
-            //     info!("Instruction: TestMutate");
-            //     Self::process_test_mutate(program_id, accounts)
-            // }
+
             _ => return Err(SfsError::InvalidInstruction.into()),
         }
     }

@@ -15,12 +15,12 @@ pub struct UserState<'a> {
 }
 impl<'a> UserState<'a> {
     pub const LEN: usize =
-        BenchList::LEN + LineupList::LEN + SwapProposalsList::LEN + PUB_KEY_LEN + 1;
+        UserPlayerList::LEN + LineupList::LEN + SwapProposalsList::LEN + PUB_KEY_LEN + 1;
     fn slice<'b>(
         &self,
         data: &'b mut [u8],
     ) -> (
-        &'b mut [u8; BenchList::LEN],
+        &'b mut [u8; UserPlayerList::LEN],
         &'b mut [u8; LineupList::LEN],
         &'b mut [u8; SwapProposalsList::LEN],
         &'b mut [u8; PUB_KEY_LEN],
@@ -28,7 +28,7 @@ impl<'a> UserState<'a> {
     ) {
         mut_array_refs![
             array_mut_ref![data, self.offset, UserState::LEN],
-            BenchList::LEN,
+            UserPlayerList::LEN,
             LineupList::LEN,
             SwapProposalsList::LEN,
             PUB_KEY_LEN,
@@ -36,18 +36,21 @@ impl<'a> UserState<'a> {
         ]
     }
 
-    pub fn get_bench(&self) -> Result<BenchList<'a>, ProgramError> {
-        BenchList::new(self.data, self.offset + PUB_KEY_LEN)
+    pub fn get_user_players(&self) -> Result<UserPlayerList<'a>, ProgramError> {
+        UserPlayerList::new(self.data, self.offset)
     }
 
     pub fn get_lineups(&self) -> Result<LineupList<'a>, ProgramError> {
-        LineupList::new(self.data, self.offset + PUB_KEY_LEN + BenchList::LEN)
+        LineupList::new(
+            self.data,
+            self.offset + UserPlayerList::LEN,
+        )
     }
 
     pub fn get_swap_proposals(&self) -> Result<SwapProposalsList<'a>, ProgramError> {
         SwapProposalsList::new(
             self.data,
-            self.offset + PUB_KEY_LEN + BenchList::LEN + LineupList::LEN,
+            self.offset + UserPlayerList::LEN + LineupList::LEN,
         )
     }
 

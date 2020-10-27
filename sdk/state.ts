@@ -57,7 +57,7 @@ export type UserState = {
 };
 
 export const UserStateLayout: typeof BufferLayout.Structure = BufferLayout.struct([
-  BufferLayout.seq(BufferLayout.u16(), TEAM_PLAYERS_COUNT, 'bench'),
+  BufferLayout.seq(BufferLayout.u16(), TEAM_PLAYERS_COUNT, 'userPlayers'),
   BufferLayout.seq(
     BufferLayout.seq(BufferLayout.u16(), ACTIVE_PLAYERS_COUNT),
     GAMES_COUNT,
