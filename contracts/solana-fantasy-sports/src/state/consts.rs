@@ -11,3 +11,10 @@ pub const LEAGUE_USERS_CAPACITY: u8 = (PLAYERS_CAPACITY / TEAM_PLAYERS_COUNT as 
 pub const SWAP_PROPOSALS_CAPACITY: u8 = 20;
 
 pub const PUB_KEY_LEN: usize = 32;
+
+pub const MAX_QB: usize = 4;
+pub const MAX_RB: usize = 8;
+pub const MAX_WR: usize = 8;
+pub const MAX_TE: usize = 3;
+pub const MAX_K: usize = 3;
+pub const MAX_D: usize = 3;

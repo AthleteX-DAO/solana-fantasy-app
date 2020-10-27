@@ -59,6 +59,8 @@ pub enum SfsInstruction<'a> {
     ///
     /// Accounts expected by this instruction:
     ///   0. `[writable]` The root to initialize.
+    ///   1. `[self user]` The root to initialize.
+    ///   2. `[other user]` The root to initialize.
     ///
     ProposeSwap {
         args: ProposeSwapArgs<'a>,
@@ -68,6 +70,8 @@ pub enum SfsInstruction<'a> {
     ///
     /// Accounts expected by this instruction:
     ///   0. `[writable]` The root to initialize.
+    ///   1. `[self user]` The root to initialize.
+    ///   2. `[other user]` The root to initialize.
     ///
     AcceptSwap {
         args: AcceptSwapArgs<'a>,

@@ -40,6 +40,9 @@ pub enum SfsError {
     IndexOutOfRange,
     #[error("Array has no more capacity")]
     OutOfCapacity,
+    /// General Error
+    #[error("Player not found in a bench list")]
+    PlayerNotFound,
 }
 impl From<SfsError> for ProgramError {
     fn from(e: SfsError) -> Self {
@@ -67,6 +70,7 @@ impl PrintProgramError for SfsError {
             SfsError::InvalidStage => info!("Error: Opertaion is not permitted for current stage"),
             SfsError::IndexOutOfRange => info!("Index is out of array bounds"),
             SfsError::OutOfCapacity => info!("Array has no more capacity"),
+            SfsError::PlayerNotFound => info!("Player not found in a bench list"),
         }
     }
 }

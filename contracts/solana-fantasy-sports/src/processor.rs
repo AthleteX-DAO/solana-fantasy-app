@@ -249,29 +249,49 @@ impl Processor {
         let root_info = next_account_info(account_info_iter)?;
         let root = Root::new(&root_info.data)?;
 
-        let user_account_info = next_account_info(account_info_iter)?;
-        let other_account_info = next_account_info(account_info_iter)?;
-
-        // @TODO: before mutating check if the condition of players bench is satisfied after the swap
-
-        // More checks:
-        // self user should own the "give" player
-        // receiving user should own the "want" player
-        // week should be the one after the current. if week is last then throw.
-
-        // Sudo code:
-        // 1. find the other user specified in second account be proposed in the array
-        // 2. Write self pub key, give and want addr
-
         let league = root.get_leagues()?.get(args.get_league_id())?;
-        let user_state = league.get_user_states()?.get(args.get_user_id())?;
 
-        Self::validate_owner(program_id, &user_state.get_pub_key(), user_account_info)?;
+        let user_account_info = next_account_info(account_info_iter)?;
+        let self_user_state = league.get_user_states()?.get_by_pub_key(*user_account_info.key)?;
+        Self::validate_owner(program_id, &self_user_state.get_pub_key(), user_account_info)?;
+        let self_bench_list = self_user_state.get_user_players()?;
+        
+        let other_account_info = next_account_info(account_info_iter)?;
+        let other_user_state = league.get_user_states()?.get_by_pub_key(*other_account_info.key)?;
+        let other_bench_list = other_user_state.get_user_players()?;
 
-        user_state
-            .get_swap_proposals()?
-            .add(args.get_give_player_id(), args.get_want_player_id())?;
+        // throws if after swap, self user has invalid bench list
+        let give_player_index_self = match self_bench_list.index_of(args.get_give_player_id()) {
+            Ok(give_player_index_self) => give_player_index_self,
+            Err(error) => panic!("There was error: {:?}", error),
+        };
 
+        match root.get_players()?.ensure_list_valid_after_set(
+            self_bench_list,
+            give_player_index_self as usize, 
+            args.get_want_player_id()
+        ) {
+            Err(ret1) => panic!("There was error: {:?}", ret1),
+            _ => {}
+        };
+        
+        // throws if after swap, other user has invalid bench list
+        let want_player_index_other = match other_bench_list.index_of(args.get_want_player_id()) {
+            Ok(want_player_index_other) => want_player_index_other,
+            Err(error) => panic!("There was error: {:?}", error),
+        };
+        match root.get_players()?.ensure_list_valid_after_set(
+            other_bench_list, 
+            want_player_index_other as usize, 
+            args.get_give_player_id()
+        ) {
+            Err(ret1) => panic!("There was error: {:?}", ret1),
+            _ => {}
+        };
+        
+        // inserting swap proposal in self user
+        self_user_state.get_swap_proposals()?.add(args.get_give_player_id(), args.get_want_player_id());
+     
         Ok(())
     }
 
@@ -312,6 +332,12 @@ impl Processor {
         let swap_proposal = proposing_user
             .get_swap_proposals()?
             .get(args.get_proposal_id())?;
+        
+        if(!swap_proposal.get_is_initialized()?) {
+            // throw that a proposal doesnot exist at given index
+        }
+       
+        let self_user = league.get_user_states()?.get_by_pub_key(*user_account_info.key);
 
         let want_player_id = swap_proposal.get_want_player_id();
         let want_player_index_accepting_user = accepting_user_state

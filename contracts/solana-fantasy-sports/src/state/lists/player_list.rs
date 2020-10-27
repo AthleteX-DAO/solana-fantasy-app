@@ -9,6 +9,7 @@ use solana_sdk::{
     program_pack::{Pack, Sealed},
 };
 use std::cell::RefCell;
+use user_player_list::{UserPlayerList};
 
 #[repr(C)]
 pub struct PlayerList<'a> {
@@ -48,6 +49,76 @@ impl<'a> PlayerList<'a> {
             self.data,
             self.offset + 2 + i as usize * PlayerList::ITEM_SIZE,
         )
+    }
+
+    pub fn get_by_id(&self, id: u16) -> Result<Player<'a>, std::io::Error>{
+        for i in 0..PlayerList::LEN {
+            let player = match self.get(i as u16) {
+                Ok(v) => v,
+                Err(e) => panic!("There was an error: {:?}", e)
+            };
+            if player.get_external_id() == id {
+                return Ok(player);
+            }
+        }
+
+        // @TODO: Throw that the user for the pub key doesnot exist
+        Err(std::io::Error::new(std::io::ErrorKind::Other, "User does not exist"))
+    }
+
+    pub fn ensure_list_valid_after_set(&self, user_player_list: UserPlayerList<'a>, set_index: usize, player_id: u16) -> Result<bool, std::io::Error> {
+        let mut qb_count = 0; // max 4
+        let mut rb_count = 0; // max 8
+        let mut wr_count = 0; // max 8
+        let mut te_count = 0; // max 3
+        let mut k_count = 0; // max 3
+        let mut d_count = 0; // max 3
+        
+        for i in 0..UserPlayerList::LEN {
+            let player = self.get_by_id(if set_index != std::u16::MAX as usize && i == set_index { player_id } else { user_player_list.get(i as u8) });
+            let player = match player {
+                Ok(player) => player,
+                Err(error) => panic!("There was error: {:?}", error),
+            };
+
+            let position = match player.get_position() {
+                Ok(position) => {position},
+                Err(error) => panic!("There was error: {:?}", error),
+            };
+
+            match position {
+                Position::RB => { rb_count += 1; },
+                // LB => {},
+                // DL => {},
+                Position::TE => { te_count += 1; },
+                // DB => {},
+                Position::QB => { qb_count += 1; },
+                Position::WR => { wr_count += 1; },
+                // OL => {},
+                _ => {}
+            }
+        }
+
+        if qb_count > 4 {
+            return Err(std::io::Error::new(std::io::ErrorKind::Other, "There was error: QB are becomming more than 4"));
+        }
+        if rb_count > 8 {
+            return Err(std::io::Error::new(std::io::ErrorKind::Other, "There was error: RB are becomming more than 8"));
+        }
+        if wr_count > 8 {
+            return Err(std::io::Error::new(std::io::ErrorKind::Other, "There was error: WR are becomming more than 8"));
+        }
+        if te_count > 3 {
+            return Err(std::io::Error::new(std::io::ErrorKind::Other, "There was error: TE are becomming more than 3"));
+        }
+        if k_count > 3 {
+            return Err(std::io::Error::new(std::io::ErrorKind::Other, "There was error: K are becomming more than 3"));
+        }
+        if d_count > 3 {
+            return Err(std::io::Error::new(std::io::ErrorKind::Other, "There was error: D are becomming more than 3"));
+        }
+
+        return Ok(true);
     }
 
     pub fn add(&self, external_id: u16, position: Position) -> Result<(), ProgramError> {

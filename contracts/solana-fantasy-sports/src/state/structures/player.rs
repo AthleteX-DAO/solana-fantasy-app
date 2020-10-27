@@ -38,7 +38,7 @@ impl<'a> Player<'a> {
         ScoreList::new(self.data, self.offset)
     }
 
-    fn get_external_id(&self) -> u16 {
+    pub fn get_external_id(&self) -> u16 {
         LittleEndian::read_u16(self.slice(&mut self.data.borrow_mut()).1)
     }
     pub fn set_external_id(&self, value: u16) {
