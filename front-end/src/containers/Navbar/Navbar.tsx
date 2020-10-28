@@ -1,12 +1,12 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, Link } from 'react-router-dom';
 
 export function Navbar() {
   return (
     <header id="header" className="fixed-top" style={{ backgroundColor: '#000' }}>
       <div className="container d-flex align-items-center">
         <h1 className="logo mr-auto">
-          <a href="index.html">SFS</a>
+          <Link to="/">SFS</Link>
         </h1>
         <nav className="nav-menu d-none d-lg-block">
           <ul>
