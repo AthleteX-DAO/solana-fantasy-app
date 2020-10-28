@@ -22,9 +22,9 @@ export const CreateWallet: FunctionComponent<{}> = (props) => {
 
           <button className="btn mt-4">Create Wallet</button>
 
-          <p className="small mt-3 mb-0">
-            <Link to="/wallet/import">But I already have a wallet.</Link>
-          </p>
+          <span className="small mt-3 mb-0 display-block">
+            {/* <Link to="/wallet/import">But I already have a wallet.</Link> */}
+          </span>
         </Card.Body>
       </Card>
     </Layout>

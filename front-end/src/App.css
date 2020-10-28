@@ -40,3 +40,7 @@
 .monospace {
   font-family: 'monospace';
 }
+
+.display-block {
+  display: block;
+}
