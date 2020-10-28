@@ -27,9 +27,7 @@ export const Layout: FunctionComponent<{ heading: string }> = (props) => {
       </section>
 
       <section className="inner-page">
-        <div className="container">
-          <p>{props.children}</p>
-        </div>
+        <div className="container">{props.children}</div>
       </section>
     </main>
   );
