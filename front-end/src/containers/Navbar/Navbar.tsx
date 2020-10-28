@@ -13,7 +13,7 @@ export function Navbar() {
             <NavElement to="/" label="Home" />
             <NavElement to="/create-a-league" label="Create a League" />
             <NavElement to="/join-a-league" label="Join a League" />
-            <NavElement to="/load-wallet" label="Load Wallet" />
+            <NavElement to="/wallet/import" label="Connect Wallet" />
           </ul>
         </nav>
       </div>
