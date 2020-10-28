@@ -6,6 +6,7 @@ import './App.css';
 import { Navbar } from './containers/Navbar/Navbar';
 import { Footer } from './containers/Footer/Footer';
 import { Home } from './containers/Home/Home';
+import { CreateLeague } from './containers/CreateLeague/CreateLeague';
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
         <Navbar />
         <Switch>
           <Route path="/" exact component={Home} />
+          <Route path="/create-a-league" exact component={CreateLeague} />
         </Switch>
         <Footer />
       </BrowserRouter>
