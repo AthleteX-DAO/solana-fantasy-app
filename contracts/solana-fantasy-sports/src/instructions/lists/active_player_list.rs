@@ -1,5 +1,6 @@
 //! State transition types
 
+use crate::error::SfsError;
 use crate::instructions::*;
 use crate::state::consts::*;
 use arrayref::{array_mut_ref, array_ref, array_refs};
@@ -35,14 +36,14 @@ impl<'a> ActivePlayersList<'a> {
         return self.index_of(player_id).is_ok();
     }
 
-    pub fn index_of(&self, player_id: u16) -> Result<u8, ()> {
+    pub fn index_of(&self, player_id: u16) -> Result<u8, ProgramError> {
         for i in 0..ActivePlayersList::LEN {
             if self.get(i as u8) == player_id {
                 return Ok(i as u8);
             }
         }
 
-        return Err(());
+        return Err(SfsError::PlayerNotFound.into());
     }
 
     pub fn copy_to(&self, to: &mut [u8]) {
@@ -54,7 +55,10 @@ impl<'a> ActivePlayersList<'a> {
         ]);
     }
 
-    pub fn new(data: &'a RefCell<&'a [u8]>, offset: usize) -> Result<ActivePlayersList, ProgramError> {
+    pub fn new(
+        data: &'a RefCell<&'a [u8]>,
+        offset: usize,
+    ) -> Result<ActivePlayersList, ProgramError> {
         if data.borrow().len() < Self::LEN + offset {
             return Err(ProgramError::InvalidInstructionData);
         }

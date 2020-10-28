@@ -38,14 +38,14 @@ impl<'a> UserPlayerList<'a> {
         return self.index_of(player_id).is_ok();
     }
 
-    pub fn index_of(&self, player_id: u16) -> Result<u8, ()> {
+    pub fn index_of(&self, player_id: u16) -> Result<u8, ProgramError> {
         for i in 0..UserPlayerList::LEN {
             if self.get(i as u8) == player_id {
                 return Ok(i as u8);
             }
         }
 
-        return Err(());
+        return Err(SfsError::PlayerNotFound.into());
     }
 
     pub fn copy_to(&self, to: &Self) {

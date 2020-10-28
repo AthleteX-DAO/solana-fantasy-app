@@ -43,6 +43,10 @@ pub enum SfsError {
     /// General Error
     #[error("Player not found in a bench list")]
     PlayerNotFound,
+    #[error("Item not found in the list")]
+    ItemNotFound,
+    #[error("Team composition rules are not met")]
+    TeamCompositionRulesViolation,
 }
 impl From<SfsError> for ProgramError {
     fn from(e: SfsError) -> Self {
@@ -71,6 +75,8 @@ impl PrintProgramError for SfsError {
             SfsError::IndexOutOfRange => info!("Index is out of array bounds"),
             SfsError::OutOfCapacity => info!("Array has no more capacity"),
             SfsError::PlayerNotFound => info!("Player not found in a bench list"),
+            SfsError::ItemNotFound => info!("Item not found in the list"),
+            SfsError::TeamCompositionRulesViolation => info!("Team composition rules are not met"),
         }
     }
 }

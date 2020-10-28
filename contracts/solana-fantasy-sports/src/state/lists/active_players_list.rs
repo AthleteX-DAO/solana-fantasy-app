@@ -1,5 +1,6 @@
 //! State transition types
 
+use crate::error::SfsError;
 use crate::state::*;
 use arrayref::{array_mut_ref, array_ref};
 use byteorder::{ByteOrder, LittleEndian};
@@ -7,7 +8,6 @@ use solana_sdk::{
     program_error::ProgramError,
     program_pack::{Pack, Sealed},
 };
-use crate::error::{SfsError};
 use std::cell::RefCell;
 
 #[repr(C)]
@@ -38,14 +38,14 @@ impl<'a> ActivePlayersList<'a> {
         return self.index_of(player_id).is_ok();
     }
 
-    pub fn index_of(&self, player_id: u16) -> Result<u8, SfsError> {
+    pub fn index_of(&self, player_id: u16) -> Result<u8, ProgramError> {
         for i in 0..ActivePlayersList::LEN {
             if self.get(i as u8) == player_id {
                 return Ok(i as u8);
             }
         }
 
-        return Err(SfsError::PlayerNotFound);
+        return Err(SfsError::PlayerNotFound.into());
     }
 
     pub fn copy_to(&self, to: &Self) {

@@ -56,39 +56,28 @@ pub fn process_propose_swap<'a>(
         .get_by_pub_key(*other_account_info.key)?;
     let other_bench_list = other_user_state.get_user_players()?;
 
-    // throws if after swap, self user has invalid bench list
-    let give_player_index_self = match self_bench_list.index_of(args.get_give_player_id()) {
-        Ok(give_player_index_self) => give_player_index_self,
-        Err(error) => panic!("There was error: {:?}", error),
-    };
+    let give_player_index_self = self_bench_list.index_of(args.get_give_player_id())?;
 
-    match root.get_players()?.ensure_list_valid_after_set(
+    // throws if after swap, self user has invalid bench list
+    root.get_players()?.ensure_list_valid_after_set(
         self_bench_list,
-        give_player_index_self as usize,
+        give_player_index_self,
         args.get_want_player_id(),
-    ) {
-        Err(ret1) => panic!("There was error: {:?}", ret1),
-        _ => {}
-    };
+    )?;
+
+    let want_player_index_other = other_bench_list.index_of(args.get_want_player_id())?;
 
     // throws if after swap, other user has invalid bench list
-    let want_player_index_other = match other_bench_list.index_of(args.get_want_player_id()) {
-        Ok(want_player_index_other) => want_player_index_other,
-        Err(error) => panic!("There was error: {:?}", error),
-    };
-    match root.get_players()?.ensure_list_valid_after_set(
+    root.get_players()?.ensure_list_valid_after_set(
         other_bench_list,
-        want_player_index_other as usize,
+        want_player_index_other,
         args.get_give_player_id(),
-    ) {
-        Err(ret1) => panic!("There was error: {:?}", ret1),
-        _ => {}
-    };
+    )?;
 
     // inserting swap proposal in self user
     self_user_state
         .get_swap_proposals()?
-        .add(args.get_give_player_id(), args.get_want_player_id());
+        .add(args.get_give_player_id(), args.get_want_player_id())?;
 
     Ok(())
 }

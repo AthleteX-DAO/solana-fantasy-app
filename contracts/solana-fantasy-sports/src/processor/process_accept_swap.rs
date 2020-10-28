@@ -77,11 +77,9 @@ pub fn process_accept_swap<'a>(
     let want_player_id = swap_proposal.get_want_player_id();
     let want_player_index_accepting_user = accepting_user_state
         .get_user_players()?
-        .index_of(want_player_id);
-
-    if want_player_index_accepting_user.is_err() {
-        return Err(SfsError::OwnerMismatch.into());
-    }
+        .index_of(want_player_id)
+        .ok()
+        .ok_or(SfsError::OwnerMismatch)?;
 
     if accepting_user_state
         .get_lineups()?
@@ -92,12 +90,12 @@ pub fn process_accept_swap<'a>(
     }
 
     let give_player_id = swap_proposal.get_give_player_id();
-    let give_player_index_proposing_user =
-        proposing_user.get_user_players()?.index_of(give_player_id);
+    let give_player_index_proposing_user = proposing_user
+        .get_user_players()?
+        .index_of(give_player_id)
+        .ok()
+        .ok_or(SfsError::OwnerMismatch)?;
 
-    if give_player_index_proposing_user.is_err() {
-        return Err(SfsError::OwnerMismatch.into());
-    }
 
     if proposing_user
         .get_lineups()?
@@ -110,10 +108,10 @@ pub fn process_accept_swap<'a>(
     // Executing the swap
     accepting_user_state
         .get_user_players()?
-        .set(want_player_index_accepting_user.unwrap(), give_player_id);
+        .set(want_player_index_accepting_user, give_player_id);
     proposing_user
         .get_user_players()?
-        .set(give_player_index_proposing_user.unwrap(), want_player_id);
+        .set(give_player_index_proposing_user, want_player_id);
 
     Ok(())
 }
