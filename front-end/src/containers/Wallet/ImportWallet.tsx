@@ -24,7 +24,7 @@ export const ImportWallet: FunctionComponent<{}> = (props) => {
       });
     } catch (error) {
       setDisplay({
-        message: `There was an error: ${error.message}`,
+        message: `Error: ${error.message}`,
         variant: 'danger',
       });
     }
@@ -37,7 +37,7 @@ export const ImportWallet: FunctionComponent<{}> = (props) => {
           Solana Fantasy Sports Wallet keeps your keys in your browser until you use this app and
           they are erased from the browser if you closed the tab or even refreshed the page.
           <Form.Control
-            className="align-items-center"
+            className="align-items-center my-2"
             onChange={(event) => setPrivateKeyInput(event.target.value)}
             value={privateKeyInput}
             type="text"
@@ -48,11 +48,15 @@ export const ImportWallet: FunctionComponent<{}> = (props) => {
               (!isHexString(privateKeyInput) || privateKeyInput.length !== 130)
             }
           />
-          {display !== null ? <Alert variant={display.variant}>{display.message}</Alert> : null}
-          <button onClick={importWallet} className="btn mt-4">
+          {display !== null ? (
+            <Alert className="my-2" variant={display.variant}>
+              {display.message}
+            </Alert>
+          ) : null}
+          <button onClick={importWallet} className="btn my-2">
             Import Wallet
           </button>
-          <span className="small mt-3 mb-0 display-block">
+          <span className="small mt-2 mb-0 display-block">
             <Link to="/wallet/create">But I don't have a wallet.</Link>
           </span>
         </Card.Body>
