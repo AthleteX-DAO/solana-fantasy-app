@@ -1,5 +1,5 @@
 import { Account, PublicKey } from '@solana/web3.js';
-import { arrayify, hexlify } from '@ethersproject/bytes';
+import { arrayify, hexlify, isHexString } from '@ethersproject/bytes';
 
 export type ClojuredWallet = {
   readonly publicKey: string;
@@ -9,7 +9,15 @@ export type ClojuredWallet = {
 
 export function CreateClojuredWallet(secretKey?: string): ClojuredWallet {
   let _secretKey: Uint8Array | undefined;
-  if (typeof secretKey === 'string') _secretKey = arrayify(secretKey);
+  if (typeof secretKey === 'string') {
+    if (!isHexString(secretKey)) {
+      throw new Error('Private key should be a hex string');
+    }
+    if (secretKey.length !== 130) {
+      throw new Error('Private key should be a 64 bytes hex string');
+    }
+    _secretKey = arrayify(secretKey);
+  }
   const programAccount = new Account(_secretKey);
 
   return {
