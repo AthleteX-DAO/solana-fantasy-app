@@ -21,7 +21,7 @@ export const DraftSelection = () =>
 
       let usersCount = 5;
 
-      const reducedPickOrder = pickOrder.filter(x => x < usersCount);
+      const reducedPickOrder = pickOrder.filter((x) => x < usersCount);
 
       const pickOrderForSmallerTeam = Array.from({
         length: TEAM_PLAYERS_COUNT * usersCount,
@@ -33,8 +33,6 @@ export const DraftSelection = () =>
         }
         return reducedPickOrder[pickInRound];
       });
-
-
 
       for (let i = 0; i < TEAM_PLAYERS_COUNT; i++) {
         console.log(pickOrderForSmallerTeam.slice(i * usersCount, (i + 1) * usersCount));

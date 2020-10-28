@@ -2,3 +2,5 @@ target
 node_modules
 bin
 build
+front-end/public
+front-end/HTML_Template
