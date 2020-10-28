@@ -32,3 +32,6 @@ export function CreateClojuredWallet(secretKey?: string): ClojuredWallet {
     },
   };
 }
+
+// @ts-ignore
+window.CreateClojuredWallet = CreateClojuredWallet;
