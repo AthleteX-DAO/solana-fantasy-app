@@ -23,8 +23,8 @@ export function Navbar() {
         <nav className="nav-menu d-none d-lg-block">
           <ul>
             <NavElement to="/" label="Home" />
-            <NavElement to="/create-a-league" label="Create a League" />
-            <NavElement to="/join-a-league" label="Join a League" />
+            <NavElement to="/leagues/create" label="Create a League" />
+            <NavElement to="/leagues" label="Join a League" />
             {window.wallet === undefined ? (
               <NavElement to="/wallet/import" label="Connect Wallet" />
             ) : (

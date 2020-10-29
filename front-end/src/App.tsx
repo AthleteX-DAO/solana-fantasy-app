@@ -6,7 +6,6 @@ import './App.css';
 import { Navbar } from './containers/Navbar/Navbar';
 import { Footer } from './containers/Footer/Footer';
 import { Home } from './containers/Home/Home';
-import { CreateLeague } from './containers/CreateLeague/CreateLeague';
 import { WalletRouter } from './containers/Wallet/Router';
 import { LeaguesRouter } from './containers/Leagues/Router';
 
@@ -17,7 +16,6 @@ function App() {
         <Navbar />
         <Switch>
           <Route path="/" exact component={Home} />
-          <Route path="/create-a-league" exact component={CreateLeague} />
           <Route path="/wallet" component={WalletRouter} />
           <Route path="/leagues" component={LeaguesRouter} />
         </Switch>
