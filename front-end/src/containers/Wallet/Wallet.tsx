@@ -5,6 +5,7 @@ import { Layout } from '../Layout';
 
 export const Wallet: FunctionComponent<{}> = (props) => {
   const [, forceRerender] = useState({});
+  const [privateKeyDisplay, setPrivateKeyDisplay] = useState<string | null>(null);
 
   const walletChangeHook = () => {
     forceRerender({});
@@ -25,6 +26,17 @@ export const Wallet: FunctionComponent<{}> = (props) => {
     });
   };
 
+  const showPrivateKey = () => {
+    if (window.wallet) {
+      const privateKey = window.wallet.privateKey;
+      setPrivateKeyDisplay(privateKey);
+    }
+  };
+
+  const hidePrivateKey = () => {
+    setPrivateKeyDisplay(null);
+  };
+
   return (
     <Layout heading="Wallet">
       <Card style={{ maxWidth: '800px', margin: '0 auto' }}>
@@ -32,7 +44,22 @@ export const Wallet: FunctionComponent<{}> = (props) => {
           {window.wallet ? (
             <>
               <p>
-                Address: <span className="monospace">{window.wallet?.publicKey}</span>
+                Public Key: <span className="monospace">{window.wallet?.publicKey}</span>
+              </p>
+              <p>
+                Private Key:{' '}
+                {privateKeyDisplay !== null ? (
+                  <>
+                    <span className="monospace">{privateKeyDisplay}</span>
+                    <button onClick={hidePrivateKey} className="btn my-2">
+                      Hide
+                    </button>
+                  </>
+                ) : (
+                  <button onClick={showPrivateKey} className="btn my-2">
+                    Show
+                  </button>
+                )}
               </p>
               <button onClick={processLogout} className="btn my-2">
                 Logout
