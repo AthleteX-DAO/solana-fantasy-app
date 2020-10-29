@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 export function Home() {
   return (
@@ -7,9 +8,9 @@ export function Home() {
         <div className="container position-relative">
           <h1>Welcome to Solana Fantasy Sports</h1>
           <h2>Create a league or join a league to start playing</h2>
-          <a href="#about" className="btn-get-started scrollto">
+          <Link to="/leagues/create" className="btn-get-started scrollto">
             Get Started
-          </a>
+          </Link>
         </div>
       </section>
       {/* <!-- End Hero --> */}

@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
 import { Button, Card, Form } from 'react-bootstrap';
+import { useHistory } from 'react-router-dom';
 import { Layout } from '../Layout';
 
 export function CreateLeague() {
+  const history = useHistory();
+
   const [leagueNameInput, setLeagueNameInput] = useState<string>('');
   const [leagueSizeInput, setLeagueSizeInput] = useState<string>('');
   const [leagueEntryCostInput, setLeagueEntryCostInput] = useState<string>('');
@@ -42,7 +45,9 @@ export function CreateLeague() {
           />
 
           {/* <Button>Submit</Button> */}
-          <button className="btn mt-4">Submit</button>
+          <button className="btn mt-4" onClick={() => history.push(`/leagues`)}>
+            Create
+          </button>
         </Card.Body>
       </Card>
     </Layout>

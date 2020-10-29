@@ -36,3 +36,12 @@
     transform: rotate(360deg);
   }
 }
+
+.monospace {
+  /* font-family: 'monospace'; */
+  font-family: 'Source Code Pro', monospace;
+}
+
+.display-block {
+  display: block;
+}

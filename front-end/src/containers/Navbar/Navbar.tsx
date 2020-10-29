@@ -1,7 +1,19 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { NavLink, Link } from 'react-router-dom';
 
 export function Navbar() {
+  const [, forceRerender] = useState({});
+
+  const walletChangeHook = () => {
+    forceRerender({});
+  };
+
+  if (!window.walletStatusChangeHooks) {
+    window.walletStatusChangeHooks = { navbar: walletChangeHook, walletPage: () => {} };
+  } else {
+    window.walletStatusChangeHooks.navbar = walletChangeHook;
+  }
+
   return (
     <header id="header" className="fixed-top" style={{ backgroundColor: '#000' }}>
       <div className="container d-flex align-items-center">
@@ -11,9 +23,16 @@ export function Navbar() {
         <nav className="nav-menu d-none d-lg-block">
           <ul>
             <NavElement to="/" label="Home" />
-            <NavElement to="/create-a-league" label="Create a League" />
-            <NavElement to="/join-a-league" label="Join a League" />
-            <NavElement to="/load-wallet" label="Load Wallet" />
+            <NavElement to="/leagues/create" label="Create a League" />
+            <NavElement to="/leagues" label="Join a League" />
+            {window.wallet === undefined ? (
+              <NavElement to="/wallet/import" label="Connect Wallet" />
+            ) : (
+              <NavElement
+                to="/wallet"
+                label={`Welcome ${window.wallet.publicKey.slice(0, 6)}...`}
+              />
+            )}
           </ul>
         </nav>
       </div>
