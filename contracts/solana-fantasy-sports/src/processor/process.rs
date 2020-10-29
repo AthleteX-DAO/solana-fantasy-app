@@ -55,6 +55,14 @@ pub fn process<'a>(
             info!("Instruction: StartSeason");
             processor::process_start_season(program_id, accounts)
         }
+        SfsInstruction::CreateLeague { args } => {
+            info!("Instruction: CreateLeague");
+            processor::process_create_league(program_id, accounts, args)
+        }
+        SfsInstruction::JoinLeague { args } => {
+            info!("Instruction: JoinLeague");
+            processor::process_join_league(program_id, accounts, args)
+        }
         SfsInstruction::UpdateLineup { args } => {
             info!("Instruction: UpdateLineup");
             processor::process_update_lineup(program_id, accounts, args)

@@ -4,6 +4,7 @@ import type { Connection } from '@solana/web3.js';
 import { sendAndConfirmTransaction } from './util/send-and-confirm-transaction';
 import { MAX_PLAYERS_PER_INSTRUCTION, Player, Root, RootLayout } from './state';
 import { SfsInstruction, Player as PlayerInit } from './instruction';
+import { u64 } from './util/layout';
 
 // The address of the special mint for wrapped native token.
 export const NATIVE_MINT: PublicKey = new PublicKey('So11111111111111111111111111111111111111112');
@@ -16,7 +17,7 @@ export class SFS {
    * Create a SFS object attached to the specific root
    *
    * @param connection The connection to use
-   * @param token Public key of the root account
+   * @param publicKey Public key of the root account
    * @param programId SFS programId
    * @param payer Payer of fees
    */
@@ -114,6 +115,65 @@ export class SFS {
     await sendAndConfirmTransaction('Initialize root', connection, transaction, payer, rootAccount);
 
     return sfs;
+  }
+
+  /**
+   * Create a league.
+   *
+   * This account may then be used as a `transfer()` or `approve()` destination
+   *
+   * @param owner User account that will own the new account
+   * @return Public key of the new empty account
+   */
+  async createLeague(
+    owner: Account,
+    name: string,
+    bid: number | u64,
+    usersLimit: number
+  ): Promise<number> {
+    const transaction = new Transaction();
+    transaction.add(
+      SfsInstruction.createCreateLeagueInstruction(
+        this.programId,
+        this.publicKey,
+        name,
+        bid,
+        usersLimit,
+        owner.publicKey
+      )
+    );
+
+    await sendAndConfirmTransaction('Create league', this.connection, transaction, owner);
+
+    const root = await this.getRootInfo();
+    for (let i = root.leaguesCount; i >= 0; i--) {
+      if (root.leagues[i].userStates.some((x) => x.pubKey.equals(owner.publicKey))) {
+        return i;
+      }
+    }
+    throw new Error('Created league is not found');
+  }
+
+  /**
+   * Join a league.
+   *
+   * This account may then be used as a `transfer()` or `approve()` destination
+   *
+   * @param owner User account that will own the new account
+   * @return Public key of the new empty account
+   */
+  async joinLeague(owner: Account, leagueId: number): Promise<void> {
+    const transaction = new Transaction();
+    transaction.add(
+      SfsInstruction.createJoinLeagueInstruction(
+        this.programId,
+        this.publicKey,
+        leagueId,
+        owner.publicKey
+      )
+    );
+
+    await sendAndConfirmTransaction('Join league', this.connection, transaction, owner);
   }
 
   /**

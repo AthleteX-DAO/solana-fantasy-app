@@ -14,12 +14,14 @@ pub struct League<'a> {
     offset: usize,
 }
 impl<'a> League<'a> {
-    pub const LEN: usize = UserStateList::LEN + 1 + 2 + 1;
+    pub const LEN: usize = UserStateList::LEN + LEAGUE_NAME_LEN + 8 + 1 + 2 + 1;
     fn slice<'b>(
         &self,
         data: &'b mut [u8],
     ) -> (
         &'b mut [u8; UserStateList::LEN],
+        &'b mut [u8; LEAGUE_NAME_LEN],
+        &'b mut [u8; 8],
         &'b mut [u8; 1],
         &'b mut [u8; 2],
         &'b mut [u8; 1],
@@ -27,6 +29,8 @@ impl<'a> League<'a> {
         mut_array_refs![
             array_mut_ref![data, self.offset, League::LEN],
             UserStateList::LEN,
+            LEAGUE_NAME_LEN,
+            8,
             1,
             2,
             1
@@ -34,28 +38,44 @@ impl<'a> League<'a> {
     }
 
     pub fn get_user_states(&self) -> Result<UserStateList<'a>, ProgramError> {
-        UserStateList::new(self.data, self.offset + 1)
+        UserStateList::new(self.data, self.offset)
     }
 
-    pub fn get_bid(&self) -> u8 {
-        self.slice(&mut self.data.borrow_mut()).1[0]
+    pub fn get_name(&self) -> [u8; LEAGUE_NAME_LEN] {
+        *self.slice(&mut self.data.borrow_mut()).1
     }
-    pub fn set_bid(&self, value: u8) {
-        self.slice(&mut self.data.borrow_mut()).1[0] = value;
+    pub fn set_name(&self, value: &[u8; LEAGUE_NAME_LEN]) {
+        self.slice(&mut self.data.borrow_mut())
+            .1
+            .copy_from_slice(value);
+    }
+
+    pub fn get_bid(&self) -> u64 {
+        LittleEndian::read_u64(self.slice(&mut self.data.borrow_mut()).2)
+    }
+    pub fn set_bid(&self, value: u64) {
+        LittleEndian::write_u64(self.slice(&mut self.data.borrow_mut()).2, value)
+    }
+
+    pub fn get_users_limit(&self) -> u8 {
+        self.slice(&mut self.data.borrow_mut()).3[0]
+    }
+    pub fn set_users_limit(&self, value: u8) {
+        self.slice(&mut self.data.borrow_mut()).3[0] = value;
     }
 
     pub fn get_current_pick(&self) -> u16 {
-        LittleEndian::read_u16(self.slice(&mut self.data.borrow_mut()).2)
+        LittleEndian::read_u16(self.slice(&mut self.data.borrow_mut()).4)
     }
     pub fn set_current_pick(&self, value: u16) {
-        LittleEndian::write_u16(self.slice(&mut self.data.borrow_mut()).2, value);
+        LittleEndian::write_u16(self.slice(&mut self.data.borrow_mut()).4, value);
     }
 
     pub fn get_is_initialized(&self) -> Result<bool, ProgramError> {
-        unpack_is_initialized(self.slice(&mut self.data.borrow_mut()).3)
+        unpack_is_initialized(self.slice(&mut self.data.borrow_mut()).5)
     }
     pub fn set_is_initialized(&self, value: bool) {
-        self.slice(&mut self.data.borrow_mut()).3[0] = value as u8;
+        self.slice(&mut self.data.borrow_mut()).5[0] = value as u8;
     }
 
     pub fn copy_to(&self, to: &Self) {

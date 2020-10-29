@@ -16,7 +16,7 @@ import { BufferLayout } from '../../../sdk/util/layout';
 
 const someAccount = new Account();
 
-export const InstructionsTests = () =>
+export const InstructionsTests = () => {
   describe('Create createInitializeRootInstruction', () => {
     // const a = Buffer.from([1,2,3]);
     // a.writeUIntLE(3, 0, 8);
@@ -82,16 +82,34 @@ export const InstructionsTests = () =>
       // });
     });
   });
+  describe('Create createLeagueInstruction', () => {
+    const data = SfsInstruction.createCreateLeagueInstruction(
+      someAccount.publicKey,
+      someAccount.publicKey,
+      'test',
+      8,
+      10,
+      someAccount.publicKey
+    );
 
-// async function getNumberOfGreetings(): Promise<number> {
-//   const accountInfo = await global.connection.getAccountInfo(rootAccount.publicKey);
-//   if (accountInfo === null) {
-//     throw Error('Error: cannot find the root account');
-//   }
-//   console.log(accountInfo);
+    it('correctly serialize instruction', async () => {
+      console.log(data.data);
+      // strictEqual(ScoreLayout.span, 2);
+      // strictEqual(PlayerLayout.span, 2 + 1);
+      // strictEqual(data.data.length, 1 + PUB_KEY_LEN);
+    });
+  });
 
-//   const info: { numGreets: number } = rootAccountDataLayout.decode(
-//     Buffer.from(accountInfo.data)
-//   );
-//   return info.numGreets;
-// }
+  // async function getNumberOfGreetings(): Promise<number> {
+  //   const accountInfo = await global.connection.getAccountInfo(rootAccount.publicKey);
+  //   if (accountInfo === null) {
+  //     throw Error('Error: cannot find the root account');
+  //   }
+  //   console.log(accountInfo);
+
+  //   const info: { numGreets: number } = rootAccountDataLayout.decode(
+  //     Buffer.from(accountInfo.data)
+  //   );
+  //   return info.numGreets;
+  // }
+};

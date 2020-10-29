@@ -41,6 +41,12 @@ pub enum SfsInstruction<'a> {
         args: StartDraftSelectionArgs<'a>,
     },
     StartSeason,
+    CreateLeague {
+        args: CreateLeagueArgs<'a>,
+    },
+    JoinLeague {
+        args: JoinLeagueArgs<'a>,
+    },
     // CompleteSeason,
     ///
     /// Updates lineup of a user
@@ -95,17 +101,24 @@ impl<'a> SfsInstruction<'a> {
                 args: StartDraftSelectionArgs::new(input, 1)?,
             },
             4 => Self::StartSeason,
-            5 => Self::UpdateLineup {
+
+            5 => Self::CreateLeague {
+                args: CreateLeagueArgs::new(input, 1)?,
+            },
+            6 => Self::JoinLeague {
+                args: JoinLeagueArgs::new(input, 1)?,
+            },
+            7 => Self::UpdateLineup {
                 args: UpdateLineupArgs::new(input, 1)?,
             },
 
-            6 => Self::PickPlayer {
+            8 => Self::PickPlayer {
                 args: PickPlayerArgs::new(input, 1)?,
             },
-            7 => Self::ProposeSwap {
+            9 => Self::ProposeSwap {
                 args: ProposeSwapArgs::new(input, 1)?,
             },
-            8 => Self::AcceptSwap {
+            10 => Self::AcceptSwap {
                 args: AcceptSwapArgs::new(input, 1)?,
             },
 
@@ -138,24 +151,33 @@ impl<'a> SfsInstruction<'a> {
             Self::StartSeason => {
                 buf.push(4);
             }
-
-            Self::UpdateLineup { args } => {
+            Self::CreateLeague { args } => {
                 buf.push(5);
-                buf.extend_from_slice(&[0u8; UpdateLineupArgs::LEN]);
-                args.copy_to(array_mut_ref![buf, 1, UpdateLineupArgs::LEN]);
+                buf.extend_from_slice(&[0u8; CreateLeagueArgs::LEN]);
+                args.copy_to(array_mut_ref![buf, 1, CreateLeagueArgs::LEN]);
+            }
+            Self::JoinLeague { args } => {
+                buf.push(6);
+                buf.extend_from_slice(&[0u8; JoinLeagueArgs::LEN]);
+                args.copy_to(array_mut_ref![buf, 1, StartDraftSelectionArgs::LEN]);
+            }
+            Self::UpdateLineup { args } => {
+                buf.push(7);
+                buf.extend_from_slice(&[0u8; JoinLeagueArgs::LEN]);
+                args.copy_to(array_mut_ref![buf, 1, JoinLeagueArgs::LEN]);
             }
             Self::PickPlayer { args } => {
-                buf.push(6);
+                buf.push(8);
                 buf.extend_from_slice(&[0u8; PickPlayerArgs::LEN]);
                 args.copy_to(array_mut_ref![buf, 1, PickPlayerArgs::LEN]);
             }
             Self::ProposeSwap { args } => {
-                buf.push(7);
+                buf.push(9);
                 buf.extend_from_slice(&[0u8; ProposeSwapArgs::LEN]);
                 args.copy_to(array_mut_ref![buf, 1, ProposeSwapArgs::LEN]);
             }
             Self::AcceptSwap { args } => {
-                buf.push(8);
+                buf.push(10);
                 buf.extend_from_slice(&[0u8; AcceptSwapArgs::LEN]);
                 args.copy_to(array_mut_ref![buf, 1, AcceptSwapArgs::LEN]);
             }
@@ -227,6 +249,40 @@ pub fn start_season(
     root_pubkey: &Pubkey,
 ) -> Result<Instruction, ProgramError> {
     let data = SfsInstruction::StartSeason.pack();
+
+    let accounts = vec![AccountMeta::new(*root_pubkey, false)];
+
+    Ok(Instruction {
+        program_id: *sfs_program_id,
+        accounts,
+        data,
+    })
+}
+
+/// Creates a `CreateLeague` instruction.
+pub fn create_league(
+    sfs_program_id: &Pubkey,
+    root_pubkey: &Pubkey,
+    args: CreateLeagueArgs,
+) -> Result<Instruction, ProgramError> {
+    let data = SfsInstruction::CreateLeague { args }.pack();
+
+    let accounts = vec![AccountMeta::new(*root_pubkey, false)];
+
+    Ok(Instruction {
+        program_id: *sfs_program_id,
+        accounts,
+        data,
+    })
+}
+
+/// Creates a `JoinLeague` instruction.
+pub fn join_league(
+    sfs_program_id: &Pubkey,
+    root_pubkey: &Pubkey,
+    args: JoinLeagueArgs,
+) -> Result<Instruction, ProgramError> {
+    let data = SfsInstruction::JoinLeague { args }.pack();
 
     let accounts = vec![AccountMeta::new(*root_pubkey, false)];
 

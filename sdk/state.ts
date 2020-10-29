@@ -13,6 +13,9 @@ export const LEAGUES_CAPACITY = 100;
 export const LEAGUE_USERS_CAPACITY = Math.floor(PLAYERS_CAPACITY / TEAM_PLAYERS_COUNT);
 export const SWAP_PROPOSALS_CAPACITY = 20;
 
+export const LEAGUE_NAME_LEN = 256;
+export const LEAGUE_NAME_UTF16_LEN = 128;
+
 export const PUB_KEY_LEN = 32;
 
 export enum Position {
@@ -72,7 +75,9 @@ export const UserStateLayout: typeof BufferLayout.Structure = BufferLayout.struc
 export type League = {
   userStateLength: number;
   userStates: UserState[];
+  name: number[];
   bid: number;
+  usersLimit: number;
   currentPick: number;
   isInitialized: boolean;
 };
@@ -80,7 +85,9 @@ export type League = {
 export const LeagueLayout: typeof BufferLayout.Structure = BufferLayout.struct([
   BufferLayout.u8('userStateLength'),
   BufferLayout.seq(UserStateLayout, LEAGUE_USERS_CAPACITY, 'userStates'),
-  BufferLayout.u8('bid'),
+  BufferLayout.seq(BufferLayout.u16(), LEAGUE_NAME_UTF16_LEN, 'name'),
+  Layout.uint64('bid'),
+  BufferLayout.u8('usersLimit'),
   BufferLayout.u16('currentPick'),
   BufferLayout.u8('isInitialized'),
 ]);
@@ -111,8 +118,10 @@ export const PlayerLayout: typeof BufferLayout.Structure = BufferLayout.struct([
 
 export type Root = {
   /// An address of an account that stores the latest state.
+  playersCount: number;
   players: Player[];
   /// Leagues
+  leaguesCount: number;
   leagues: League[];
   pickOrder: number[];
   stage: Stage;

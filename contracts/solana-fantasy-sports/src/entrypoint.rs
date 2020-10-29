@@ -6,7 +6,7 @@ use crate::{error::SfsError, processor};
 use arrayref::{array_mut_ref, array_ref};
 use solana_sdk::{
     account_info::next_account_info, account_info::AccountInfo, entrypoint,
-    entrypoint::ProgramResult, program_error::PrintProgramError, pubkey::Pubkey,
+    entrypoint::ProgramResult, program_error::PrintProgramError, pubkey::Pubkey
 };
 
 entrypoint!(process_instruction);

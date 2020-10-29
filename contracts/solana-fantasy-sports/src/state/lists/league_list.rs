@@ -1,7 +1,9 @@
 //! State transition types
 
+use crate::error::SfsError;
 use crate::state::*;
-use arrayref::{array_mut_ref, array_ref};
+use arrayref::{array_mut_ref, array_ref, mut_array_refs};
+use byteorder::{ByteOrder, LittleEndian};
 use solana_sdk::{
     program_error::ProgramError,
     program_pack::{Pack, Sealed},
@@ -17,9 +19,44 @@ impl<'a> LeagueList<'a> {
     pub const ITEM_SIZE: usize = League::LEN;
     pub const ITEM_CAPACITY: u16 = consts::LEAGUES_CAPACITY;
     pub const LEN: usize = 2 + LeagueList::ITEM_SIZE * LeagueList::ITEM_CAPACITY as usize;
+    fn slice<'b>(
+        &self,
+        data: &'b mut [u8],
+    ) -> (
+        &'b mut [u8; 2],
+        &'b mut [u8; LeagueList::ITEM_SIZE * LeagueList::ITEM_CAPACITY as usize],
+    ) {
+        mut_array_refs![
+            array_mut_ref![data, self.offset, LeagueList::LEN],
+            2,
+            LeagueList::ITEM_SIZE * LeagueList::ITEM_CAPACITY as usize
+        ]
+    }
+
+    pub fn get_count(&self) -> u16 {
+        LittleEndian::read_u16(self.slice(&mut self.data.borrow_mut()).0)
+    }
+    fn set_count(&self, value: u16) {
+        LittleEndian::write_u16(self.slice(&mut self.data.borrow_mut()).0, value);
+    }
 
     pub fn get(&self, i: u16) -> Result<League<'a>, ProgramError> {
-        League::new(self.data, self.offset + i as usize * LeagueList::ITEM_SIZE)
+        if i >= self.get_count() {
+            return Err(SfsError::IndexOutOfRange.into());
+        }
+        League::new(
+            self.data,
+            self.offset + 2 + i as usize * LeagueList::ITEM_SIZE,
+        )
+    }
+
+    pub fn create(&self) -> Result<League<'a>, ProgramError> {
+        if self.get_count() >= LeagueList::ITEM_CAPACITY {
+            return Err(SfsError::OutOfCapacity.into());
+        }
+        self.set_count(self.get_count() + 1);
+        let league = self.get(self.get_count() - 1)?;
+        Ok(league)
     }
 
     pub fn copy_to(&self, to: &Self) {

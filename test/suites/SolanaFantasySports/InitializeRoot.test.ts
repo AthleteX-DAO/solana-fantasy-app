@@ -2,6 +2,8 @@ import { Account } from '@solana/web3.js';
 import { Player } from '../../../sdk/instruction';
 import { SFS } from '../../../sdk/sfs';
 import { GAMES_COUNT, Position, Score, PLAYERS_CAPACITY } from '../../../sdk/state';
+import { u64 } from '../../../sdk/util/layout';
+import BN from 'bn.js';
 
 const rootAccount = new Account();
 
@@ -29,6 +31,9 @@ export const InitializeRoot = () =>
         ),
         global.solanaFantasySportsPPK
       );
+
+      const leagueId = await sfs.createLeague(global.payerAccount, 'test', 10, 10);
+      console.log(leagueId);
     });
 
     // it('calls InitializeRoot on the program on the network', async () => {
