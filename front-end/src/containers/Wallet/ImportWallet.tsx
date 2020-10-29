@@ -19,7 +19,7 @@ export const ImportWallet: FunctionComponent<{}> = (props) => {
       const wallet = CreateClojuredWallet(privateKeyInput);
       window.wallet = wallet;
       setDisplay({
-        message: 'Wallet imported successfully',
+        message: 'Wallet imported successfully!',
         variant: 'success',
       });
 
@@ -59,12 +59,20 @@ export const ImportWallet: FunctionComponent<{}> = (props) => {
               {display.message}
             </Alert>
           ) : null}
-          <button onClick={importWallet} className="btn my-2">
-            Import Wallet
-          </button>
-          <span className="small mt-2 mb-0 display-block">
-            <Link to="/wallet/create">But I don't have a wallet.</Link>
-          </span>
+          {display?.variant !== 'success' ? (
+            <>
+              <button onClick={importWallet} className="btn my-2">
+                Import Wallet
+              </button>
+              <span className="small mt-2 mb-0 display-block">
+                <Link to="/wallet/create">But I don't have a wallet.</Link>
+              </span>
+            </>
+          ) : (
+            <Link to="/wallet">
+              <span className="btn mb-2">Go to my wallet</span>
+            </Link>
+          )}
         </Card.Body>
       </Card>
     </Layout>
