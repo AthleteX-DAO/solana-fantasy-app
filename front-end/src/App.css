@@ -45,3 +45,24 @@
 .display-block {
   display: block;
 }
+
+.team-card-scroll-deck {
+  /* background-color: #333; */
+  overflow: auto;
+  white-space: nowrap;
+  /* margin: 0 -15px; */
+}
+
+.team-card-scroll-deck .card {
+  display: inline-block;
+  /* color: white; */
+  text-align: center;
+  /* padding: 14px; */
+  text-decoration: none;
+  width: 300px;
+  margin-right: 30px;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
