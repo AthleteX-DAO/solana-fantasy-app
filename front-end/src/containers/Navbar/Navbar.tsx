@@ -28,7 +28,10 @@ export function Navbar() {
             {window.wallet === undefined ? (
               <NavElement to="/wallet/import" label="Connect Wallet" />
             ) : (
-              <NavElement to="/wallet" label={`Welcome ${window.wallet.publicKey}`} />
+              <NavElement
+                to="/wallet"
+                label={`Welcome ${window.wallet.publicKey.slice(0, 6)}...`}
+              />
             )}
           </ul>
         </nav>
