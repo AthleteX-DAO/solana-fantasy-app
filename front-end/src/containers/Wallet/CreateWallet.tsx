@@ -50,7 +50,7 @@ export const CreateWallet: FunctionComponent<{}> = (props) => {
 
           {display?.variant === 'success' ? (
             <span className="small mt-3 mb-0 display-block">
-              <Link to="/wallet">Go to my wallet</Link>
+              <Link to="/wallet">Go to my wallet to see private key</Link>
             </span>
           ) : null}
         </Card.Body>
