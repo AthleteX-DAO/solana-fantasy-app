@@ -22,6 +22,12 @@ export const ImportWallet: FunctionComponent<{}> = (props) => {
         message: 'Wallet imported successfully',
         variant: 'success',
       });
+
+      Object.entries(window.walletStatusChangeHooks).forEach((entries) => {
+        try {
+          entries[1]();
+        } catch {}
+      });
     } catch (error) {
       setDisplay({
         message: `Error: ${error.message}`,
