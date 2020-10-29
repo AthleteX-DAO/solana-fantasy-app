@@ -35,14 +35,14 @@ export const LeagueView: FunctionComponent<RouteComponentProps<MatchParams>> = (
               type="text"
               placeholder="Enter fees"
               autoComplete="off"
-              // isInvalid={}
+              isInvalid={isNaN(+feesInput)}
             />
             <InputGroup.Append>
               <InputGroup.Text id="basic-addon2">SOL</InputGroup.Text>
             </InputGroup.Append>
           </InputGroup>
 
-          <button className="btn mt-4">Join</button>
+          <button className="btn mt-4">Join by paying {feesInput} SOL</button>
         </Card.Body>
       </Card>
     </Layout>

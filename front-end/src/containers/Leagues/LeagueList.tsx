@@ -22,7 +22,7 @@ export const LeagueList: FunctionComponent<{}> = (props) => {
             <td>League 1</td>
             <td>
               <button onClick={() => history.push(`/leagues/${0}`)} className="btn">
-                View
+                Join
               </button>
             </td>
           </tr>
