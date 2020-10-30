@@ -15,6 +15,7 @@ export const Forwarder: FunctionComponent<RouteComponentProps<MatchParams>> = (p
   useEffect(() => {
     setTimeout(() => {
       history.push(`/leagues/${leagueIndex}/join`);
+      window.leagueTabHook();
     }, 1500);
   }, []);
   return (
