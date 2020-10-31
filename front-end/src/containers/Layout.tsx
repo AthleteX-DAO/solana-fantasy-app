@@ -1,14 +1,16 @@
 import React, { FunctionComponent } from 'react';
 import { Link } from 'react-router-dom';
 
-export const Layout: FunctionComponent<{ heading: string }> = (props) => {
+export const Layout: FunctionComponent<{ heading: string; removeTopMargin?: boolean }> = (
+  props
+) => {
   const breadcrumb = window.location.pathname.split('/');
   if (breadcrumb[breadcrumb.length - 1] === '') {
     breadcrumb.pop();
   }
   return (
     <main id="main">
-      <section id="breadcrumbs" className="breadcrumbs">
+      <section id="breadcrumbs" className={`breadcrumbs${props.removeTopMargin ? ' mt-0' : ''}`}>
         <div className="container">
           <ol>
             {breadcrumb.map((name, index) => (

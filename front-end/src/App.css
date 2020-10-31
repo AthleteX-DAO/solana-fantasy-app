@@ -66,3 +66,7 @@
 .cursor-pointer {
   cursor: pointer;
 }
+
+.align-left {
+  text-align: left;
+}
