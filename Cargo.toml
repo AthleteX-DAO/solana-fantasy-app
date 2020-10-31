@@ -1,0 +1,6 @@
+[workspace]
+members = [
+  "contracts/solana-fantasy-sports",
+]
+exclude = [
+]

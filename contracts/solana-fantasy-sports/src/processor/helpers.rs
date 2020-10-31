@@ -1,6 +1,5 @@
 //! Program state processor
 
-#![cfg(feature = "program")]
 use crate::{
     error::SfsError,
     instructions,
@@ -10,9 +9,9 @@ use crate::{
 };
 use arrayref::{array_mut_ref, array_ref, array_refs, mut_array_refs};
 use num_traits::FromPrimitive;
-use solana_sdk::program::invoke;
-use solana_sdk::program::invoke_signed;
-use solana_sdk::{
+use solana_program::program::invoke;
+use solana_program::program::invoke_signed;
+use solana_program::{
     account_info::{next_account_info, AccountInfo},
     decode_error::DecodeError,
     entrypoint::ProgramResult,
@@ -43,14 +42,22 @@ pub fn validate_owner(
     Ok(())
 }
 
+/// Validates bank account address
+pub fn validate_bank(program_id: &Pubkey, bank_account_info: &AccountInfo) -> ProgramResult {
+    let (bank_pubkey, bump_seed) = Pubkey::find_program_address(&[&[0]], program_id);
+    if bank_pubkey != *bank_account_info.key {
+        return Err(SfsError::InvalidInstruction.into());
+    }
+    Ok(())
+}
+
 // Pull in syscall stubs when building for non-BPF targets
 #[cfg(not(target_arch = "bpf"))]
-solana_sdk::program_stubs!();
 
 #[cfg(test)]
 pub mod tests {
     use super::*;
-    use solana_sdk::{
+    use solana_program::{
         account::Account as SolanaAccount, account_info::create_is_signer_account_infos,
         clock::Epoch, instruction::Instruction, sysvar::rent,
     };

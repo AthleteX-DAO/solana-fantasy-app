@@ -1,4 +1,4 @@
-import { PublicKey, TransactionInstruction, SYSVAR_RENT_PUBKEY } from '@solana/web3.js';
+import { PublicKey, TransactionInstruction, SYSVAR_RENT_PUBKEY, SystemProgram } from '@solana/web3.js';
 
 import * as Layout from './util/layout';
 import { BufferLayout } from './util/layout';
@@ -60,7 +60,7 @@ export class SfsInstruction {
       const encodeLength = commandDataLayout.encode(
         {
           instruction: Command.InitializeRoot,
-          oracleAuthority: oracleAuthority.toBuffer(),
+          oracleAuthority,
         },
         data
       );
@@ -117,6 +117,7 @@ export class SfsInstruction {
   static createCreateLeagueInstruction(
     programId: PublicKey,
     root: PublicKey,
+    bank: PublicKey,
     name: string,
     bid: number | Layout.u64,
     usersLimit: number,
@@ -124,7 +125,9 @@ export class SfsInstruction {
   ): TransactionInstruction {
     let keys = [
       { pubkey: root, isSigner: false, isWritable: true },
-      { pubkey: owner, isSigner: true, isWritable: false },
+      { pubkey: owner, isSigner: true, isWritable: true },
+      { pubkey: bank, isSigner: false, isWritable: true },
+      { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
     ];
     const commandDataLayout = BufferLayout.struct([
       BufferLayout.u8('instruction'),
@@ -144,7 +147,7 @@ export class SfsInstruction {
             .padEnd(LEAGUE_NAME_UTF16_LEN, '\0')
             .split('')
             .map((x) => x.charCodeAt(0)),
-          bid,
+          bid: new Layout.u64(bid).toBuffer(),
           usersLimit,
         },
         data

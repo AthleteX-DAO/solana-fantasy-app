@@ -1,4 +1,5 @@
-import { Account } from '@solana/web3.js';
+import { Account, PublicKey, SystemProgram, Transaction } from '@solana/web3.js';
+import { sendAndConfirmTransaction } from '../../../sdk/util/send-and-confirm-transaction';
 import { Player } from '../../../sdk/instruction';
 import { SFS } from '../../../sdk/sfs';
 import { GAMES_COUNT, Position, Score, PLAYERS_CAPACITY } from '../../../sdk/state';
@@ -32,8 +33,22 @@ export const InitializeRoot = () =>
         global.solanaFantasySportsPPK
       );
 
-      const leagueId = await sfs.createLeague(global.payerAccount, 'test', 10, 10);
+      // var bank = new Account();
+      const [bank, _] = await PublicKey.findProgramAddress([Buffer.from([0])], global.solanaFantasySportsPPK);
+
+      // const transaction = new Transaction().add(
+      //   SystemProgram.transfer({
+      //     fromPubkey: global.payerAccount.publicKey,
+      //     toPubkey: bank,
+      //     lamports: 10,
+      //   })
+      // );
+
+      // await sendAndConfirmTransaction('', global.connection, transaction, global.payerAccount);
+
+      const leagueId = await sfs.createLeague(global.payerAccount, null!, 'test', 10, 10);
       console.log(leagueId);
+      console.log(JSON.stringify(await sfs.getRootInfo()));
     });
 
     // it('calls InitializeRoot on the program on the network', async () => {

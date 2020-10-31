@@ -1,7 +1,7 @@
 //! State transition types
 use crate::state::*;
 use arrayref::{array_mut_ref, array_ref, array_refs, mut_array_refs};
-use solana_sdk::{
+use solana_program::{
     program_error::ProgramError,
     program_pack::{IsInitialized, Pack, Sealed},
     pubkey::Pubkey,
@@ -90,7 +90,6 @@ impl<'a> UserState<'a> {
 
 // Pull in syscall stubs when building for non-BPF targets
 #[cfg(not(target_arch = "bpf"))]
-solana_sdk::program_stubs!();
 
 #[cfg(test)]
 mod tests {

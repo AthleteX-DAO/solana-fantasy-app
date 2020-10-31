@@ -1,8 +1,7 @@
 //! Error types
-#![cfg(feature = "program")]
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
-use solana_sdk::{
+use solana_program::{
     decode_error::DecodeError,
     info,
     program_error::{PrintProgramError, ProgramError},
@@ -83,12 +82,11 @@ impl PrintProgramError for SfsError {
 
 // Pull in syscall stubs when building for non-BPF targets
 #[cfg(not(target_arch = "bpf"))]
-solana_sdk::program_stubs!();
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use solana_sdk::{
+    use solana_program::{
         account::Account as SolanaAccount, account_info::create_is_signer_account_infos,
         clock::Epoch, instruction::Instruction, sysvar::rent,
     };

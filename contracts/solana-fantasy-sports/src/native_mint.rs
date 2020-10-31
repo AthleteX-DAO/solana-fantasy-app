@@ -4,16 +4,16 @@
 pub const DECIMALS: u8 = 9;
 
 // The Mint for native SOL Token accounts
-solana_sdk::declare_id!("So11111111111111111111111111111111111111113");
+// solana_program::declare_id!("11111111111111111111111111111111");
+// solana_program::declare_id!("So11111111111111111111111111111111111111112");
 
 // Pull in syscall stubs when building for non-BPF targets
 #[cfg(not(target_arch = "bpf"))]
-solana_sdk::program_stubs!();
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use solana_sdk::native_token::*;
+    use solana_program::native_token::*;
 
     #[test]
     fn test_decimals() {

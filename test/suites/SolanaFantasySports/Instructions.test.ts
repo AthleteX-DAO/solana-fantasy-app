@@ -82,8 +82,9 @@ export const InstructionsTests = () => {
       // });
     });
   });
-  describe('Create createLeagueInstruction', () => {
+  describe('Create createLeagueInstruction', async () => {
     const data = SfsInstruction.createCreateLeagueInstruction(
+      someAccount.publicKey,
       someAccount.publicKey,
       someAccount.publicKey,
       'test',

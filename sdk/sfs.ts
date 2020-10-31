@@ -30,7 +30,11 @@ export class SFS {
     /**
      * Program Identifier for the SFS program
      */
-    private programId: PublicKey
+    private programId: PublicKey,
+    /**
+     * Bank account for the SFS program
+     */
+    private bank: PublicKey
   ) {}
 
   /**
@@ -59,7 +63,8 @@ export class SFS {
     programId: PublicKey
   ): Promise<SFS> {
     const rootAccount = new Account();
-    const sfs = new SFS(connection, rootAccount.publicKey, programId);
+    const [bank, _] = await PublicKey.findProgramAddress([Buffer.from([0])], programId);
+    const sfs = new SFS(connection, rootAccount.publicKey, programId, bank);
 
     // Allocate memory for the account
     const balanceNeeded = await SFS.getMinBalanceRentForExemptRoot(connection);
@@ -98,8 +103,7 @@ export class SFS {
         } of ${players.length}`,
         connection,
         transaction,
-        payer,
-        rootAccount
+        payer
       );
     }
 
@@ -112,7 +116,7 @@ export class SFS {
     );
 
     // Send the two instructions
-    await sendAndConfirmTransaction('Initialize root', connection, transaction, payer, rootAccount);
+    await sendAndConfirmTransaction('Initialize root', connection, transaction, payer);
 
     return sfs;
   }
@@ -127,6 +131,7 @@ export class SFS {
    */
   async createLeague(
     owner: Account,
+    bank: Account,
     name: string,
     bid: number | u64,
     usersLimit: number
@@ -136,13 +141,17 @@ export class SFS {
       SfsInstruction.createCreateLeagueInstruction(
         this.programId,
         this.publicKey,
+        this.bank,
         name,
         bid,
         usersLimit,
         owner.publicKey
       )
     );
-
+    const rootInfo = await this.connection.getAccountInfo(this.publicKey);
+    if (rootInfo === null) {
+      throw new Error('Failed to find root account');
+    }
     await sendAndConfirmTransaction('Create league', this.connection, transaction, owner);
 
     const root = await this.getRootInfo();
@@ -193,8 +202,6 @@ export class SFS {
 
     const data = Buffer.from(info.data);
     const rootInfo = RootLayout.decode(data);
-
-    rootInfo.oracleAuthority = new PublicKey(rootInfo.oracleAuthority);
 
     rootInfo.isInitialized = rootInfo.isInitialized != 0;
 

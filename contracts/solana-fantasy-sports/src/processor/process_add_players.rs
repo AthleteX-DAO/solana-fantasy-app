@@ -1,6 +1,5 @@
 //! Program state processor
 
-#![cfg(feature = "program")]
 use crate::{
     error::SfsError,
     instructions,
@@ -11,9 +10,9 @@ use crate::{
 };
 use arrayref::{array_mut_ref, array_ref, array_refs, mut_array_refs};
 use num_traits::FromPrimitive;
-use solana_sdk::program::invoke;
-use solana_sdk::program::invoke_signed;
-use solana_sdk::{
+use solana_program::program::invoke;
+use solana_program::program::invoke_signed;
+use solana_program::{
     account_info::{next_account_info, AccountInfo},
     decode_error::DecodeError,
     entrypoint::ProgramResult,
@@ -54,13 +53,12 @@ pub fn process_add_players<'a>(
 
 // Pull in syscall stubs when building for non-BPF targets
 #[cfg(not(target_arch = "bpf"))]
-solana_sdk::program_stubs!();
 
 #[cfg(test)]
 mod tests {
     use super::helpers::tests::*;
     use super::*;
-    use solana_sdk::{
+    use solana_program::{
         account::Account as SolanaAccount, account_info::create_is_signer_account_infos,
         clock::Epoch, instruction::Instruction, sysvar::rent,
     };

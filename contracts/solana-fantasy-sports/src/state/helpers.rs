@@ -1,6 +1,6 @@
 //! State transition types
 use arrayref::{array_refs, mut_array_refs};
-use solana_sdk::{program_error::ProgramError, program_option::COption, pubkey::Pubkey};
+use solana_program::{program_error::ProgramError, program_option::COption, pubkey::Pubkey};
 
 // Helpers
 pub fn pack_coption_key(src: &COption<Pubkey>, dst: &mut [u8; 36]) {

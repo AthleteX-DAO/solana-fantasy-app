@@ -3,7 +3,7 @@
 use crate::{error::SfsError, instructions::*};
 use arrayref::{array_mut_ref, array_ref};
 use byteorder::{ByteOrder, LittleEndian};
-use solana_sdk::{
+use solana_program::{
     instruction::{AccountMeta, Instruction},
     program_error::ProgramError,
     program_option::COption,

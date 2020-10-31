@@ -6,7 +6,7 @@ import { strictEqual } from 'assert';
 export const LoadProgram = () =>
   describe('Load SFS Program', () => {
     it('loads program to the localnet', async () => {
-      const data = readFileSync(resolve(__dirname, '../../../build/solana_fantasy_sports.so'), {
+      const data = readFileSync(resolve(__dirname, '../../../contracts/solana-fantasy-sports/solana_fantasy_sports.so'), {
         encoding: 'hex',
       });
       const programAccount = new Account();

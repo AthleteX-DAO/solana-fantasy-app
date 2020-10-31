@@ -7,9 +7,15 @@
   "private": false,
   "testnetDefaultChannel": "edge",
   "scripts": {
-    "build": "./do.sh build all",
-    "localnet:up": "sudo ./localnet.sh update && sudo ./localnet.sh up",
-    "localnet:down": "sudo ./localnet.sh down",
+    "build": "cd contracts/solana-fantasy-sports && cargo build-bpf",
+    "localnet:update": "solana-localnet update",
+    "localnet:up": "rm -f client/util/store/config.json; set -x; solana-localnet down; set -e; solana-localnet up",
+    "localnet:down": "solana-localnet down",
+    "localnet:logs": "solana-localnet logs -f",
+    "cluster:localnet": "rm -f .env",
+    "cluster:devnet": "cp cluster-devnet.env .env",
+    "cluster:testnet": "cp cluster-testnet.env .env",
+    "cluster:mainnet-beta": "cp cluster-mainnet-beta.env .env",
     "mocha": "mocha -t 120000 -r ts-node/register test/index.ts",
     "test": "yarn build && yarn localnet:up && npm-run-all mocha localnet:down --continue-on-error",
     "test2": "yarn build && npm-run-all mocha",
@@ -29,8 +35,10 @@
     "typescript": "^4.0.3"
   },
   "dependencies": {
-    "@solana/web3.js": "^0.80.0",
-    "bn.js": "^5.1.3"
+    "@solana/web3.js": "^0.86.2",
+    "@types/bn.js": "^4.11.6",
+    "bn.js": "^5.1.3",
+    "dotenv": "^8.2.0"
   },
   "husky": {
     "hooks": {

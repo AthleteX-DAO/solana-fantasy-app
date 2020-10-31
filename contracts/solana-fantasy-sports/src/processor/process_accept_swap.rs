@@ -1,6 +1,5 @@
 //! Program state processor
 
-#![cfg(feature = "program")]
 use crate::{
     error::SfsError,
     instructions,
@@ -10,9 +9,9 @@ use crate::{
 };
 use arrayref::{array_mut_ref, array_ref, array_refs, mut_array_refs};
 use num_traits::FromPrimitive;
-use solana_sdk::program::invoke;
-use solana_sdk::program::invoke_signed;
-use solana_sdk::{
+use solana_program::program::invoke;
+use solana_program::program::invoke_signed;
+use solana_program::{
     account_info::{next_account_info, AccountInfo},
     decode_error::DecodeError,
     entrypoint::ProgramResult,

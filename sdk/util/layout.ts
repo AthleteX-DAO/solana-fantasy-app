@@ -1,3 +1,4 @@
+import { PublicKey } from '@solana/web3.js';
 import { strictEqual } from 'assert';
 import BN from 'bn.js';
 export const BufferLayout = require('buffer-layout');
@@ -6,7 +7,20 @@ export const BufferLayout = require('buffer-layout');
  * Layout for a public key
  */
 export const publicKey = (property: string = 'publicKey'): Object => {
-  return BufferLayout.blob(32, property);
+  const layout = BufferLayout.blob(32, property);
+  const _decode = layout.decode.bind(layout);
+  const _encode = layout.encode.bind(layout);
+
+  layout.decode = (buffer, offset) => {
+    const data = _decode(buffer, offset);
+    return new PublicKey(data);
+  };
+
+  layout.encode = (pk: PublicKey, buffer, offset) => {
+    return _encode(pk.toBuffer(), buffer, offset);
+  };
+
+  return layout;
 };
 
 /**
