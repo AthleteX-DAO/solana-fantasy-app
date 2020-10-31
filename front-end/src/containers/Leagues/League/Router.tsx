@@ -6,6 +6,7 @@ import { DraftSelection } from './DraftSelection';
 import { JoinLeague } from './Join';
 import { Lineups } from './Lineups';
 import { Swaps } from './Swaps';
+import { Scoreboard } from './Scoreboard';
 
 export const LeagueRouter: FunctionComponent = (props) => {
   return (
@@ -18,6 +19,7 @@ export const LeagueRouter: FunctionComponent = (props) => {
         <Route path="/leagues/:index/join" exact component={JoinLeague} />
         <Route path="/leagues/:index/lineups" exact component={Lineups} />
         <Route path="/leagues/:index/swaps" exact component={Swaps} />
+        <Route path="/leagues/:index/scoreboard" exact component={Scoreboard} />
       </Switch>
     </>
   );
