@@ -94,7 +94,7 @@ export const DraftSelection: FunctionComponent<RouteComponentProps<MatchParams>>
   }, []);
 
   return (
-    <Layout removeTopMargin heading="League">
+    <Layout removeTopMargin heading="Draft Selection">
       <Container>
         <Row className="pb-3">
           <Col>

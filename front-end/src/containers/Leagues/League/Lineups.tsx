@@ -83,7 +83,7 @@ export const Lineups: FunctionComponent<RouteComponentProps<MatchParams>> = (pro
   }, []);
 
   return (
-    <Layout removeTopMargin heading="League">
+    <Layout removeTopMargin heading="Lineups">
       <Container>
         <h4 className="align-left mb-4">
           Upcomming Lineup Selection (Week {week !== null ? week + 1 : 'Loading...'})

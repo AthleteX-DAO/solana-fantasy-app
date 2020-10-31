@@ -91,7 +91,7 @@ export const Swaps: FunctionComponent<RouteComponentProps<MatchParams>> = (props
   };
 
   return (
-    <Layout removeTopMargin heading="League">
+    <Layout removeTopMargin heading="Swaps">
       <Container>
         <h4 className="align-left mb-4">Swap a player</h4>
         <Row className="pb-3">
