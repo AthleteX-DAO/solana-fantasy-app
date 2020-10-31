@@ -1,4 +1,4 @@
-import { BufferLayout } from './util/layout';
+import { BufferLayout, u64 } from './util/layout';
 import { PublicKey } from '@solana/web3.js';
 
 import * as Layout from './util/layout';
@@ -14,7 +14,7 @@ export const LEAGUE_USERS_CAPACITY = Math.floor(PLAYERS_CAPACITY / TEAM_PLAYERS_
 export const SWAP_PROPOSALS_CAPACITY = 20;
 
 export const LEAGUE_NAME_LEN = 256;
-export const LEAGUE_NAME_UTF16_LEN = 128;
+export const LEAGUE_NAME_MAX_SYMBOLS = 128;
 
 export const PUB_KEY_LEN = 32;
 
@@ -47,7 +47,7 @@ export type SwapProposal = {
 export const SwapProposalLayout: typeof BufferLayout.Structure = BufferLayout.struct([
   BufferLayout.u16('givePlayerId'),
   BufferLayout.u16('wantPlayerId'),
-  BufferLayout.u8('isInitialized'),
+  Layout.boolean('isInitialized'),
 ]);
 
 export type UserState = {
@@ -69,14 +69,14 @@ export const UserStateLayout: typeof BufferLayout.Structure = BufferLayout.struc
   BufferLayout.u8('swapProposalsCount'),
   BufferLayout.seq(SwapProposalLayout, SWAP_PROPOSALS_CAPACITY, 'swapProposals'),
   Layout.publicKey('pubKey'),
-  BufferLayout.u8('isInitialized'),
+  Layout.boolean('isInitialized'),
 ]);
 
 export type League = {
   userStateLength: number;
   userStates: UserState[];
-  name: number[];
-  bid: number;
+  name: string;
+  bid: u64;
   usersLimit: number;
   currentPick: number;
   isInitialized: boolean;
@@ -85,11 +85,11 @@ export type League = {
 export const LeagueLayout: typeof BufferLayout.Structure = BufferLayout.struct([
   BufferLayout.u8('userStateLength'),
   BufferLayout.seq(UserStateLayout, LEAGUE_USERS_CAPACITY, 'userStates'),
-  BufferLayout.seq(BufferLayout.u16(), LEAGUE_NAME_UTF16_LEN, 'name'),
+  Layout.utf16FixedString(LEAGUE_NAME_MAX_SYMBOLS, 'name'),
   Layout.uint64('bid'),
   BufferLayout.u8('usersLimit'),
   BufferLayout.u16('currentPick'),
-  BufferLayout.u8('isInitialized'),
+  Layout.boolean('isInitialized'),
 ]);
 
 export type Score = {
@@ -99,7 +99,7 @@ export type Score = {
 
 export const ScoreLayout: typeof BufferLayout.Structure = BufferLayout.struct([
   BufferLayout.u8('score1'),
-  BufferLayout.u8('isInitialized'),
+  Layout.boolean('isInitialized'),
 ]);
 
 export type Player = {
@@ -113,7 +113,7 @@ export const PlayerLayout: typeof BufferLayout.Structure = BufferLayout.struct([
   BufferLayout.seq(ScoreLayout, GAMES_COUNT, 'scores'),
   BufferLayout.u16('externalId'),
   BufferLayout.u8('position'),
-  BufferLayout.u8('isInitialized'),
+  Layout.boolean('isInitialized'),
 ]);
 
 export type Root = {

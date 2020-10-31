@@ -41,11 +41,23 @@ pub fn process_join_league<'a>(
     }
 
     let user_account_info = next_account_info(account_info_iter)?;
+    let bank_account_info = next_account_info(account_info_iter)?;
+    let system_program_account_info = next_account_info(account_info_iter)?;
+
+    helpers::validate_bank(program_id, bank_account_info)?;
     let league = root.get_leagues()?.get(args.get_league_id())?;
 
-    let escrow_pubkey = Pubkey::create_program_address(&[b"escrow"], program_id)?;
-    let instruction = transfer(user_account_info.key, &escrow_pubkey, league.get_bid());
-    invoke(&instruction, accounts)?;
+    let instruction = transfer(
+        user_account_info.key,
+        bank_account_info.key,
+        league.get_bid(),
+    );
+    let accounts = [
+        user_account_info.clone(),
+        bank_account_info.clone(),
+        system_program_account_info.clone(),
+    ];
+    invoke(&instruction, &accounts)?;
 
     let user_states = league.get_user_states()?;
     if user_states.get_count() == league.get_users_limit() {

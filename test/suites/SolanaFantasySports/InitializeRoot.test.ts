@@ -1,10 +1,8 @@
-import { Account, PublicKey, SystemProgram, Transaction } from '@solana/web3.js';
-import { sendAndConfirmTransaction } from '../../../sdk/util/send-and-confirm-transaction';
+import { Account } from '@solana/web3.js';
 import { Player } from '../../../sdk/instruction';
 import { SFS } from '../../../sdk/sfs';
-import { GAMES_COUNT, Position, Score, PLAYERS_CAPACITY } from '../../../sdk/state';
-import { u64 } from '../../../sdk/util/layout';
-import BN from 'bn.js';
+import { Position, PLAYERS_CAPACITY, Stage } from '../../../sdk/state';
+import { strictEqual, ok } from 'assert';
 
 const rootAccount = new Account();
 
@@ -13,75 +11,36 @@ export const InitializeRoot = () =>
     it('Initialize root account', async () => {
       console.log('Initializing root account', rootAccount.publicKey.toBase58());
 
-      const sfs = await SFS.initializeRoot(
+      const players = Array.from({ length: PLAYERS_CAPACITY }).map(
+        (_, i): Player => ({
+          externalId: i,
+          position: Position.DB,
+        })
+      );
+
+      const balanceBefore = await global.connection.getBalance(global.payerAccount.publicKey);
+
+      global.sfs = await SFS.initializeRoot(
         global.connection,
         global.payerAccount,
         global.payerAccount.publicKey,
-        Array.from({ length: PLAYERS_CAPACITY }).map(
-          (x, i): Player => ({
-            externalId: i,
-            position: Position.DB,
-            // scores: Array.from({ length: GAMES_COUNT }).map(
-            //   (): Score => ({
-            //     score1: 1,
-            //     isInitialized: true,
-            //   })
-            // ),
-            // isInitialized: true,
-          })
-        ),
+        players,
         global.solanaFantasySportsPPK
       );
 
-      // var bank = new Account();
-      const [bank, _] = await PublicKey.findProgramAddress([Buffer.from([0])], global.solanaFantasySportsPPK);
+      const balanceAfter = await global.connection.getBalance(global.payerAccount.publicKey);
 
-      // const transaction = new Transaction().add(
-      //   SystemProgram.transfer({
-      //     fromPubkey: global.payerAccount.publicKey,
-      //     toPubkey: bank,
-      //     lamports: 10,
-      //   })
-      // );
+      console.log(`Initialization cost ${(balanceBefore - balanceAfter) / 10 ** 9} sol`);
 
-      // await sendAndConfirmTransaction('', global.connection, transaction, global.payerAccount);
+      const root = await global.sfs.getRootInfo();
 
-      const leagueId = await sfs.createLeague(global.payerAccount, null!, 'test', 10, 10);
-      console.log(leagueId);
-      console.log(JSON.stringify(await sfs.getRootInfo()));
+      ok(
+        root.oracleAuthority.equals(global.payerAccount.publicKey),
+        'oracle authority should be set correctly'
+      );
+
+      strictEqual(root.playersCount, players.length, 'players count should match');
+      strictEqual(root.stage, Stage.Join, 'stage should be correct');
+      strictEqual(root.leaguesCount, 0, 'should be no leagues yet');
     });
-
-    // it('calls InitializeRoot on the program on the network', async () => {
-    //   const instruction = new TransactionInstruction({
-    //     keys: [{ pubkey: rootAccount.publicKey, isSigner: false, isWritable: true }],
-    //     programId: global.solanaFantasySportsPPK,
-    //     data: Buffer.alloc(0), // All instructions are hellos
-    //   });
-
-    //   const numGreetsBefore = await getNumberOfGreetings();
-    //   strictEqual(numGreetsBefore, 0, 'num greets should be 0 initially');
-
-    //   await sendAndConfirmTransaction(
-    //     global.connection,
-    //     new Transaction().add(instruction),
-    //     [global.payerAccount],
-    //     { skipPreflight: false, commitment: 'recent', preflightCommitment: 'recent' }
-    //   );
-
-    //   const numGreetsAfter = await getNumberOfGreetings();
-    //   strictEqual(numGreetsAfter, 1, 'num greets should be 1 after a greet');
-    // });
   });
-
-// async function getNumberOfGreetings(): Promise<number> {
-//   const accountInfo = await global.connection.getAccountInfo(rootAccount.publicKey);
-//   if (accountInfo === null) {
-//     throw Error('Error: cannot find the root account');
-//   }
-//   console.log(accountInfo);
-
-//   const info: { numGreets: number } = rootAccountDataLayout.decode(
-//     Buffer.from(accountInfo.data)
-//   );
-//   return info.numGreets;
-// }

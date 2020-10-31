@@ -17,9 +17,9 @@ pub struct JoinLeagueArgs<'a> {
     offset: usize,
 }
 impl<'a> JoinLeagueArgs<'a> {
-    pub const LEN: usize = 8;
-    fn slice<'b>(&self, data: &'b [u8]) -> (&'b [u8; 8], &'b [u8; 0]) {
-        array_refs![array_ref![data, self.offset, JoinLeagueArgs::LEN], 8, 0]
+    pub const LEN: usize = 2;
+    fn slice<'b>(&self, data: &'b [u8]) -> (&'b [u8; 2], &'b [u8; 0]) {
+        array_refs![array_ref![data, self.offset, JoinLeagueArgs::LEN], 2, 0]
     }
 
     pub fn get_league_id(&self) -> u16 {

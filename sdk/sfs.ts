@@ -131,7 +131,6 @@ export class SFS {
    */
   async createLeague(
     owner: Account,
-    bank: Account,
     name: string,
     bid: number | u64,
     usersLimit: number
@@ -177,6 +176,7 @@ export class SFS {
       SfsInstruction.createJoinLeagueInstruction(
         this.programId,
         this.publicKey,
+        this.bank,
         leagueId,
         owner.publicKey
       )
@@ -202,8 +202,6 @@ export class SFS {
 
     const data = Buffer.from(info.data);
     const rootInfo = RootLayout.decode(data);
-
-    rootInfo.isInitialized = rootInfo.isInitialized != 0;
 
     return rootInfo;
   }

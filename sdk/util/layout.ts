@@ -11,13 +11,13 @@ export const publicKey = (property: string = 'publicKey'): Object => {
   const _decode = layout.decode.bind(layout);
   const _encode = layout.encode.bind(layout);
 
-  layout.decode = (buffer, offset) => {
-    const data = _decode(buffer, offset);
+  layout.decode = (...args: any) => {
+    const data = _decode(...args);
     return new PublicKey(data);
   };
 
-  layout.encode = (pk: PublicKey, buffer, offset) => {
-    return _encode(pk.toBuffer(), buffer, offset);
+  layout.encode = (value: PublicKey, ...args: any) => {
+    return _encode(value.toBuffer(), ...args);
   };
 
   return layout;
@@ -27,14 +27,27 @@ export const publicKey = (property: string = 'publicKey'): Object => {
  * Layout for a 64bit unsigned value
  */
 export const uint64 = (property: string = 'uint64'): Object => {
-  return BufferLayout.blob(8, property);
+  const layout = BufferLayout.blob(8, property);
+  const _decode = layout.decode.bind(layout);
+  const _encode = layout.encode.bind(layout);
+
+  layout.decode = (...args: any) => {
+    const data = _decode(...args);
+    return u64.fromBuffer(data);
+  };
+
+  layout.encode = (value: u64 | number, ...args: any) => {
+    return _encode(new u64(value).toBuffer(), ...args);
+  };
+
+  return layout;
 };
 
 /**
  * Layout for a Rust String type
  */
 export const rustString = (property: string = 'string'): Object => {
-  const rsl = BufferLayout.struct(
+  const layout = BufferLayout.struct(
     [
       BufferLayout.u32('length'),
       BufferLayout.u32('lengthPadding'),
@@ -42,22 +55,74 @@ export const rustString = (property: string = 'string'): Object => {
     ],
     property
   );
-  const _decode = rsl.decode.bind(rsl);
-  const _encode = rsl.encode.bind(rsl);
+  const _decode = layout.decode.bind(layout);
+  const _encode = layout.encode.bind(layout);
 
-  rsl.decode = (buffer, offset) => {
-    const data = _decode(buffer, offset);
+  layout.decode = (...args: any) => {
+    const data = _decode(...args);
     return data.chars.toString('utf8');
   };
 
-  rsl.encode = (str, buffer, offset) => {
+  layout.encode = (value: string, ...args: any) => {
     const data = {
-      chars: Buffer.from(str, 'utf8'),
+      chars: Buffer.from(value, 'utf8'),
     };
-    return _encode(data, buffer, offset);
+    return _encode(data, ...args);
   };
 
-  return rsl;
+  return layout;
+};
+
+/**
+ * Layout for a Rust String type
+ */
+export const utf16FixedString = (
+  maxSymbols: number,
+  property: string = 'utf16FixedString'
+): Object => {
+  const layout = BufferLayout.seq(BufferLayout.u16(), maxSymbols, property);
+  const _decode = layout.decode.bind(layout);
+  const _encode = layout.encode.bind(layout);
+
+  layout.decode = (...args: any) => {
+    const data = _decode(...args);
+    return String.fromCharCode(...data.filter((x: number) => x !== 0));
+  };
+
+  layout.encode = (value: string, ...args: any) => {
+    if (value.length > maxSymbols) throw new Error('String is too big');
+    const data = value
+      .padEnd(maxSymbols, '\0')
+      .split('')
+      .map((x) => x.charCodeAt(0));
+    return _encode(data, ...args);
+  };
+
+  return layout;
+};
+
+export const boolean = (property: string = 'boolean'): Object => {
+  const layout = BufferLayout.u8(property);
+  const _decode = layout.decode.bind(layout);
+  const _encode = layout.encode.bind(layout);
+
+  layout.decode = (...args: any) => {
+    const data = _decode(...args);
+    switch (data) {
+      case 1:
+        return true;
+      case 0:
+        return false;
+      default:
+        throw new Error('Invalid value for bool');
+    }
+  };
+
+  layout.encode = (value: boolean, ...args: any) => {
+    return _encode(value ? 1 : 0, ...args);
+  };
+
+  return layout;
 };
 
 /**

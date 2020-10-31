@@ -41,75 +41,19 @@ pub fn process_create_league<'a>(
         return Err(SfsError::InvalidStage.into());
     }
 
-    // return Ok(());
     let user_account_info = next_account_info(account_info_iter)?;
     let bank_account_info = next_account_info(account_info_iter)?;
     let system_program_account_info = next_account_info(account_info_iter)?;
 
-    // helpers::validate_bank(program_id, bank_account_info)?;
+    helpers::validate_bank(program_id, bank_account_info)?;
 
-
-
-    // let (bank_pubkey, bump_seed) = Pubkey::find_program_address(&[&[0]], program_id);
-
-    // let instruction = create_account(
-    //     user_account_info.key,
-    //     bank_account_info.key,
-    //     0,
-    //     0,
-    //     program_id,
-    // );
-    // invoke_signed(
-    //     &instruction,
-    //     &[user_account_info.clone(), bank_account_info.clone()],
-    //     &[&[&[0, bump_seed]]]
-    // )?;
-
-    // return Ok(());
-    let instruction = transfer(user_account_info.key, bank_account_info.key, 10);// args.get_bid());
-    invoke(&instruction, &[user_account_info.clone(), bank_account_info.clone(), system_program_account_info.clone()])?;
-
-    // return Ok(());
-    // if !instruction.accounts[0].is_writable {
-    //     return Err(SfsError::InvalidStage.into());
-    // }
-    // if !instruction.accounts[1].is_writable {
-    //     return Err(SfsError::InvalidStage.into());
-    // }
-    // if !instruction.accounts[0].is_signer {
-    //     return Err(SfsError::InvalidStage.into());
-    // }
-    // return Ok(());
-
-    // if (instruction.accounts[0].pubkey != *(bank_account_info.clone()).key) {
-    // return Ok(());
-    // return Ok(());
-
-// let account_infos = &[root_info.clone()];
-//     for account_meta in instruction.accounts.iter() {
-//         for account_info in account_infos.iter() {
-//             if account_meta.pubkey == *account_info.key {
-//                 if account_meta.is_writable {
-//                     let _ = account_info.try_borrow_mut_lamports()?;
-//                     let _ = account_info.try_borrow_mut_data()?;
-//                 } else {
-//                     let _ = account_info.try_borrow_lamports()?;
-//                     let _ = account_info.try_borrow_data()?;
-//                 }
-//                 break;
-//             }
-//         }
-//     }
-//     return Ok(());
-    // }
-    // return Ok(());
-
-    // invoke_signed(
-    //     &instruction,
-    //     &[ user_account_info.clone()], //,
-    //                                   &[&[&[0, bump_seed]]]
-    // )?;
-    // return Ok(());
+    let instruction = transfer(user_account_info.key, bank_account_info.key, args.get_bid());
+    let accounts = [
+        user_account_info.clone(),
+        bank_account_info.clone(),
+        system_program_account_info.clone(),
+    ];
+    invoke(&instruction, &accounts)?;
 
     let league = root.get_leagues()?.create()?;
     league.set_name(args.get_name());
@@ -119,10 +63,5 @@ pub fn process_create_league<'a>(
 
     league.get_user_states()?.add(*user_account_info.key)?;
 
-    Ok(())
-}
-
-pub fn x<'a>(instruction: &Instruction, a: AccountInfo<'a>, b: AccountInfo<'a>) -> ProgramResult {
-    invoke_signed(&instruction, &[a, b], &[&[&[0]]])?;
     Ok(())
 }

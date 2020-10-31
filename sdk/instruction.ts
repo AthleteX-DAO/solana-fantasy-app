@@ -1,14 +1,13 @@
-import { PublicKey, TransactionInstruction, SYSVAR_RENT_PUBKEY, SystemProgram } from '@solana/web3.js';
+import {
+  PublicKey,
+  TransactionInstruction,
+  SYSVAR_RENT_PUBKEY,
+  SystemProgram,
+} from '@solana/web3.js';
 
 import * as Layout from './util/layout';
 import { BufferLayout } from './util/layout';
-import {
-  Position,
-  PLAYERS_CAPACITY,
-  MAX_PLAYERS_PER_INSTRUCTION,
-  LEAGUE_NAME_UTF16_LEN,
-} from './state';
-import { stringify } from 'querystring';
+import { Position, MAX_PLAYERS_PER_INSTRUCTION, LEAGUE_NAME_MAX_SYMBOLS } from './state';
 
 enum Command {
   Uninitialized,
@@ -131,23 +130,18 @@ export class SfsInstruction {
     ];
     const commandDataLayout = BufferLayout.struct([
       BufferLayout.u8('instruction'),
-      BufferLayout.seq(BufferLayout.u16(), LEAGUE_NAME_UTF16_LEN, 'name'),
+      Layout.utf16FixedString(LEAGUE_NAME_MAX_SYMBOLS, 'name'),
       Layout.uint64('bid'),
       BufferLayout.u8('usersLimit'),
     ]);
-
-    if (name.length > LEAGUE_NAME_UTF16_LEN) throw new Error('Name is too big');
 
     let data = Buffer.alloc(commandDataLayout.span);
     {
       const encodeLength = commandDataLayout.encode(
         {
           instruction: Command.CreateLeague,
-          name: name
-            .padEnd(LEAGUE_NAME_UTF16_LEN, '\0')
-            .split('')
-            .map((x) => x.charCodeAt(0)),
-          bid: new Layout.u64(bid).toBuffer(),
+          name,
+          bid,
           usersLimit,
         },
         data
@@ -167,12 +161,15 @@ export class SfsInstruction {
   static createJoinLeagueInstruction(
     programId: PublicKey,
     root: PublicKey,
+    bank: PublicKey,
     leagueId: number,
     owner: PublicKey
   ): TransactionInstruction {
     let keys = [
       { pubkey: root, isSigner: false, isWritable: true },
       { pubkey: owner, isSigner: true, isWritable: false },
+      { pubkey: bank, isSigner: false, isWritable: true },
+      { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
     ];
     const commandDataLayout = BufferLayout.struct([
       BufferLayout.u8('instruction'),
