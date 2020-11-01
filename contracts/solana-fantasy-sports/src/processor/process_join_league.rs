@@ -36,8 +36,12 @@ pub fn process_join_league<'a>(
     let root_info = next_account_info(account_info_iter)?;
     let root = Root::new(&root_info.data)?;
 
-    if root.get_stage()? != Stage::Join {
+    if root.get_stage()? != Stage::SeasonOpen {
         return Err(SfsError::InvalidStage.into());
+    }
+
+    if root.get_current_week() >= consts::GAMES_COUNT {
+        return Err(SfsError::InvalidState.into());
     }
 
     let user_account_info = next_account_info(account_info_iter)?;

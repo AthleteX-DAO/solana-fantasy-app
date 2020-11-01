@@ -7,10 +7,10 @@ import { JoinLeague } from './JoinLeague.test';
 
 export const SolanaFantasySports = () =>
   describe('Solana Fantasy Sports', () => {
-    DraftSelection();
-    InstructionsTests();
+    // InstructionsTests();
     LoadProgram();
     InitializeRoot();
     CreateLeague();
     JoinLeague();
+    DraftSelection();
   });

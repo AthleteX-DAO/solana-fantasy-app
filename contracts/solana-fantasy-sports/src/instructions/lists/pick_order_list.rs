@@ -22,7 +22,7 @@ impl<'a> PickOrderList<'a> {
     fn slice<'b>(&self, data: &'b [u8], i: u8) -> &'b [u8; 1] {
         array_ref![
             data,
-            self.offset + i as usize * PickOrderList::ITEM_COUNT as usize,
+            self.offset + i as usize * PickOrderList::ITEM_SIZE as usize,
             PickOrderList::ITEM_SIZE
         ]
     }

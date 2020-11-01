@@ -2,7 +2,13 @@ import { Account, PublicKey, SystemProgram, Transaction } from '@solana/web3.js'
 import type { Connection } from '@solana/web3.js';
 
 import { sendAndConfirmTransaction } from './util/send-and-confirm-transaction';
-import { MAX_PLAYERS_PER_INSTRUCTION, Player, Root, RootLayout } from './state';
+import {
+  MAX_PLAYERS_PER_INSTRUCTION,
+  Player,
+  Root,
+  RootLayout,
+  LEAGUE_USERS_CAPACITY,
+} from './state';
 import { SfsInstruction, Player as PlayerInit } from './instruction';
 import { u64 } from './util/layout';
 
@@ -60,6 +66,7 @@ export class SFS {
     payer: Account,
     oracleAuthority: PublicKey,
     players: PlayerInit[],
+    currentWeek: number,
     programId: PublicKey
   ): Promise<SFS> {
     const rootAccount = new Account();
@@ -107,15 +114,30 @@ export class SFS {
       );
     }
 
+    const pickOrder = Array.from({ length: LEAGUE_USERS_CAPACITY })
+      .map((_, i) => i)
+      .sort(() => 0.5 - Math.random());
+
+    transaction = new Transaction().add(
+      SfsInstruction.createSeedDraftSelectionInstruction(
+        programId,
+        rootAccount.publicKey,
+        pickOrder
+      )
+    );
+    console.log('Seed draft selection');
+    await sendAndConfirmTransaction('Seed draft selection', connection, transaction, payer);
+
     transaction = new Transaction().add(
       SfsInstruction.createInitializeRootInstruction(
         programId,
         rootAccount.publicKey,
-        oracleAuthority
+        oracleAuthority,
+        currentWeek
       )
     );
 
-    // Send the two instructions
+    console.log('Initialize root');
     await sendAndConfirmTransaction('Initialize root', connection, transaction, payer);
 
     return sfs;
@@ -183,6 +205,30 @@ export class SFS {
     );
 
     await sendAndConfirmTransaction('Join league', this.connection, transaction, owner);
+  }
+
+  /**
+   * Pick player.
+   */
+  async pickPlayer(
+    owner: Account,
+    leagueId: number,
+    userId: number,
+    playerId: number
+  ): Promise<void> {
+    const transaction = new Transaction();
+    transaction.add(
+      SfsInstruction.createPickPlayerInstruction(
+        this.programId,
+        this.publicKey,
+        leagueId,
+        userId,
+        playerId,
+        owner.publicKey
+      )
+    );
+
+    await sendAndConfirmTransaction('Pick player', this.connection, transaction, owner);
   }
 
   /**

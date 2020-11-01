@@ -1,4 +1,5 @@
 import { Account } from '@solana/web3.js';
+import { strictEqual } from 'assert';
 import { Player } from '../../../sdk/instruction';
 import { SFS } from '../../../sdk/sfs';
 import {
@@ -9,17 +10,17 @@ import {
   TEAM_PLAYERS_COUNT,
   LEAGUE_USERS_CAPACITY,
 } from '../../../sdk/state';
-
-const rootAccount = new Account();
+import { throwsAsync } from '../../helpers';
 
 export const DraftSelection = () =>
-  describe('Draft selection', () => {
-    it('Initialize root account', async () => {
-      const pickOrder = Array.from({ length: LEAGUE_USERS_CAPACITY })
-        .map((_, i) => i)
-        .sort(() => 0.5 - Math.random());
+  describe('Draft selection', async () => {
+    it('', async () => {
+      const root = await global.sfs.getRootInfo();
+      const league = root.leagues[0];
 
-      let usersCount = 5;
+      const pickOrder = root.pickOrder;
+
+      let usersCount = league.usersLimit;
 
       const reducedPickOrder = pickOrder.filter((x) => x < usersCount);
 
@@ -34,64 +35,53 @@ export const DraftSelection = () =>
         return reducedPickOrder[pickInRound];
       });
 
+      console.log('expected pick order:');
       for (let i = 0; i < TEAM_PLAYERS_COUNT; i++) {
         console.log(pickOrderForSmallerTeam.slice(i * usersCount, (i + 1) * usersCount));
       }
 
-      // console.log('Initializing root account', rootAccount.publicKey.toBase58());
+      const getOwnerAccount = (userId: number) =>
+        userId === 0 ? global.payerAccount : global.secondAccount;
 
-      // const sfs = await SFS.initializeRoot(
-      //   global.connection,
-      //   global.payerAccount,
-      //   global.payerAccount.publicKey,
-      //   Array.from({ length: PLAYERS_CAPACITY }).map(
-      //     (x, i): Player => ({
-      //       id: i,
-      //       position: Position.DB,
-      //       // scores: Array.from({ length: GAMES_COUNT }).map(
-      //       //   (): Score => ({
-      //       //     score1: 1,
-      //       //     isInitialized: true,
-      //       //   })
-      //       // ),
-      //       // isInitialized: true,
-      //     })
-      //   ),
-      //   global.solanaFantasySportsPPK
-      // );
+      for (let i = 0; i < TEAM_PLAYERS_COUNT * usersCount; i++) {
+        const expectedPick = pickOrderForSmallerTeam[i];
+        const round = Math.floor(i / usersCount);
+
+        it(`throws on wrong player pick attempt at step ${i}`, async () => {
+          const userId = pickOrderForSmallerTeam.filter((x) => x !== expectedPick)[0];
+
+          await throwsAsync(
+            () => global.sfs.pickPlayer(getOwnerAccount(userId), 0, userId, i),
+            'should not allow another player pick'
+          );
+        });
+
+        if (i > 0 && i < TEAM_PLAYERS_COUNT * usersCount - 1) {
+          it(`throws on already taken player pick, step ${i}`, async () => {
+            if (i > 0 && i < TEAM_PLAYERS_COUNT * usersCount - 1) {
+              await throwsAsync(
+                () => global.sfs.pickPlayer(getOwnerAccount(expectedPick), 0, expectedPick, i - 1),
+                'should not allow to pick already taken player'
+              );
+            }
+          });
+        }
+
+        it(`allow right player to pick at step ${i}`, async () => {
+          await global.sfs.pickPlayer(getOwnerAccount(expectedPick), 0, expectedPick, i);
+          const root = await global.sfs.getRootInfo();
+          const league = root.leagues[0];
+
+          strictEqual(league.currentPick, i + 1, 'should increase current pick');
+          strictEqual(
+            league.userStates[expectedPick].bench[round],
+            i,
+            'should add correct player id to bench'
+          );
+          console.log(
+            `User ${expectedPick} successfully picked player ${i} at step ${i}, round ${round}`
+          );
+        });
+      }
     });
-
-    // it('calls InitializeRoot on the program on the network', async () => {
-    //   const instruction = new TransactionInstruction({
-    //     keys: [{ pubkey: rootAccount.publicKey, isSigner: false, isWritable: true }],
-    //     programId: global.solanaFantasySportsPPK,
-    //     data: Buffer.alloc(0), // All instructions are hellos
-    //   });
-
-    //   const numGreetsBefore = await getNumberOfGreetings();
-    //   strictEqual(numGreetsBefore, 0, 'num greets should be 0 initially');
-
-    //   await sendAndConfirmTransaction(
-    //     global.connection,
-    //     new Transaction().add(instruction),
-    //     [global.payerAccount],
-    //     { skipPreflight: false, commitment: 'recent', preflightCommitment: 'recent' }
-    //   );
-
-    //   const numGreetsAfter = await getNumberOfGreetings();
-    //   strictEqual(numGreetsAfter, 1, 'num greets should be 1 after a greet');
-    // });
   });
-
-// async function getNumberOfGreetings(): Promise<number> {
-//   const accountInfo = await global.connection.getAccountInfo(rootAccount.publicKey);
-//   if (accountInfo === null) {
-//     throw Error('Error: cannot find the root account');
-//   }
-//   console.log(accountInfo);
-
-//   const info: { numGreets: number } = rootAccountDataLayout.decode(
-//     Buffer.from(accountInfo.data)
-//   );
-//   return info.numGreets;
-// }

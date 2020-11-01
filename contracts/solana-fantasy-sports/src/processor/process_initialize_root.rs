@@ -48,7 +48,8 @@ pub fn process_initialize_root<'a>(
     }
 
     root.set_oracle_authority(args.get_oracle_authority());
-    root.set_stage(Stage::Join);
+    root.set_current_week(args.get_current_week());
+    root.set_stage(Stage::SeasonOpen);
 
     Ok(())
 }

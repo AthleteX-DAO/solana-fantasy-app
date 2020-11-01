@@ -22,7 +22,7 @@ impl<'a> UserPlayerList<'a> {
     fn slice<'b>(&self, data: &'b mut [u8], i: u8) -> &'b mut [u8; 2] {
         array_mut_ref![
             data,
-            self.offset + i as usize * UserPlayerList::ITEM_COUNT as usize,
+            self.offset + i as usize * UserPlayerList::ITEM_SIZE as usize,
             UserPlayerList::ITEM_SIZE
         ]
     }

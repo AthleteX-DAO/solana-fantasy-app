@@ -16,13 +16,21 @@ pub struct InitializeRootArgs<'a> {
     offset: usize,
 }
 impl<'a> InitializeRootArgs<'a> {
-    pub const LEN: usize = PUB_KEY_LEN;
-    fn slice<'b>(&self, data: &'b [u8]) -> &'b [u8; PUB_KEY_LEN] {
-        array_ref![data, self.offset, InitializeRootArgs::LEN]
+    pub const LEN: usize = PUB_KEY_LEN + 1;
+    fn slice<'b>(&self, data: &'b [u8]) -> (&'b [u8; PUB_KEY_LEN], &'b [u8; 1]) {
+        array_refs![
+            array_ref![data, self.offset, InitializeRootArgs::LEN],
+            PUB_KEY_LEN,
+            1
+        ]
     }
 
     pub fn get_oracle_authority(&self) -> Pubkey {
-        Pubkey::new_from_array(*self.slice(&self.data.borrow()))
+        Pubkey::new_from_array(*self.slice(&self.data.borrow()).0)
+    }
+
+    pub fn get_current_week(&self) -> u8 {
+        self.slice(&mut self.data.borrow()).1[0]
     }
 
     pub fn copy_to(&self, to: &mut [u8]) {
@@ -55,7 +63,6 @@ impl Clone for InitializeRootArgs<'_> {
 
 // Pull in syscall stubs when building for non-BPF targets
 #[cfg(not(target_arch = "bpf"))]
-
 #[cfg(test)]
 mod tests {
     use super::*;

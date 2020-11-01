@@ -32,8 +32,6 @@ export enum Position {
 
 export enum Stage {
   Uninitialized,
-  Join,
-  DraftSelection,
   SeasonOpen,
   SeasonComplete,
 }

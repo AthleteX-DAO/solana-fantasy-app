@@ -36,11 +36,11 @@ pub fn process_start_season<'a>(
     let root_info = next_account_info(account_info_iter)?;
     let root = Root::new(&root_info.data)?;
 
-    if root.get_stage()? != Stage::DraftSelection {
-        return Err(SfsError::InvalidStage.into());
-    }
+    // if root.get_stage()? != Stage::DraftSelection {
+    //     return Err(SfsError::InvalidStage.into());
+    // }
 
-    root.set_stage(Stage::SeasonOpen);
+    // root.set_stage(Stage::SeasonOpen);
 
     Ok(())
 }

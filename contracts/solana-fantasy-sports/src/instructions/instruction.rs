@@ -37,8 +37,8 @@ pub enum SfsInstruction<'a> {
     InitializeRoot {
         args: InitializeRootArgs<'a>,
     },
-    StartDraftSelection {
-        args: StartDraftSelectionArgs<'a>,
+    SeedDraftSelection {
+        args: SeedDraftSelectionArgs<'a>,
     },
     StartSeason,
     CreateLeague {
@@ -97,8 +97,8 @@ impl<'a> SfsInstruction<'a> {
             2 => Self::InitializeRoot {
                 args: InitializeRootArgs::new(input, 1)?,
             },
-            3 => Self::StartDraftSelection {
-                args: StartDraftSelectionArgs::new(input, 1)?,
+            3 => Self::SeedDraftSelection {
+                args: SeedDraftSelectionArgs::new(input, 1)?,
             },
             4 => Self::StartSeason,
 
@@ -143,10 +143,10 @@ impl<'a> SfsInstruction<'a> {
                 buf.extend_from_slice(&[0u8; InitializeRootArgs::LEN]);
                 args.copy_to(array_mut_ref![buf, 1, InitializeRootArgs::LEN]);
             }
-            Self::StartDraftSelection { args } => {
+            Self::SeedDraftSelection { args } => {
                 buf.push(3);
-                buf.extend_from_slice(&[0u8; StartDraftSelectionArgs::LEN]);
-                args.copy_to(array_mut_ref![buf, 1, StartDraftSelectionArgs::LEN]);
+                buf.extend_from_slice(&[0u8; SeedDraftSelectionArgs::LEN]);
+                args.copy_to(array_mut_ref![buf, 1, SeedDraftSelectionArgs::LEN]);
             }
             Self::StartSeason => {
                 buf.push(4);
@@ -159,7 +159,7 @@ impl<'a> SfsInstruction<'a> {
             Self::JoinLeague { args } => {
                 buf.push(6);
                 buf.extend_from_slice(&[0u8; JoinLeagueArgs::LEN]);
-                args.copy_to(array_mut_ref![buf, 1, StartDraftSelectionArgs::LEN]);
+                args.copy_to(array_mut_ref![buf, 1, SeedDraftSelectionArgs::LEN]);
             }
             Self::UpdateLineup { args } => {
                 buf.push(7);
@@ -226,13 +226,13 @@ pub fn initialize_root(
     })
 }
 
-/// Creates a `StartDraftSelection` instruction.
-pub fn start_draft_selection(
+/// Creates a `SeedDraftSelection` instruction.
+pub fn seed_draft_selection(
     sfs_program_id: &Pubkey,
     root_pubkey: &Pubkey,
-    args: StartDraftSelectionArgs,
+    args: SeedDraftSelectionArgs,
 ) -> Result<Instruction, ProgramError> {
-    let data = SfsInstruction::StartDraftSelection { args }.pack();
+    let data = SfsInstruction::SeedDraftSelection { args }.pack();
 
     let accounts = vec![AccountMeta::new(*root_pubkey, false)];
 

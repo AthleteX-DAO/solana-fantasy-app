@@ -27,17 +27,17 @@ use solana_program::{
 use std::cell::RefCell;
 use std::convert::TryInto;
 
-/// Processes an [StartDraftSelection](enum.SfsInstruction.html) instruction.
-pub fn process_start_draft_selection<'a>(
+/// Processes an [SeedDraftSelection](enum.SfsInstruction.html) instruction.
+pub fn process_seed_draft_selection<'a>(
     program_id: &Pubkey,
     accounts: &'a [AccountInfo<'a>],
-    args: StartDraftSelectionArgs,
+    args: SeedDraftSelectionArgs,
 ) -> ProgramResult {
     let account_info_iter = &mut accounts.iter();
     let root_info = next_account_info(account_info_iter)?;
     let root = Root::new(&root_info.data)?;
 
-    if root.get_stage()? != Stage::Join {
+    if root.get_stage()? != Stage::Uninitialized {
         return Err(SfsError::InvalidStage.into());
     }
 
@@ -47,8 +47,6 @@ pub fn process_start_draft_selection<'a>(
     for i in 0..PickOrderList::ITEM_COUNT {
         pick_order_root.set(i, pick_order_args.get(i));
     }
-
-    root.set_stage(Stage::DraftSelection);
 
     Ok(())
 }

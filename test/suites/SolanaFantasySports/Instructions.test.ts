@@ -51,14 +51,15 @@ export const InstructionsTests = () => {
     const data = SfsInstruction.createInitializeRootInstruction(
       someAccount.publicKey,
       someAccount.publicKey,
-      someAccount.publicKey
+      someAccount.publicKey,
+      0
     );
 
     it('correctly serialize instruction', async () => {
       console.log(data.data);
       strictEqual(ScoreLayout.span, 2);
       strictEqual(PlayerLayout.span, 2 + 1);
-      strictEqual(data.data.length, 1 + PUB_KEY_LEN);
+      strictEqual(data.data.length, 1 + 1 + PUB_KEY_LEN);
 
       // it('calls InitializeRoot on the program on the network', async () => {
       //   const instruction = new TransactionInstruction({

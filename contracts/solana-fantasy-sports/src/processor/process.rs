@@ -46,9 +46,9 @@ pub fn process<'a>(
             info!("Instruction: InitializeRoot");
             processor::process_initialize_root(program_id, accounts, args)
         }
-        SfsInstruction::StartDraftSelection { args } => {
-            info!("Instruction: StartDraftSelection");
-            processor::process_start_draft_selection(program_id, accounts, args)
+        SfsInstruction::SeedDraftSelection { args } => {
+            info!("Instruction: SeedDraftSelection");
+            processor::process_seed_draft_selection(program_id, accounts, args)
         }
         SfsInstruction::StartSeason => {
             info!("Instruction: StartSeason");

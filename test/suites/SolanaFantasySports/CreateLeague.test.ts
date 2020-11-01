@@ -4,7 +4,7 @@ import { u64 } from '../../../sdk/util/layout';
 
 export const CreateLeague = () =>
   describe('Create league', () => {
-    it('Creates league', async () => {
+    it('creates league', async () => {
       const bank = (global.sfs as any).bank as PublicKey;
 
       const balanceBefore = await global.connection.getBalance(bank);
@@ -13,7 +13,7 @@ export const CreateLeague = () =>
         global.payerAccount,
         'Test League',
         1 * 10 ** 9,
-        10
+        2
       );
 
       const balanceAfter = await global.connection.getBalance(bank);
@@ -26,7 +26,7 @@ export const CreateLeague = () =>
       strictEqual(league.userStateLength, 1, 'should be 1 player joined');
       strictEqual(league.isInitialized, true, 'league should be initialized');
       strictEqual(league.name, 'Test League', 'should correctly set name');
-      strictEqual(league.usersLimit, 10, 'should correctly set users limit');
+      strictEqual(league.usersLimit, 2, 'should correctly set users limit');
       strictEqual(league.currentPick, 0, 'should correctly set currentPick');
       strictEqual(
         league.bid.toString(),
@@ -43,38 +43,4 @@ export const CreateLeague = () =>
         'should correctly set first player pubkey'
       );
     });
-
-    // it('calls InitializeRoot on the program on the network', async () => {
-    //   const instruction = new TransactionInstruction({
-    //     keys: [{ pubkey: rootAccount.publicKey, isSigner: false, isWritable: true }],
-    //     programId: global.solanaFantasySportsPPK,
-    //     data: Buffer.alloc(0), // All instructions are hellos
-    //   });
-
-    //   const numGreetsBefore = await getNumberOfGreetings();
-    //   strictEqual(numGreetsBefore, 0, 'num greets should be 0 initially');
-
-    //   await sendAndConfirmTransaction(
-    //     global.connection,
-    //     new Transaction().add(instruction),
-    //     [global.payerAccount],
-    //     { skipPreflight: false, commitment: 'recent', preflightCommitment: 'recent' }
-    //   );
-
-    //   const numGreetsAfter = await getNumberOfGreetings();
-    //   strictEqual(numGreetsAfter, 1, 'num greets should be 1 after a greet');
-    // });
   });
-
-// async function getNumberOfGreetings(): Promise<number> {
-//   const accountInfo = await global.connection.getAccountInfo(rootAccount.publicKey);
-//   if (accountInfo === null) {
-//     throw Error('Error: cannot find the root account');
-//   }
-//   console.log(accountInfo);
-
-//   const info: { numGreets: number } = rootAccountDataLayout.decode(
-//     Buffer.from(accountInfo.data)
-//   );
-//   return info.numGreets;
-// }

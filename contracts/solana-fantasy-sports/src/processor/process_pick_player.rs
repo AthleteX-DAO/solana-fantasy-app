@@ -38,8 +38,12 @@ pub fn process_pick_player<'a>(
     let root = Root::new(&root_info.data)?;
     let user_account_info = next_account_info(account_info_iter)?;
 
-    if root.get_stage()? != Stage::DraftSelection {
+    if root.get_stage()? != Stage::SeasonOpen {
         return Err(SfsError::InvalidStage.into());
+    }
+
+    if root.get_current_week() >= consts::GAMES_COUNT {
+        return Err(SfsError::InvalidState.into());
     }
 
     let player_id = args.get_player_id();

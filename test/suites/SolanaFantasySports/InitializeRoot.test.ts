@@ -1,14 +1,15 @@
 import { Account } from '@solana/web3.js';
 import { Player } from '../../../sdk/instruction';
 import { SFS } from '../../../sdk/sfs';
-import { Position, PLAYERS_CAPACITY, Stage } from '../../../sdk/state';
+import { Position, PLAYERS_CAPACITY, Stage, LEAGUE_USERS_CAPACITY } from '../../../sdk/state';
 import { strictEqual, ok } from 'assert';
+import { hasDuplicates } from '../../helpers';
 
 const rootAccount = new Account();
 
 export const InitializeRoot = () =>
   describe('Initialize root', () => {
-    it('Initialize root account', async () => {
+    it('initializes root account', async () => {
       console.log('Initializing root account', rootAccount.publicKey.toBase58());
 
       const players = Array.from({ length: PLAYERS_CAPACITY }).map(
@@ -25,6 +26,7 @@ export const InitializeRoot = () =>
         global.payerAccount,
         global.payerAccount.publicKey,
         players,
+        0,
         global.solanaFantasySportsPPK
       );
 
@@ -40,7 +42,14 @@ export const InitializeRoot = () =>
       );
 
       strictEqual(root.playersCount, players.length, 'players count should match');
-      strictEqual(root.stage, Stage.Join, 'stage should be correct');
+      strictEqual(root.stage, Stage.SeasonOpen, 'stage should be correct');
       strictEqual(root.leaguesCount, 0, 'should be no leagues yet');
+
+      ok(
+        root.pickOrder.every((x) => x < LEAGUE_USERS_CAPACITY),
+        'all pick order values should be in range of users'
+      );
+
+      ok(!hasDuplicates(root.pickOrder), 'pick order should not contain duplicates');
     });
   });

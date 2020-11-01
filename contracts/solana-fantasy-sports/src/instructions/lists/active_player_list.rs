@@ -23,7 +23,7 @@ impl<'a> ActivePlayersList<'a> {
     fn slice<'b>(&self, data: &'b [u8], i: u8) -> &'b [u8; 2] {
         array_ref![
             data,
-            self.offset + i as usize * ActivePlayersList::ITEM_COUNT as usize,
+            self.offset + i as usize * ActivePlayersList::ITEM_SIZE as usize,
             ActivePlayersList::ITEM_SIZE
         ]
     }

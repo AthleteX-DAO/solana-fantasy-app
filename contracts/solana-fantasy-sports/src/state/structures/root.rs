@@ -53,10 +53,8 @@ impl<'a> Root<'a> {
     pub fn get_stage(&self) -> Result<Stage, ProgramError> {
         let stage = match self.slice(&mut self.data.borrow_mut()).3 {
             [0] => Stage::Uninitialized,
-            [1] => Stage::Join,
-            [2] => Stage::DraftSelection,
-            [3] => Stage::SeasonOpen,
-            [4] => Stage::SeasonComplete,
+            [1] => Stage::SeasonOpen,
+            [2] => Stage::SeasonComplete,
             _ => return Err(ProgramError::InvalidAccountData),
         };
         return Ok(stage);

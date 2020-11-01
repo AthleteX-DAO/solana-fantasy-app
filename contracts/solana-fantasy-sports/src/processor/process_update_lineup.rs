@@ -37,7 +37,7 @@ pub fn process_update_lineup<'a>(
     let root = Root::new(&root_info.data)?;
     let user_account_info = next_account_info(account_info_iter)?;
 
-    if root.get_stage()? != Stage::DraftSelection || root.get_stage()? != Stage::SeasonOpen {
+    if root.get_stage()? != Stage::SeasonOpen {
         return Err(SfsError::InvalidStage.into());
     }
 

@@ -1,10 +1,17 @@
 import { PublicKey } from '@solana/web3.js';
 import { ok, strictEqual, throws, doesNotThrow, fail } from 'assert';
 import { u64 } from '../../../sdk/util/layout';
+import { throwsAsync } from '../../helpers';
 
 export const JoinLeague = () =>
   describe('Join league', () => {
-    it('Joins league', async () => {
+    it('throws on creator join attempt', async () => {
+      await throwsAsync(
+        () => global.sfs.joinLeague(global.payerAccount, 0),
+        'should not allow double join'
+      );
+    });
+    it('joins league', async () => {
       const bank = (global.sfs as any).bank as PublicKey;
 
       const balanceBefore = await global.connection.getBalance(bank);
@@ -26,51 +33,11 @@ export const JoinLeague = () =>
         global.secondAccount.publicKey.toString(),
         'should correctly set first player pubkey'
       );
-
-      let error;
-      try {
-        await global.sfs.joinLeague(global.secondAccount, 0);
-      } catch (e) {
-        error = e;
-      }
-      ok(error, 'should not allow double join');
-
-      // doesNotThrow(async () => {
-      //   await global.sfs.joinLeague(global.secondAccount, 0);
-      // }, 'should not allow double join');
     });
-
-    // it('calls InitializeRoot on the program on the network', async () => {
-    //   const instruction = new TransactionInstruction({
-    //     keys: [{ pubkey: rootAccount.publicKey, isSigner: false, isWritable: true }],
-    //     programId: global.solanaFantasySportsPPK,
-    //     data: Buffer.alloc(0), // All instructions are hellos
-    //   });
-
-    //   const numGreetsBefore = await getNumberOfGreetings();
-    //   strictEqual(numGreetsBefore, 0, 'num greets should be 0 initially');
-
-    //   await sendAndConfirmTransaction(
-    //     global.connection,
-    //     new Transaction().add(instruction),
-    //     [global.payerAccount],
-    //     { skipPreflight: false, commitment: 'recent', preflightCommitment: 'recent' }
-    //   );
-
-    //   const numGreetsAfter = await getNumberOfGreetings();
-    //   strictEqual(numGreetsAfter, 1, 'num greets should be 1 after a greet');
-    // });
+    it('throws on joined player double join attempt', async () => {
+      await throwsAsync(
+        () => global.sfs.joinLeague(global.secondAccount, 0),
+        'should not allow join more than limit players'
+      );
+    });
   });
-
-// async function getNumberOfGreetings(): Promise<number> {
-//   const accountInfo = await global.connection.getAccountInfo(rootAccount.publicKey);
-//   if (accountInfo === null) {
-//     throw Error('Error: cannot find the root account');
-//   }
-//   console.log(accountInfo);
-
-//   const info: { numGreets: number } = rootAccountDataLayout.decode(
-//     Buffer.from(accountInfo.data)
-//   );
-//   return info.numGreets;
-// }

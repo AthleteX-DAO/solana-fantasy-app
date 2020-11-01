@@ -6,8 +6,6 @@ use num_enum::TryFromPrimitive;
 #[derive(Clone, Copy, Debug, PartialEq, TryFromPrimitive)]
 pub enum Stage {
     Uninitialized,
-    Join,
-    DraftSelection,
     SeasonOpen,
     SeasonComplete,
 }
