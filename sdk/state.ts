@@ -96,7 +96,7 @@ export type Score = {
 };
 
 export const ScoreLayout: typeof BufferLayout.Structure = BufferLayout.struct([
-  BufferLayout.u8('score1'),
+  BufferLayout.u16('score1'),
   Layout.boolean('isInitialized'),
 ]);
 
