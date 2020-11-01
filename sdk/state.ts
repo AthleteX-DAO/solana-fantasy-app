@@ -49,7 +49,7 @@ export const SwapProposalLayout: typeof BufferLayout.Structure = BufferLayout.st
 ]);
 
 export type UserState = {
-  bench: number[];
+  userPlayers: number[];
   lineups: number[][];
   swapProposalsLength: number;
   swapProposals: SwapProposal[];

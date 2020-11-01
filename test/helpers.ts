@@ -3,7 +3,10 @@ import { ok } from 'assert';
 export const throwsAsync = async (block: () => Promise<any>, message?: string | Error) => {
   let error: any;
   try {
+    let t = console.error;
+    console.error = () => {};
     await block();
+    console.error = t;
   } catch (e) {
     error = e;
   }
