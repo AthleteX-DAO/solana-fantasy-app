@@ -18,6 +18,8 @@ pub mod process_create_league;
 pub use process_create_league::*;
 pub mod process_join_league;
 pub use process_join_league::*;
+pub mod process_update_player_score;
+pub use process_update_player_score::*;
 pub mod process;
 pub use process::*;
 pub mod helpers;

@@ -82,6 +82,9 @@ pub enum SfsInstruction<'a> {
     AcceptSwap {
         args: AcceptSwapArgs<'a>,
     },
+    UpdatePlayerScore {
+        args: UpdatePlayerScoreArgs<'a>,
+    },
 }
 impl<'a> SfsInstruction<'a> {
     pub fn unpack(input: &'a RefCell<&'a [u8]>) -> Result<Self, ProgramError> {
@@ -120,6 +123,9 @@ impl<'a> SfsInstruction<'a> {
             },
             10 => Self::AcceptSwap {
                 args: AcceptSwapArgs::new(input, 1)?,
+            },
+            11 => Self::UpdatePlayerScore {
+                args: UpdatePlayerScoreArgs::new(input, 1)?,
             },
 
             _ => return Err(SfsError::InvalidInstruction.into()),
@@ -180,6 +186,11 @@ impl<'a> SfsInstruction<'a> {
                 buf.push(10);
                 buf.extend_from_slice(&[0u8; AcceptSwapArgs::LEN]);
                 args.copy_to(array_mut_ref![buf, 1, AcceptSwapArgs::LEN]);
+            }
+            Self::UpdatePlayerScore { args } => {
+                buf.push(11);
+                buf.extend_from_slice(&[0u8; UpdatePlayerScoreArgs::LEN]);
+                args.copy_to(array_mut_ref![buf, 1, UpdatePlayerScoreArgs::LEN]);
             }
         };
         buf

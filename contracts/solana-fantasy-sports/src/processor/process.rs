@@ -78,6 +78,10 @@ pub fn process<'a>(
             info!("Instruction: AcceptSwap");
             processor::process_accept_swap(program_id, accounts, args)
         }
+        SfsInstruction::UpdatePlayerScore { args } => {
+            info!("Instruction: UpdatePlayerScore");
+            processor::process_update_player_score(program_id, accounts, args)
+        }
 
         _ => return Err(SfsError::InvalidInstruction.into()),
     }

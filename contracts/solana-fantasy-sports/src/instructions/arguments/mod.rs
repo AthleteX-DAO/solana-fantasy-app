@@ -16,3 +16,5 @@ pub mod create_league_args;
 pub use create_league_args::*;
 pub mod join_league_args;
 pub use join_league_args::*;
+pub mod update_player_score_args;
+pub use update_player_score_args::*;

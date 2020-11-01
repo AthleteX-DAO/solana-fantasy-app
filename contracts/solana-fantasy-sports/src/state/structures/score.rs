@@ -6,6 +6,7 @@ use solana_program::{
     program_error::ProgramError,
     program_pack::{IsInitialized, Pack, Sealed},
 };
+use byteorder::{ByteOrder, LittleEndian};
 use std::cell::RefCell;
 
 #[repr(C)]
@@ -14,16 +15,18 @@ pub struct Score<'a> {
     offset: usize,
 }
 impl<'a> Score<'a> {
-    pub const LEN: usize = 1 + 1;
-    fn slice<'b>(&self, data: &'b mut [u8]) -> (&'b mut [u8; 1], &'b mut [u8; 1]) {
-        mut_array_refs![array_mut_ref![data, self.offset, Score::LEN], 1, 1]
+    pub const LEN: usize = 2 + 1;
+    fn slice<'b>(&self, data: &'b mut [u8]) -> (&'b mut [u8; 2], &'b mut [u8; 1]) {
+        mut_array_refs![array_mut_ref![data, self.offset, Score::LEN], 2, 1]
     }
 
-    pub fn get_score1(&self) -> u8 {
-        self.slice(&mut self.data.borrow_mut()).0[0]
+    pub fn get_score1(&self) -> u16 {
+        // self.slice(&mut self.data.borrow_mut()).0[0]
+        LittleEndian::read_u16(self.slice(&mut self.data.borrow_mut()).0)
     }
-    pub fn set_score1(&self, value: u8) {
-        self.slice(&mut self.data.borrow_mut()).0[0] = value;
+    pub fn set_score1(&self, value: u16) {
+        // self.slice(&mut self.data.borrow_mut()).0[0] = value;
+        LittleEndian::write_u16(self.slice(&mut self.data.borrow_mut()).0, value);
     }
 
     pub fn get_is_initialized(&self) -> Result<bool, ProgramError> {
