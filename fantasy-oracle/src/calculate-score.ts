@@ -187,10 +187,15 @@ export async function calculateScore(playerIds: number[], week: number) {
   );
   const playerGameStatsArr = response.data.filter((o) => playerIds.includes(o.PlayerID));
 
-  // console.log(response.data.map((p) => p.PlayerID));
+  // console.log(
+  //   response.data.map((p) => p.PlayerID),
+  //   playerIds
+  // );
 
   let totalScore = 0;
-  let scoresArr: Array<number> = Array(playerIds.length);
+  let scoresArr: Array<number> = Array(playerIds.length).fill(0);
+
+  console.log('calculate loop length', playerGameStatsArr.length);
 
   for (const playerGameStats of playerGameStatsArr) {
     const playerId = playerGameStats.PlayerID;
@@ -735,6 +740,7 @@ export async function calculateScore(playerIds: number[], week: number) {
     /**
      * Defensive/Special Teams (D) ENDS here
      */
+    totalScore += playerScore;
 
     const index = playerIds.indexOf(playerId);
     if (index === -1) {
@@ -743,13 +749,12 @@ export async function calculateScore(playerIds: number[], week: number) {
 
       throw new Error(`Player of index ${index} with id ${playerId} not available`);
     }
+
     if (playerScore < 0) {
       playerScore = 0;
     }
     scoresArr[index] = playerScore ?? 0;
-    totalScore += playerScore;
   }
 
-  scoresArr = scoresArr.map((n) => n ?? 0);
   return { totalScore, scoresArr };
 }

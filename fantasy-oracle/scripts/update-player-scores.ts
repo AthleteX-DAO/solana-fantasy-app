@@ -9,9 +9,12 @@ import { connection, sfs, wallet } from './commons';
   console.log('currentWeek', root.currentWeek);
   console.log('Calculating scores for week', root.currentWeek - 1);
   const { scoresArr } = await calculateScore(idArr, root.currentWeek - 1);
+  console.log(scoresArr);
 
   for (const [index, score] of scoresArr.entries()) {
-    console.log(`Updating score of player index ${index} of ${scoresArr.length}: ${score}`);
+    console.log(
+      `Sending score update tx of player index ${index} of ${scoresArr.length}: ${score}`
+    );
 
     await sfs.updatePlayerScore(wallet, index, score);
   }
