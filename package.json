@@ -21,7 +21,12 @@
     "test2": "yarn build && npm-run-all mocha",
     "test3": "npm-run-all mocha",
     "style:check": "prettier --check .",
-    "style:fix": "prettier --write ."
+    "style:fix": "prettier --write .",
+    "balance": "ts-node fantasy-oracle/scripts/balance-check.ts",
+    "airdrop": "ts-node fantasy-oracle/scripts/request-airdrop.ts",
+    "deploy": "ts-node fantasy-oracle/scripts/deploy-contract.ts",
+    "week": "ts-node fantasy-oracle/scripts/increment-week.ts",
+    "score": "ts-node fantasy-oracle/scripts/update-player-scores.ts"
   },
   "devDependencies": {
     "@types/mocha": "^8.0.3",

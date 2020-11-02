@@ -181,19 +181,25 @@ interface ScoreRaw {
   }>; // []
 }
 
-export async function calculateScore(playerIds: number[]): Promise<number> {
+export async function calculateScore(playerIds: number[], week: number) {
   const response: AxiosResponse<ScoreRaw[]> = await axios.get(
-    'https://api.sportsdata.io/v3/nfl/stats/json/PlayerGameStatsByWeek/2020/1?key=014d8886bd8f40dfabc9f75bc0451a0d'
+    `https://api.sportsdata.io/v3/nfl/stats/json/PlayerGameStatsByWeek/2020/${week}?key=014d8886bd8f40dfabc9f75bc0451a0d`
   );
   const playerGameStatsArr = response.data.filter((o) => playerIds.includes(o.PlayerID));
 
+  // console.log(response.data.map((p) => p.PlayerID));
+
   let totalScore = 0;
+  let scoresArr: Array<number> = Array(playerIds.length);
 
   for (const playerGameStats of playerGameStatsArr) {
+    const playerId = playerGameStats.PlayerID;
     // https://www.espn.in/fantasy/football/ffl/story?page=fflrulesstandardscoring
     /**
      * Calculation for Offense STARTS here
      */
+    let playerScore = 0;
+
     let offensePositions = ['QB', 'RB', 'WR', 'TE'];
     if (offensePositions.includes(playerGameStats.Position)) {
       /**
@@ -215,7 +221,7 @@ export async function calculateScore(playerIds: number[]): Promise<number> {
         // playerGameStats.ReceivingYardsPerReception +
         // playerGameStats.ReceivingYardsPerTarget;
 
-        totalScore += (rushings + receivings) * 6;
+        playerScore += (rushings + receivings) * 6;
       }
 
       /**
@@ -236,7 +242,7 @@ export async function calculateScore(playerIds: number[]): Promise<number> {
         // playerGameStats.KickReturnFairCatches +
         // playerGameStats.PuntReturnFairCatches;
 
-        totalScore += returningKicksPlunts * 6;
+        playerScore += returningKicksPlunts * 6;
       }
 
       /**
@@ -258,7 +264,7 @@ export async function calculateScore(playerIds: number[]): Promise<number> {
           playerGameStats.SpecialTeamsFumblesForced +
           playerGameStats.SpecialTeamsFumblesRecovered;
 
-        totalScore += fumbles * 6;
+        playerScore += fumbles * 6;
       }
 
       /**
@@ -279,7 +285,7 @@ export async function calculateScore(playerIds: number[]): Promise<number> {
         // playerGameStats.PassingYardsPerAttempt +
         // playerGameStats.PassingYardsPerCompletion;
 
-        totalScore += passingTd * 4;
+        playerScore += passingTd * 4;
       }
 
       /**
@@ -301,7 +307,7 @@ export async function calculateScore(playerIds: number[]): Promise<number> {
           playerGameStats.ReceivingYardsPerReception +
           playerGameStats.ReceivingYardsPerTarget;
 
-        totalScore += (rushings + receivings) * 2;
+        playerScore += (rushings + receivings) * 2;
       }
 
       /**
@@ -322,7 +328,7 @@ export async function calculateScore(playerIds: number[]): Promise<number> {
           playerGameStats.PassingYardsPerAttempt +
           playerGameStats.PassingYardsPerCompletion;
 
-        totalScore += passing * 2;
+        playerScore += passing * 2;
       }
 
       /**
@@ -344,7 +350,7 @@ export async function calculateScore(playerIds: number[]): Promise<number> {
           playerGameStats.ReceivingYardsPerReception +
           playerGameStats.ReceivingYardsPerTarget;
 
-        totalScore += (rushings + receivings) * 1;
+        playerScore += (rushings + receivings) * 1;
       }
 
       /**
@@ -365,7 +371,7 @@ export async function calculateScore(playerIds: number[]): Promise<number> {
           playerGameStats.PassingYardsPerAttempt +
           playerGameStats.PassingYardsPerCompletion;
 
-        totalScore += passing * 1;
+        playerScore += passing * 1;
       }
 
       /**
@@ -391,7 +397,7 @@ export async function calculateScore(playerIds: number[]): Promise<number> {
             playerGameStats.ReceivingYardsPerReception +
             playerGameStats.ReceivingYardsPerTarget;
 
-          totalScore += (rushings + receivings) * 2;
+          playerScore += (rushings + receivings) * 2;
         }
 
         /**
@@ -412,7 +418,7 @@ export async function calculateScore(playerIds: number[]): Promise<number> {
             playerGameStats.PassingYardsPerAttempt +
             playerGameStats.PassingYardsPerCompletion;
 
-          totalScore += passing * 1;
+          playerScore += passing * 1;
         }
       }
 
@@ -438,7 +444,7 @@ export async function calculateScore(playerIds: number[]): Promise<number> {
           // playerGameStats.PassingYardsPerAttempt +
           // playerGameStats.PassingYardsPerCompletion;
 
-          totalScore += passing * -2;
+          playerScore += passing * -2;
         }
 
         /**
@@ -460,7 +466,7 @@ export async function calculateScore(playerIds: number[]): Promise<number> {
             playerGameStats.SpecialTeamsFumblesForced +
             playerGameStats.SpecialTeamsFumblesRecovered;
 
-          totalScore += fumbles * 6;
+          playerScore += fumbles * 6;
         }
       }
     }
@@ -491,7 +497,7 @@ export async function calculateScore(playerIds: number[]): Promise<number> {
           playerGameStats.FieldGoalsMade40to49 +
           playerGameStats.FieldGoalsMade50Plus +
           playerGameStats.FantasyPointsDraftKings;
-        totalScore += fg * 5;
+        playerScore += fg * 5;
       }
 
       /**
@@ -512,7 +518,7 @@ export async function calculateScore(playerIds: number[]): Promise<number> {
           playerGameStats.FieldGoalsMade40to49 +
           playerGameStats.FieldGoalsMade50Plus +
           playerGameStats.FantasyPointsDraftKings;
-        totalScore += fg * 4;
+        playerScore += fg * 4;
       }
 
       /**
@@ -534,7 +540,7 @@ export async function calculateScore(playerIds: number[]): Promise<number> {
           playerGameStats.FieldGoalsMade50Plus +
           playerGameStats.FantasyPointsDraftKings;
 
-        totalScore += fg * 3;
+        playerScore += fg * 3;
       }
 
       /**
@@ -570,7 +576,7 @@ export async function calculateScore(playerIds: number[]): Promise<number> {
           playerGameStats.PassingYardsPerAttempt +
           playerGameStats.PassingYardsPerCompletion;
 
-        totalScore += (rushings + passing + receivings) * 2;
+        playerScore += (rushings + passing + receivings) * 2;
       }
 
       /**
@@ -582,7 +588,7 @@ export async function calculateScore(playerIds: number[]): Promise<number> {
           playerGameStats.ExtraPointsHadBlocked +
           playerGameStats.ExtraPointsMade;
 
-        totalScore += extraPoint * 1;
+        playerScore += extraPoint * 1;
       }
 
       /**
@@ -609,7 +615,7 @@ export async function calculateScore(playerIds: number[]): Promise<number> {
           playerGameStats.FieldGoalsMade50Plus +
           playerGameStats.FantasyPointsDraftKings;
 
-        totalScore += missedFG * -2;
+        playerScore += missedFG * -2;
       }
 
       /**
@@ -633,7 +639,7 @@ export async function calculateScore(playerIds: number[]): Promise<number> {
           playerGameStats.FieldGoalsMade50Plus +
           playerGameStats.FantasyPointsDraftKings;
 
-        totalScore += missedFG * -1;
+        playerScore += missedFG * -1;
       }
     }
     /**
@@ -651,7 +657,7 @@ export async function calculateScore(playerIds: number[]): Promise<number> {
       {
         const td = playerGameStats.DefensiveTouchdowns + playerGameStats.SpecialTeamsTouchdowns;
 
-        totalScore += td * 3;
+        playerScore += td * 3;
       }
 
       /**
@@ -664,7 +670,7 @@ export async function calculateScore(playerIds: number[]): Promise<number> {
           playerGameStats.Interceptions +
           playerGameStats.PassingInterceptions;
 
-        totalScore += interceptions * 2;
+        playerScore += interceptions * 2;
       }
 
       /**
@@ -686,7 +692,7 @@ export async function calculateScore(playerIds: number[]): Promise<number> {
           // playerGameStats.SpecialTeamsFumblesForced +
           playerGameStats.SpecialTeamsFumblesRecovered;
 
-        totalScore += fumbleRecovery * 2;
+        playerScore += fumbleRecovery * 2;
       }
 
       /**
@@ -701,7 +707,7 @@ export async function calculateScore(playerIds: number[]): Promise<number> {
           playerGameStats.FieldGoalsHadBlocked +
           playerGameStats.PuntsHadBlocked;
 
-        totalScore += blocked * 2;
+        playerScore += blocked * 2;
       }
 
       /**
@@ -710,7 +716,7 @@ export async function calculateScore(playerIds: number[]): Promise<number> {
       {
         const safety = playerGameStats.Safeties + playerGameStats.SafetiesAllowed;
 
-        totalScore += safety * 2;
+        playerScore += safety * 2;
       }
 
       /**
@@ -723,13 +729,27 @@ export async function calculateScore(playerIds: number[]): Promise<number> {
           playerGameStats.PassingSackYards +
           playerGameStats.PassingSacks;
 
-        totalScore += sack * 2;
+        playerScore += sack * 2;
       }
     }
     /**
      * Defensive/Special Teams (D) ENDS here
      */
+
+    const index = playerIds.indexOf(playerId);
+    if (index === -1) {
+      // this error should not be happen, but if does then it is singnal for a bug
+      console.log(playerIds, playerId);
+
+      throw new Error(`Player of index ${index} with id ${playerId} not available`);
+    }
+    if (playerScore < 0) {
+      playerScore = 0;
+    }
+    scoresArr[index] = playerScore ?? 0;
+    totalScore += playerScore;
   }
 
-  return totalScore;
+  scoresArr = scoresArr.map((n) => n ?? 0);
+  return { totalScore, scoresArr };
 }

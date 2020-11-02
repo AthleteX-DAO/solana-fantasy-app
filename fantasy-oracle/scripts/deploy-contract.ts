@@ -7,6 +7,7 @@ import { SFS } from '../../sdk/sfs';
 import { PLAYERS_CAPACITY, Position, Stage, LEAGUE_USERS_CAPACITY } from '../../sdk/state';
 import { Player } from '../../sdk/instruction';
 import { hasDuplicates } from '../../test/helpers';
+import { getPlayerList } from '../src/players-list';
 
 connection;
 
@@ -14,10 +15,10 @@ connection;
   const programAccount = new Account();
 
   {
-    await connection.requestAirdrop(wallet.publicKey, 10 * 10 ** 9);
-    console.log('requested for airdrop');
+    // await connection.requestAirdrop(wallet.publicKey, 25 * 10 ** 9);
+    // console.log('requested for airdrop');
 
-    await new Promise((res) => setTimeout(res, 1000));
+    // await new Promise((res) => setTimeout(res, 1000));
 
     const data = readFileSync(
       resolve(__dirname, '../../contracts/solana-fantasy-sports/solana_fantasy_sports.so'),
@@ -28,6 +29,9 @@ connection;
     console.log(data.slice(0, 10));
 
     const balanceBefore = await connection.getBalance(wallet.publicKey);
+    if (balanceBefore < 20999980000) {
+      throw new Error('Balance is a bit low, it will cause tx to fail. Please request airdrop');
+    }
 
     console.log('deploying contract....');
 
@@ -52,27 +56,80 @@ connection;
   /**
    * Initialize root
    */
-  const rootAccount = new Account();
   let sfs: SFS;
   {
-    console.log('Initializing root account', rootAccount.publicKey.toBase58());
+    console.log('Initializing root account');
 
-    const players = Array.from({ length: PLAYERS_CAPACITY }).map(
-      (_, i): Player => ({
-        externalId: i,
-        position: Position.DB,
-      })
-    );
+    const allPlayers = await getPlayerList();
+
+    //   Uninitialized,
+    // RB,
+    // LB,
+    // DL,
+    // TE,
+    // DB,
+    // QB,
+    // WR,
+    // OL,
+    const choosenPlayers: Player[] = [];
+
+    // .slice(0, PLAYERS_CAPACITY).map(
+    for (let i = 0; choosenPlayers.length < PLAYERS_CAPACITY; i++) {
+      let position: Position;
+      let p = allPlayers[i];
+      if (!p) {
+        break;
+      }
+      // console.log(i, p.Position);
+
+      switch (p.Position) {
+        case 'RB':
+          position = Position.RB;
+          break;
+        case 'LB':
+          position = Position.LB;
+          break;
+        case 'DL':
+          position = Position.DL;
+          break;
+        case 'TE':
+          position = Position.TE;
+          break;
+        case 'DB':
+          position = Position.DB;
+          break;
+        case 'QB':
+          position = Position.QB;
+          break;
+        case 'WR':
+          position = Position.WR;
+          break;
+        case 'OL':
+          position = Position.OL;
+          break;
+        default:
+          continue;
+      }
+      choosenPlayers.push({
+        externalId: p.PlayerID,
+        position,
+      });
+    }
+    console.log(choosenPlayers.length);
 
     sfs = await SFS.initializeRoot(
       connection,
       wallet,
       wallet.publicKey,
-      players,
+      choosenPlayers,
       0,
       programAccount.publicKey
     );
 
-    const root = await sfs.getRootInfo();
+    await sfs.getRootInfo();
+
+    // @ts-ignore
+    const rootPublicKey: PublicKey = sfs.publicKey;
+    console.log('rootPublicKey', rootPublicKey.toBase58());
   }
 })().catch(console.error);
