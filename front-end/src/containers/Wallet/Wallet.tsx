@@ -1,9 +1,23 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useEffect, useState } from 'react';
 import { Card, Alert } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
+import { PublicKey } from '@solana/web3.js';
 import { Layout } from '../Layout';
 
 export const Wallet: FunctionComponent<{}> = (props) => {
+  const [balance, setBalance] = useState<number | null>(null);
+
+  const updateBalance = async () => {
+    if (window.wallet) {
+      const balance = await window.connection.getBalance(new PublicKey(window.wallet.publicKey));
+      setBalance(balance);
+    }
+  };
+
+  useEffect(() => {
+    updateBalance().catch(console.log);
+  }, []);
+
   const [, forceRerender] = useState({});
   const [privateKeyDisplay, setPrivateKeyDisplay] = useState<string | null>(null);
 
@@ -59,6 +73,29 @@ export const Wallet: FunctionComponent<{}> = (props) => {
                   <button onClick={showPrivateKey} className="btn my-2">
                     Show
                   </button>
+                )}
+              </p>
+              <p>
+                Balance:{' '}
+                {balance !== null ? (
+                  <>
+                    <span className="monospace">{balance / 10 ** 9}</span> SOL{' '}
+                    <span
+                      className="cursor-pointer"
+                      onClick={async () => {
+                        if (window.wallet) {
+                          const pub = new PublicKey(window.wallet.publicKey);
+                          await window.connection.requestAirdrop(pub, 1 * 10 ** 9);
+                          await new Promise((res) => setTimeout(res, 1000));
+                          await updateBalance();
+                        }
+                      }}
+                    >
+                      (request airdrop)
+                    </span>
+                  </>
+                ) : (
+                  'Loading...'
                 )}
               </p>
               <button onClick={processLogout} className="btn my-2">

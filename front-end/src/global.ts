@@ -1,4 +1,4 @@
-import { PublicKey } from '@solana/web3.js';
+import { Connection, PublicKey } from '@solana/web3.js';
 import { ClojuredWallet } from './clojured-wallet';
 
 declare global {
@@ -8,6 +8,7 @@ declare global {
     leagueTabHook: Function;
     sfsProgramId: PublicKey;
     sfsRoot: PublicKey;
+    connection: Connection;
   }
 }
 
