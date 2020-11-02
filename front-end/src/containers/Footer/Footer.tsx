@@ -8,13 +8,23 @@ export function Footer() {
         <div className="footer-top">
           <div className="container">
             <div className="row">
-              <div className="col-lg-4 col-md-6">
+              <div className="col-lg-6 col-md-6">
                 <div className="footer-info">
-                  <h3>SFS</h3>
+                  <h3>Address</h3>
                   <p>
-                    <span style={{ fontFamily: 'monospace' }}>0x2343742837</span>
+                    Since SFS is a dApp on Solana, it doesn't have a physical address, but a crypto
+                    address on the Solana Blockchain.
+                  </p>
+                  <p className="mt-2">
+                    Program:{' '}
+                    <span style={{ fontFamily: 'monospace' }}>
+                      {window.sfsProgramId.toBase58()}
+                    </span>
                     <br />
-                    Devnet, Solana
+                    Root:{' '}
+                    <span style={{ fontFamily: 'monospace' }}>{window.sfsRoot.toBase58()}</span>
+                    <br />
+                    Devnet, Solana Blockchain
                     <br />
                     <br />
                     {/* <strong>Phone:</strong> +1 5589 55488 55
