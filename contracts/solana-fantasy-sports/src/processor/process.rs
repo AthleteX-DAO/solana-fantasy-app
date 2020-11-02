@@ -82,6 +82,10 @@ pub fn process<'a>(
             info!("Instruction: UpdatePlayerScore");
             processor::process_update_player_score(program_id, accounts, args)
         }
+        SfsInstruction::IncrementWeek => {
+            info!("Instruction: IncrementWeek");
+            processor::process_increment_week(program_id, accounts)
+        }
 
         _ => return Err(SfsError::InvalidInstruction.into()),
     }

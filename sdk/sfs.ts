@@ -270,4 +270,21 @@ export class SFS {
 
     await sendAndConfirmTransaction('Update Player Score', this.connection, transaction, owner);
   }
+
+  /**
+   * Increment week
+   */
+  async incrementWeek(owner: Account): Promise<void> {
+    const transaction = new Transaction();
+    transaction.add(
+      SfsInstruction.createIncrementWeekInstruction(
+        this.programId,
+        this.publicKey,
+        this.bank,
+        owner.publicKey
+      )
+    );
+
+    await sendAndConfirmTransaction('Increment week', this.connection, transaction, owner);
+  }
 }

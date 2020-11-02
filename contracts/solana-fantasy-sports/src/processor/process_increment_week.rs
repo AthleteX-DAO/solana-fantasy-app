@@ -27,23 +27,17 @@ use solana_program::{
 use std::cell::RefCell;
 use std::convert::TryInto;
 
-pub fn process_update_player_score<'a>(
+/// Processes an [StartSeason](enum.SfsInstruction.html) instruction.
+pub fn process_increment_week<'a>(
   program_id: &Pubkey,
   accounts: &'a [AccountInfo<'a>],
-  args: UpdatePlayerScoreArgs,
 ) -> ProgramResult {
   let account_info_iter = &mut accounts.iter();
   let root_info = next_account_info(account_info_iter)?;
   let root = Root::new(&root_info.data)?;
 
-  // add a check that only owner can call
-
-  let score = root.get_players()?.get(args.get_player_id())?.get_scores()?.get(root.get_current_week() - 1)?;
-  if(score.get_score1() != 0) {
-    return Err(SfsError::ScoreAlreadyUpdated.into());
-  }
-
-  score.set_score1(args.get_player_score());
+  let current_week = root.get_current_week();
+  root.set_current_week(current_week + 1);
 
   Ok(())
 }

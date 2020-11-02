@@ -27,6 +27,7 @@ enum Command {
   ProposeSwaps,
   AcceptSwap,
   UpdatePlayerScore,
+  IncrementWeek,
 }
 
 export type Player = {
@@ -280,7 +281,7 @@ export class SfsInstruction {
     });
   }
   /**
-   * Construct an JoinLeague instruction
+   * Construct an UpdatePlayerScore instruction
    */
   static createUpdatePlayerScoreInstruction(
     programId: PublicKey,
@@ -309,6 +310,39 @@ export class SfsInstruction {
           instruction: Command.UpdatePlayerScore,
           playerId,
           playerScore,
+        },
+        data
+      );
+    }
+
+    return new TransactionInstruction({
+      keys,
+      programId,
+      data,
+    });
+  }
+  /**
+   * Construct an IncrementWeek instruction
+   */
+  static createIncrementWeekInstruction(
+    programId: PublicKey,
+    root: PublicKey,
+    bank: PublicKey,
+    owner: PublicKey
+  ): TransactionInstruction {
+    let keys = [
+      { pubkey: root, isSigner: false, isWritable: true },
+      { pubkey: owner, isSigner: true, isWritable: false },
+      { pubkey: bank, isSigner: false, isWritable: true },
+      { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
+    ];
+    const commandDataLayout = BufferLayout.struct([BufferLayout.u8('instruction')]);
+
+    let data = Buffer.alloc(commandDataLayout.span);
+    {
+      const encodeLength = commandDataLayout.encode(
+        {
+          instruction: Command.IncrementWeek,
         },
         data
       );
