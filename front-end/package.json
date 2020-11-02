@@ -25,7 +25,8 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "update-sdk": "rm -r src/sdk && cp -r ../sdk src/sdk"
   },
   "eslintConfig": {
     "extends": [
