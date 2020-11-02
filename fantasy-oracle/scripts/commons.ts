@@ -11,4 +11,5 @@ export const wallet = new Account(arrayify(privateKey));
 
 console.log('Wallet loaded', wallet.publicKey.toBase58());
 
-export const programId = new PublicKey('9h5WrAmWGDs5XHU8EDzQctu6tE4HzHGyZUFwTcVNDCzk');
+export const programId = new PublicKey('CvGkZJjQocKHJUHcpxUPGSy15MDf94LWJEJ1S9Q6qkH9');
+export const rootPublicKey = new PublicKey('ADsPv16735sU87wNiH4EN2T6p9g996aJnYS3m8RYYWMf');
