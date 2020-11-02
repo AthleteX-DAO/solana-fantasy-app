@@ -251,4 +251,23 @@ export class SFS {
 
     return rootInfo;
   }
+
+  /**
+   * Update player score
+   */
+  async updatePlayerScore(owner: Account, playerId: number, playerScore: number): Promise<void> {
+    const transaction = new Transaction();
+    transaction.add(
+      SfsInstruction.createUpdatePlayerScoreInstruction(
+        this.programId,
+        this.publicKey,
+        this.bank,
+        playerId,
+        playerScore,
+        owner.publicKey
+      )
+    );
+
+    await sendAndConfirmTransaction('Update Player Score', this.connection, transaction, owner);
+  }
 }

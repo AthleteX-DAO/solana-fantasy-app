@@ -26,6 +26,7 @@ enum Command {
   PickPlayer,
   ProposeSwaps,
   AcceptSwap,
+  UpdatePlayerScore,
 }
 
 export type Player = {
@@ -250,7 +251,7 @@ export class SfsInstruction {
   ): TransactionInstruction {
     let keys = [
       { pubkey: root, isSigner: false, isWritable: true },
-      { pubkey: owner, isSigner: true, isWritable: false }
+      { pubkey: owner, isSigner: true, isWritable: false },
     ];
     const commandDataLayout = BufferLayout.struct([
       BufferLayout.u8('instruction'),
@@ -267,6 +268,47 @@ export class SfsInstruction {
           leagueId,
           userId,
           playerId,
+        },
+        data
+      );
+    }
+
+    return new TransactionInstruction({
+      keys,
+      programId,
+      data,
+    });
+  }
+  /**
+   * Construct an JoinLeague instruction
+   */
+  static createUpdatePlayerScoreInstruction(
+    programId: PublicKey,
+    root: PublicKey,
+    bank: PublicKey,
+    playerId: number,
+    playerScore: number,
+    owner: PublicKey
+  ): TransactionInstruction {
+    let keys = [
+      { pubkey: root, isSigner: false, isWritable: true },
+      { pubkey: owner, isSigner: true, isWritable: false },
+      { pubkey: bank, isSigner: false, isWritable: true },
+      { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
+    ];
+    const commandDataLayout = BufferLayout.struct([
+      BufferLayout.u8('instruction'),
+      BufferLayout.u16('playerId'),
+      BufferLayout.u16('playerScore'),
+    ]);
+
+    let data = Buffer.alloc(commandDataLayout.span);
+    {
+      const encodeLength = commandDataLayout.encode(
+        {
+          instruction: Command.UpdatePlayerScore,
+          playerId,
+          playerScore,
         },
         data
       );

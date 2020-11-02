@@ -38,8 +38,12 @@ pub fn process_update_player_score<'a>(
 
   // add a check that only owner can call
 
-  // throws if after swap, self user has invalid bench list
-  root.get_players()?.get(args.get_player_id())?.get_scores()?.get(root.get_current_week() - 1)?.set_score1(args.get_player_score());
+  let score = root.get_players()?.get(args.get_player_id())?.get_scores()?.get(root.get_current_week())?;
+  if(score.get_score1() != 0) {
+    return Err(SfsError::ScoreAlreadyUpdated.into());
+  }
+
+  score.set_score1(args.get_player_score());
 
   Ok(())
 }

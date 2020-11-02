@@ -46,6 +46,8 @@ pub enum SfsError {
     ItemNotFound,
     #[error("Team composition rules are not met")]
     TeamCompositionRulesViolation,
+    #[error("Score already updated cannot update again")]
+    ScoreAlreadyUpdated,
 }
 impl From<SfsError> for ProgramError {
     fn from(e: SfsError) -> Self {
@@ -76,6 +78,7 @@ impl PrintProgramError for SfsError {
             SfsError::PlayerNotFound => info!("Player not found in a bench list"),
             SfsError::ItemNotFound => info!("Item not found in the list"),
             SfsError::TeamCompositionRulesViolation => info!("Team composition rules are not met"),
+            SfsError::ScoreAlreadyUpdated => info!("Score already updated cannot update again"),
         }
     }
 }
