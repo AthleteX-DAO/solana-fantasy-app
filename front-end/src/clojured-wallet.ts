@@ -33,6 +33,8 @@ export function CreateClojuredWallet(secretKey?: string): ClojuredWallet {
     callback(description: string, fn: (account: Account) => any): any {
       if (window.confirm(description)) {
         return fn(account);
+      } else {
+        throw new Error('User denied signature');
       }
     },
   };
