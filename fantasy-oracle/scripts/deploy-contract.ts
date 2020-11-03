@@ -2,7 +2,7 @@ import { Account, BpfLoader, BPF_LOADER_PROGRAM_ID } from '@solana/web3.js';
 import { ok, strictEqual } from 'assert';
 import { resolve } from 'path';
 import { readFileSync } from 'fs';
-import { connection, wallet } from './commons';
+import { connection, sfs, wallet } from './commons';
 import { SFS } from '../../sdk/sfs';
 import { PLAYERS_CAPACITY, Position, Stage, LEAGUE_USERS_CAPACITY } from '../../sdk/state';
 import { Player } from '../../sdk/instruction';
@@ -117,11 +117,27 @@ connection;
     }
     console.log(choosenPlayers.length);
 
+    // sfs = await SFS.initializeRoot(
+    //   connection,
+    //   wallet,
+    //   wallet.publicKey,
+    //   choosenPlayers,
+    //   0,
+    //   programAccount.publicKey
+    // );
+
+    const players = Array.from({ length: PLAYERS_CAPACITY }).map(
+      (_, i): Player => ({
+        externalId: i,
+        position: Position.DB,
+      })
+    );
+
     sfs = await SFS.initializeRoot(
       connection,
       wallet,
       wallet.publicKey,
-      choosenPlayers,
+      players,
       0,
       programAccount.publicKey
     );

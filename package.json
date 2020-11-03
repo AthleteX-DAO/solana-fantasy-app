@@ -26,7 +26,8 @@
     "airdrop": "ts-node fantasy-oracle/scripts/request-airdrop.ts",
     "deploy": "ts-node fantasy-oracle/scripts/deploy-contract.ts",
     "week": "ts-node fantasy-oracle/scripts/increment-week.ts",
-    "score": "ts-node fantasy-oracle/scripts/update-player-scores.ts"
+    "score": "ts-node fantasy-oracle/scripts/update-player-scores.ts",
+    "create-league": "ts-node fantasy-oracle/scripts/create-league.ts"
   },
   "devDependencies": {
     "@types/mocha": "^8.0.3",

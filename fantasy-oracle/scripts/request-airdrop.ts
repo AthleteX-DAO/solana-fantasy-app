@@ -7,5 +7,5 @@ import { connection, wallet } from './commons';
   }
   await new Promise((res) => setTimeout(res, 1000));
   const bal = await connection.getBalance(wallet.publicKey);
-  console.log(bal);
+  console.log('new balance:', bal / 10 ** 9);
 })().catch(console.error);
