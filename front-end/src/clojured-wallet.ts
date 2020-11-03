@@ -18,24 +18,21 @@ export function CreateClojuredWallet(secretKey?: string): ClojuredWallet {
     }
     _secretKey = arrayify(secretKey);
   }
-  const programAccount = new Account(_secretKey);
+  const account = new Account(_secretKey);
 
   return {
     get publicKey() {
-      return programAccount.publicKey.toBase58();
+      return account.publicKey.toBase58();
     },
     get privateKey() {
-      const _secretKey = this.callback(
-        'Do you want to export private key?',
-        (programAcc: Account) => {
-          return programAcc.secretKey;
-        }
-      );
+      const _secretKey = this.callback('Do you want to export private key?', (account: Account) => {
+        return account.secretKey;
+      });
       return hexlify(_secretKey);
     },
-    callback(description: string, fn: (programAcc: Account) => any): any {
+    callback(description: string, fn: (account: Account) => any): any {
       if (window.confirm(description)) {
-        return fn(programAccount);
+        return fn(account);
       }
     },
   };
