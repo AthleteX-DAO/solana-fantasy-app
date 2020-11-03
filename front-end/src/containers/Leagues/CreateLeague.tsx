@@ -6,6 +6,7 @@ import { Layout } from '../Layout';
 export function CreateLeague() {
   const history = useHistory();
 
+  const [spinner, setSpinner] = useState<boolean>(false);
   const [leagueNameInput, setLeagueNameInput] = useState<string>('');
   const [leagueEntryCostInput, setLeagueEntryCostInput] = useState<string>('');
   const [leagueSizeInput, setLeagueSizeInput] = useState<string>('');
@@ -37,6 +38,7 @@ export function CreateLeague() {
       <Card style={{ maxWidth: '400px', margin: '0 auto' }}>
         <Card.Body>
           <Form.Control
+            disabled={spinner}
             className="align-items-center"
             onChange={(event) => setLeagueNameInput(event.target.value)}
             value={leagueNameInput}
@@ -47,6 +49,7 @@ export function CreateLeague() {
           />
 
           <Form.Control
+            disabled={spinner}
             className="align-items-center my-4"
             onChange={(event) => setLeagueSizeInput(event.target.value)}
             value={leagueSizeInput}
@@ -57,6 +60,7 @@ export function CreateLeague() {
           />
 
           <Form.Control
+            disabled={spinner}
             className="align-items-center"
             onChange={(event) => setLeagueEntryCostInput(event.target.value)}
             value={leagueEntryCostInput}
@@ -69,18 +73,22 @@ export function CreateLeague() {
           {/* <Button>Submit</Button> */}
           <button
             className="btn mt-4"
+            disabled={spinner}
             onClick={() => {
+              setSpinner(true);
               createLeague()
                 .then(() => {
+                  setSpinner(false);
                   history.push(`/leagues`);
                 })
                 .catch((err) => {
                   alert('Error:' + err?.message ?? err);
                   console.log(err);
+                  setSpinner(false);
                 });
             }}
           >
-            Create
+            {!spinner ? 'Create' : 'Creating...'}
           </button>
         </Card.Body>
       </Card>
