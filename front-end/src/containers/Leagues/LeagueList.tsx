@@ -1,10 +1,10 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
 import { Table } from 'react-bootstrap';
-import { useHistory } from 'react-router-dom';
+import { useHistory, RouteComponentProps } from 'react-router-dom';
 import { League } from '../../sdk/state';
 import { Layout } from '../Layout';
 
-export const LeagueList: FunctionComponent<{}> = (props) => {
+export const LeagueList: FunctionComponent<RouteComponentProps> = (props) => {
   const history = useHistory();
 
   const [leagues, setLeagues] = useState<League[] | null>();
@@ -14,8 +14,12 @@ export const LeagueList: FunctionComponent<{}> = (props) => {
 
   useEffect(() => {
     (async () => {
-      const sdk = await window.sfsSDK();
-      const root = await sdk.getRootInfo();
+      let forceUpdate = false;
+      if (window.URLSearchParams) {
+        const sp = new URLSearchParams(props.location.search);
+        forceUpdate = !!sp.get('forceRootUpdate');
+      }
+      const root = await window.getCachedRootInfo(forceUpdate || undefined);
       setLeagues(root.leagues.filter((league) => league.isInitialized));
     })().catch(console.log);
   }, []);
@@ -43,7 +47,7 @@ export const LeagueList: FunctionComponent<{}> = (props) => {
                     {league.userStateLength}/{league.usersLimit}
                   </td>
                   <td>
-                    <button onClick={() => history.push(`/leagues/${0}`)} className="btn">
+                    <button onClick={() => history.push(`/leagues/${i}`)} className="btn">
                       Join
                     </button>
                   </td>

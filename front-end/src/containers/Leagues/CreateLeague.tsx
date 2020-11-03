@@ -79,7 +79,7 @@ export function CreateLeague() {
               createLeague()
                 .then(() => {
                   setSpinner(false);
-                  history.push(`/leagues`);
+                  history.push(`/leagues?forceRootUpdate=true`);
                 })
                 .catch((err) => {
                   alert('Error:' + err?.message ?? err);
