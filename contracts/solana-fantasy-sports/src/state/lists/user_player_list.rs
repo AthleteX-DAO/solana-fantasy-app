@@ -5,6 +5,7 @@ use crate::state::*;
 use arrayref::{array_mut_ref, array_ref, mut_array_refs};
 use byteorder::{ByteOrder, LittleEndian};
 use solana_program::{
+    info,
     program_error::ProgramError,
     program_pack::{Pack, Sealed},
 };
@@ -34,10 +35,6 @@ impl<'a> UserPlayerList<'a> {
         LittleEndian::write_u16(self.slice(&mut self.data.borrow_mut(), i), value);
     }
 
-    pub fn contains(&self, player_id: u16) -> bool {
-        return self.index_of(player_id).is_ok();
-    }
-
     pub fn index_of(&self, player_id: u16) -> Result<u8, ProgramError> {
         for i in 0..UserPlayerList::LEN {
             if self.get(i as u8) == player_id {
@@ -48,7 +45,77 @@ impl<'a> UserPlayerList<'a> {
         return Err(SfsError::PlayerNotFound.into());
     }
 
-    pub fn copy_to(&self, to: &Self) {
+    pub fn contains(&self, player_id: u16) -> bool {
+        return self.index_of(player_id).is_ok();
+    }
+
+    pub fn replace_id(&self, from_id: u16, to_id: u16) -> Result<(), ProgramError> {
+        if self.contains(to_id) {
+            return Err(SfsError::AlreadyInUse.into());
+        }
+        let index = self.index_of(from_id)?;
+        self.set(index, to_id);
+        Ok(())
+    }
+
+    pub fn validate_team_composition(&self, player_list: &PlayerList) -> Result<(), ProgramError> {
+        let mut qb_count = 0; // max 4
+        let mut rb_count = 0; // max 8
+        let mut wr_count = 0; // max 8
+        let mut te_count = 0; // max 3
+        let mut k_count = 0; // max 3
+        let mut d_count = 0; // max 3
+        for i in 1..UserPlayerList::LEN + 1 {
+            match player_list.get_by_id(self.get(i as u8))?.get_position()? {
+                Position::RB => {
+                    rb_count += 1;
+                }
+                // LB => {},
+                // DL => {},
+                Position::TE => {
+                    te_count += 1;
+                }
+                // DB => {},
+                Position::QB => {
+                    qb_count += 1;
+                }
+                Position::WR => {
+                    wr_count += 1;
+                }
+                // OL => {},
+                _ => {}
+            }
+        }
+
+        if qb_count > 4 {
+            info!("There was error: QB are becoming more than 4");
+            return Err(SfsError::TeamCompositionRulesViolation.into());
+        }
+        if rb_count > 8 {
+            info!("There was error: RB are becoming more than 8");
+            return Err(SfsError::TeamCompositionRulesViolation.into());
+        }
+        if wr_count > 8 {
+            info!("There was error: WR are becoming more than 8");
+            return Err(SfsError::TeamCompositionRulesViolation.into());
+        }
+        if te_count > 3 {
+            info!("There was error: TE are becoming more than 3");
+            return Err(SfsError::TeamCompositionRulesViolation.into());
+        }
+        if k_count > 3 {
+            info!("There was error: K are becoming more than 3");
+            return Err(SfsError::TeamCompositionRulesViolation.into());
+        }
+        if d_count > 3 {
+            info!("There was error: D are becoming more than 3");
+            return Err(SfsError::TeamCompositionRulesViolation.into());
+        }
+
+        return Ok(());
+    }
+
+    pub fn copy_to<'b>(&self, to: &UserPlayerList<'b>) {
         let mut dst = to.data.borrow_mut();
         let mut src = self.data.borrow_mut();
         array_mut_ref![dst, self.offset, UserPlayerList::LEN].copy_from_slice(array_mut_ref![
@@ -71,7 +138,6 @@ impl<'a> UserPlayerList<'a> {
 
 // Pull in syscall stubs when building for non-BPF targets
 #[cfg(not(target_arch = "bpf"))]
-
 #[cfg(test)]
 mod tests {
     use super::*;

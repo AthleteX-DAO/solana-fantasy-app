@@ -37,8 +37,8 @@ export const UpdatePlayerScore = () =>
       const root = await global.sfs.getRootInfo();
       const scores = root.players.map((p) => p.scores);
 
-      const _stroredScore = scores[PLAYER_ID][root.currentWeek - 1].score1;
-      strictEqual(SCORE, _stroredScore, 'score should be set');
+      const _storedScore = scores[PLAYER_ID - 1][root.currentWeek - 1].score1;
+      strictEqual(SCORE, _storedScore, 'score should be set');
     });
 
     it('cannot update score again in same week', async () => {

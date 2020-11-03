@@ -38,8 +38,8 @@ pub fn process_update_player_score<'a>(
 
   // add a check that only owner can call
 
-  let score = root.get_players()?.get(args.get_player_id())?.get_scores()?.get(root.get_current_week() - 1)?;
-  if(score.get_score1() != 0) {
+  let score = root.get_players()?.get_by_id(args.get_player_id())?.get_scores()?.get(root.get_current_week() - 1)?;
+  if score.get_score1() != 0 {
     return Err(SfsError::ScoreAlreadyUpdated.into());
   }
 

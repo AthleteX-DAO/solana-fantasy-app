@@ -1,7 +1,7 @@
 //! State transition types
 
-use crate::state::*;
 use crate::error::SfsError;
+use crate::state::*;
 use arrayref::{array_mut_ref, array_ref, mut_array_refs};
 use byteorder::{ByteOrder, LittleEndian};
 use solana_program::{
@@ -41,13 +41,13 @@ impl<'a> UserStateList<'a> {
         self.slice(&mut self.data.borrow_mut()).0[0] = value;
     }
 
-    pub fn get(&self, i: u8) -> Result<UserState<'a>, ProgramError> {
-        if i >= self.get_count() {
+    pub fn get_by_id(&self, id: u8) -> Result<UserState<'a>, ProgramError> {
+        if id == 0 || id > self.get_count() {
             return Err(SfsError::IndexOutOfRange.into());
         }
         UserState::new(
             self.data,
-            self.offset + 1 + i as usize * UserStateList::ITEM_SIZE,
+            self.offset + 1 + (id as usize - 1) * UserStateList::ITEM_SIZE,
         )
     }
 
@@ -55,26 +55,16 @@ impl<'a> UserStateList<'a> {
         if self.get_count() >= UserStateList::ITEM_CAPACITY {
             return Err(SfsError::OutOfCapacity.into());
         }
-        for i in 0..self.get_count() {
-            if self.get(i)?.get_pub_key() == pubkey {
+        for i in 1..self.get_count() + 1 {
+            if self.get_by_id(i)?.get_pub_key() == pubkey {
                 return Err(SfsError::AlreadyInUse.into());
             }
         }
         self.set_count(self.get_count() + 1);
-        let user_state = self.get(self.get_count() - 1)?;
+        let user_state = self.get_by_id(self.get_count())?;
         user_state.set_pub_key(pubkey);
         user_state.set_is_initialized(true);
         Ok(())
-    }
-
-    pub fn get_by_pub_key(&self, pub_key: Pubkey) -> Result<UserState<'a>, ProgramError> {
-        for i in 0..UserStateList::LEN {
-            let user_state = self.get(i as u8)?;
-            if pub_key == user_state.get_pub_key() {
-                return Ok(user_state);
-            }
-        }
-        Err(ProgramError::InvalidAccountData)
     }
 
     pub fn copy_to(&self, to: &Self) {
@@ -99,7 +89,6 @@ impl<'a> UserStateList<'a> {
 
 // Pull in syscall stubs when building for non-BPF targets
 #[cfg(not(target_arch = "bpf"))]
-
 #[cfg(test)]
 mod tests {
     use super::*;

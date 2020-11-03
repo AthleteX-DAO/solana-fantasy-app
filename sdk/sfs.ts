@@ -115,7 +115,7 @@ export class SFS {
     }
 
     const pickOrder = Array.from({ length: LEAGUE_USERS_CAPACITY })
-      .map((_, i) => i)
+      .map((_, i) => i + 1)
       .sort(() => 0.5 - Math.random());
 
     transaction = new Transaction().add(

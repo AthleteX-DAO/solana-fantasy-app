@@ -78,6 +78,10 @@ impl<'a> League<'a> {
         self.slice(&mut self.data.borrow_mut()).5[0] = value as u8;
     }
 
+    pub fn get_pick_round(&self) -> Result<u8, ProgramError> {
+        Ok((self.get_current_pick() / self.get_user_states()?.get_count() as u16) as u8)
+    }
+
     pub fn copy_to(&self, to: &Self) {
         let mut dst = to.data.borrow_mut();
         let mut src = self.data.borrow_mut();
@@ -98,7 +102,6 @@ impl<'a> League<'a> {
 
 // Pull in syscall stubs when building for non-BPF targets
 #[cfg(not(target_arch = "bpf"))]
-
 #[cfg(test)]
 mod tests {
     use super::*;

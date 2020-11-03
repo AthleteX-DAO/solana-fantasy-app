@@ -12,7 +12,7 @@ export const DraftSelection = () =>
 
       const pickOrder = root.pickOrder;
 
-      const reducedPickOrder = pickOrder.filter((x) => x < usersCount);
+      const reducedPickOrder = pickOrder.filter((x) => x <= usersCount);
 
       const pickOrderForSmallerTeam = Array.from({
         length: TEAM_PLAYERS_COUNT * usersCount,
@@ -41,9 +41,9 @@ export const DraftSelection = () =>
     });
 
     const getOwnerAccount = (userId: number) =>
-      userId === 0 ? global.payerAccount : global.secondAccount;
+      userId === 1 ? global.payerAccount : global.secondAccount;
 
-    for (let i = 0; i < TEAM_PLAYERS_COUNT * usersCount; i++) {
+    for (let i = 0; i <  TEAM_PLAYERS_COUNT * usersCount; i++) {
       if (i === 0) {
         it(`throws on wrong player pick attempt at step ${i}`, async () => {
           const { pickOrderForSmallerTeam, expectedPick, playersToPick } = await getContext(i);
@@ -90,7 +90,7 @@ export const DraftSelection = () =>
 
         strictEqual(league.currentPick, i + 1, 'should increase current pick');
         strictEqual(
-          league.userStates[expectedPick].userPlayers[round],
+          league.userStates[expectedPick - 1].userPlayers[round],
           playersToPick[i],
           'should add correct player id to bench'
         );

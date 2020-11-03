@@ -17,11 +17,21 @@ pub struct ProposeSwapArgs<'a> {
     pub offset: usize,
 }
 impl<'a> ProposeSwapArgs<'a> {
-    pub const LEN: usize = 2 + 1 + 2 + 2;
-    fn slice<'b>(&self, data: &'b [u8]) -> (&'b [u8; 2], &'b [u8; 1], &'b [u8; 2], &'b [u8; 2]) {
+    pub const LEN: usize = 2 + 1 + 1 + 2 + 2;
+    fn slice<'b>(
+        &self,
+        data: &'b [u8],
+    ) -> (
+        &'b [u8; 2],
+        &'b [u8; 1],
+        &'b [u8; 1],
+        &'b [u8; 2],
+        &'b [u8; 2],
+    ) {
         array_refs![
             array_ref![data, self.offset, ProposeSwapArgs::LEN],
             2,
+            1,
             1,
             2,
             2
@@ -32,16 +42,20 @@ impl<'a> ProposeSwapArgs<'a> {
         LittleEndian::read_u16(self.slice(&mut self.data.borrow()).0)
     }
 
-    pub fn get_user_id(&self) -> u8 {
-        self.slice(&mut self.data.borrow()).1[0]
+    pub fn get_proposing_user_id(&self) -> u8 {
+        self.slice(&self.data.borrow()).1[0]
+    }
+
+    pub fn get_accepting_user_id(&self) -> u8 {
+        self.slice(&self.data.borrow()).2[0]
     }
 
     pub fn get_give_player_id(&self) -> u16 {
-        LittleEndian::read_u16(self.slice(&mut self.data.borrow()).2)
+        LittleEndian::read_u16(self.slice(&mut self.data.borrow()).3)
     }
 
     pub fn get_want_player_id(&self) -> u16 {
-        LittleEndian::read_u16(self.slice(&mut self.data.borrow()).3)
+        LittleEndian::read_u16(self.slice(&mut self.data.borrow()).4)
     }
 
     pub fn copy_to(&self, to: &mut [u8]) {
@@ -74,7 +88,6 @@ impl Clone for ProposeSwapArgs<'_> {
 
 // Pull in syscall stubs when building for non-BPF targets
 #[cfg(not(target_arch = "bpf"))]
-
 #[cfg(test)]
 mod tests {
     use super::*;

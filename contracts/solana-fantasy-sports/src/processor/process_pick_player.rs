@@ -48,12 +48,12 @@ pub fn process_pick_player<'a>(
 
     let player_id = args.get_player_id();
 
-    if player_id >= root.get_players()?.get_count() {
+    if player_id == 0 || player_id > root.get_players()?.get_count() {
         return Err(SfsError::IndexOutOfRange.into());
     }
 
     let league = root.get_leagues()?.get(args.get_league_id())?;
-    let user_state = league.get_user_states()?.get(args.get_user_id())?;
+    let user_state = league.get_user_states()?.get_by_id(args.get_user_id())?;
 
     helpers::validate_owner(program_id, &user_state.get_pub_key(), user_account_info)?;
 
@@ -62,7 +62,7 @@ pub fn process_pick_player<'a>(
     let mut league_pick_order = Vec::<u8>::with_capacity(users_count as usize);
     for i in 0..PickOrderList::ITEM_COUNT {
         let pick = root.get_pick_order()?.get(i);
-        if pick < users_count {
+        if pick <= users_count {
             league_pick_order.push(pick);
             if league_pick_order.len() == users_count as usize {
                 break;
@@ -70,7 +70,7 @@ pub fn process_pick_player<'a>(
         }
     }
 
-    let round = (league.get_current_pick() / users_count as u16) as u8;
+    let round = league.get_pick_round()?;
     if round >= TEAM_PLAYERS_COUNT {
         return Err(SfsError::InvalidState.into());
     }
@@ -84,8 +84,9 @@ pub fn process_pick_player<'a>(
     if args.get_user_id() != current_pick_user_id {
         return Err(SfsError::InvalidState.into());
     }
-    for i in 0..users_count {
-        let user_players = league.get_user_states()?.get(i)?.get_user_players()?;
+
+    for i in 1..users_count + 1 {
+        let user_players = league.get_user_states()?.get_by_id(i)?.get_user_players()?;
         if user_players.contains(player_id) {
             return Err(SfsError::AlreadyInUse.into());
         }

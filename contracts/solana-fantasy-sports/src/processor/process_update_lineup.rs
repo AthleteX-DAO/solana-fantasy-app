@@ -44,11 +44,12 @@ pub fn process_update_lineup<'a>(
     let user_account_info = next_account_info(account_info_iter)?;
 
     let league = root.get_leagues()?.get(args.get_league_id())?;
-    let user_state = league.get_user_states()?.get(args.get_user_id())?;
+    let user_state = league.get_user_states()?.get_by_id(args.get_user_id())?;
 
     helpers::validate_owner(program_id, &user_state.get_pub_key(), user_account_info)?;
 
-    let round = (league.get_current_pick() / league.get_user_states()?.get_count() as u16) as u8;
+    let round = league.get_pick_round()?;
+
     // Checking if draft selection complete for this league
     if round < TEAM_PLAYERS_COUNT {
         return Err(SfsError::InvalidState.into());
@@ -67,7 +68,7 @@ pub fn process_update_lineup<'a>(
         return Err(SfsError::InvalidState.into());
     }
 
-    let lineup = user_state.get_lineups()?.get(week)?;
+    let lineup = user_state.get_lineups()?.get_by_week(week)?;
     for i in 0..ActivePlayersList::ITEM_COUNT {
         let player_id = args.get_active_players()?.get(i);
         lineup.set(i, player_id);

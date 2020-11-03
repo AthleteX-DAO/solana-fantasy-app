@@ -1,7 +1,7 @@
 //! State transition types
 
-use crate::state::*;
 use crate::error::SfsError;
+use crate::state::*;
 use arrayref::{array_mut_ref, array_ref, mut_array_refs};
 use solana_program::{
     program_error::ProgramError,
@@ -41,7 +41,7 @@ impl<'a> SwapProposalsList<'a> {
         self.slice(&mut self.data.borrow_mut()).0[0] = value;
     }
 
-    pub fn get(&self, i: u8) -> Result<SwapProposal<'a>, ProgramError> {
+    fn get(&self, i: u8) -> Result<SwapProposal<'a>, ProgramError> {
         if i >= self.get_count() {
             return Err(SfsError::IndexOutOfRange.into());
         }
@@ -51,9 +51,29 @@ impl<'a> SwapProposalsList<'a> {
         )
     }
 
+    fn index_of(&self, give_player_id: u16, want_player_id: u16) -> Result<u8, ProgramError> {
+        for i in 0..self.get_count() {
+            let proposal = self.get(i)?;
+            if proposal.get_give_player_id() == give_player_id
+                && proposal.get_want_player_id() == want_player_id
+            {
+                return Ok(i as u8);
+            }
+        }
+
+        return Err(SfsError::ItemNotFound.into());
+    }
+
+    pub fn contains(&self, give_player_id: u16, want_player_id: u16) -> bool {
+        return self.index_of(give_player_id, want_player_id).is_ok();
+    }
+
     pub fn add(&self, give_player_id: u16, want_player_id: u16) -> Result<(), ProgramError> {
         if self.get_count() >= SwapProposalsList::ITEM_CAPACITY {
             return Err(SfsError::OutOfCapacity.into());
+        }
+        if self.contains(give_player_id, want_player_id) {
+            return Err(SfsError::AlreadyInUse.into());
         }
         self.set_count(self.get_count() + 1);
         let proposal = self.get(self.get_count() - 1)?;
@@ -63,13 +83,11 @@ impl<'a> SwapProposalsList<'a> {
         Ok(())
     }
 
-    pub fn remove(&self, i: u8) -> Result<(), ProgramError> {
-        if i >= self.get_count() {
-            return Err(SfsError::IndexOutOfRange.into());
-        }
-        for i2 in i..self.get_count() - 1 {
-            let proposal = self.get(i2)?;
-            let next = self.get(i2 + 1)?;
+    pub fn remove(&self, give_player_id: u16, want_player_id: u16) -> Result<(), ProgramError> {
+        let proposal_index = self.index_of(give_player_id, want_player_id)?;
+        for i in proposal_index..self.get_count() - 1 {
+            let proposal = self.get(i)?;
+            let next = self.get(i + 1)?;
             next.copy_to(&proposal);
         }
         let last = self.get(self.get_count() - 1)?;
@@ -103,7 +121,6 @@ impl<'a> SwapProposalsList<'a> {
 
 // Pull in syscall stubs when building for non-BPF targets
 #[cfg(not(target_arch = "bpf"))]
-
 #[cfg(test)]
 mod tests {
     use super::*;

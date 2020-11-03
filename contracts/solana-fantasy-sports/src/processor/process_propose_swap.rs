@@ -39,42 +39,47 @@ pub fn process_propose_swap<'a>(
     let league = root.get_leagues()?.get(args.get_league_id())?;
 
     let user_account_info = next_account_info(account_info_iter)?;
-    let self_user_state = league
+    let proposing_user_state = league
         .get_user_states()?
-        .get_by_pub_key(*user_account_info.key)?;
+        .get_by_id(args.get_proposing_user_id())?;
     helpers::validate_owner(
         program_id,
-        &self_user_state.get_pub_key(),
+        &proposing_user_state.get_pub_key(),
         user_account_info,
     )?;
-    let self_bench_list = self_user_state.get_user_players()?;
 
-    let other_account_info = next_account_info(account_info_iter)?;
-    let other_user_state = league
+    // validate a user can make a proposal
+
+    let mut buffer = [0u8; UserPlayerList::LEN];
+    let buffer_cell = RefCell::new(&mut buffer as &mut [u8]);
+    let proposing_user_player_list_copy = UserPlayerList::new(&buffer_cell, 0)?;
+    proposing_user_state
+        .get_user_players()?
+        .copy_to(&proposing_user_player_list_copy);
+
+    proposing_user_player_list_copy
+        .replace_id(args.get_give_player_id(), args.get_want_player_id())?;
+    proposing_user_player_list_copy.validate_team_composition(&root.get_players()?)?;
+
+    // validate a user can accept proposal
+
+    let accepting_user_state = league
         .get_user_states()?
-        .get_by_pub_key(*other_account_info.key)?;
-    let other_bench_list = other_user_state.get_user_players()?;
+        .get_by_id(args.get_accepting_user_id())?;
 
-    let give_player_index_self = self_bench_list.index_of(args.get_give_player_id())?;
+    let mut buffer = [0u8; UserPlayerList::LEN];
+    let buffer_cell = RefCell::new(&mut buffer as &mut [u8]);
+    let accepting_user_player_list_copy = UserPlayerList::new(&buffer_cell, 0)?;
+    accepting_user_state
+        .get_user_players()?
+        .copy_to(&proposing_user_player_list_copy);
 
-    // throws if after swap, self user has invalid bench list
-    root.get_players()?.ensure_list_valid_after_set(
-        self_bench_list,
-        give_player_index_self,
-        args.get_want_player_id(),
-    )?;
-
-    let want_player_index_other = other_bench_list.index_of(args.get_want_player_id())?;
-
-    // throws if after swap, other user has invalid bench list
-    root.get_players()?.ensure_list_valid_after_set(
-        other_bench_list,
-        want_player_index_other,
-        args.get_give_player_id(),
-    )?;
+    accepting_user_player_list_copy
+        .replace_id(args.get_give_player_id(), args.get_want_player_id())?;
+    accepting_user_player_list_copy.validate_team_composition(&root.get_players()?)?;
 
     // inserting swap proposal in self user
-    self_user_state
+    proposing_user_state
         .get_swap_proposals()?
         .add(args.get_give_player_id(), args.get_want_player_id())?;
 

@@ -46,7 +46,7 @@ export const InitializeRoot = () =>
       strictEqual(root.leaguesCount, 0, 'should be no leagues yet');
 
       ok(
-        root.pickOrder.every((x) => x < LEAGUE_USERS_CAPACITY),
+        root.pickOrder.every((x) => x > 0 && x < LEAGUE_USERS_CAPACITY + 1),
         'all pick order values should be in range of users'
       );
 
