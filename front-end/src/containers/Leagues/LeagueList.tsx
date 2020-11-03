@@ -73,17 +73,19 @@ export const LeagueRow: FunctionComponent<{ league: League; leagueIndex: number 
         {props.league.userStateLength}/{props.league.usersLimit}
       </td>
       <td>
-        <button
-          disabled={isAlreadyJoined || props.league.userStateLength >= props.league.usersLimit}
-          onClick={() => history.push(`/leagues/${props.leagueIndex}`)}
-          className="btn"
-        >
-          {isAlreadyJoined
-            ? 'Joined'
-            : props.league.userStateLength >= props.league.usersLimit
-            ? 'Full'
-            : 'Join'}
-        </button>
+        {isAlreadyJoined ? (
+          <button onClick={() => history.push(`/leagues/${props.leagueIndex}`)} className="btn">
+            View Joined League
+          </button>
+        ) : (
+          <button
+            disabled={props.league.userStateLength >= props.league.usersLimit}
+            onClick={() => history.push(`/leagues/${props.leagueIndex}`)}
+            className="btn"
+          >
+            {props.league.userStateLength >= props.league.usersLimit ? 'Already Full' : 'Join'}
+          </button>
+        )}
       </td>
     </tr>
   );
