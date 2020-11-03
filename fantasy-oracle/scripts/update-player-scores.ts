@@ -1,7 +1,9 @@
 import { calculateScore } from '../src/calculate-score';
-import { connection, sfs, wallet } from './commons';
+import { connection, sfsFn, wallet } from './commons';
 
 (async () => {
+  const sfs = await sfsFn();
+
   console.log('Fetching players list from root');
   const root = await sfs.getRootInfo();
   const idArr = root.players.filter((p) => p.isInitialized).map((p) => p.externalId);

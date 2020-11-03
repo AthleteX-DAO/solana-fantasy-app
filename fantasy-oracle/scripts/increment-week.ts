@@ -1,7 +1,8 @@
 import { PublicKey } from '@solana/web3.js';
-import { connection, wallet, sfs } from './commons';
+import { connection, wallet, sfsFn } from './commons';
 
 (async () => {
+  const sfs = await sfsFn();
   // @ts-ignore
   const bank = sfs.bank as PublicKey;
 

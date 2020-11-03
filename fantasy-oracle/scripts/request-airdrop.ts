@@ -2,10 +2,10 @@ import { connection, wallet } from './commons';
 
 (async () => {
   for (let i = 0; i < 5; i++) {
-    await connection.requestAirdrop(wallet.publicKey, 5 * 10 ** 9);
+    await connection.requestAirdrop(wallet.publicKey, 100 * 10 ** 9);
     console.log('requested');
   }
   await new Promise((res) => setTimeout(res, 1000));
   const bal = await connection.getBalance(wallet.publicKey);
-  console.log(bal);
+  console.log('new balance:', bal / 10 ** 9);
 })().catch(console.error);

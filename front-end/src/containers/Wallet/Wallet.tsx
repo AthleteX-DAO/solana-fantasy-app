@@ -42,8 +42,12 @@ export const Wallet: FunctionComponent<{}> = (props) => {
 
   const showPrivateKey = () => {
     if (window.wallet) {
-      const privateKey = window.wallet.privateKey;
-      setPrivateKeyDisplay(privateKey);
+      try {
+        const privateKey = window.wallet.privateKey;
+        setPrivateKeyDisplay(privateKey);
+      } catch (err) {
+        console.error(err);
+      }
     }
   };
 
