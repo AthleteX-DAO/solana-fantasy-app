@@ -10,6 +10,7 @@ export function CreateLeague() {
   const [leagueNameInput, setLeagueNameInput] = useState<string>('');
   const [leagueEntryCostInput, setLeagueEntryCostInput] = useState<string>('');
   const [leagueSizeInput, setLeagueSizeInput] = useState<string>('');
+  const [teamNameInput, setTeamNameInput] = useState<string>('');
 
   const createLeague = async () => {
     if (!window.wallet) {
@@ -61,11 +62,22 @@ export function CreateLeague() {
 
           <Form.Control
             disabled={spinner}
-            className="align-items-center"
+            className="align-items-center my-4"
             onChange={(event) => setLeagueEntryCostInput(event.target.value)}
             value={leagueEntryCostInput}
             type="text"
             placeholder="Enter League Entry Cost"
+            autoComplete="off"
+            // isInvalid={}
+          />
+
+          <Form.Control
+            disabled={spinner}
+            className="align-items-center"
+            onChange={(event) => setTeamNameInput(event.target.value)}
+            value={teamNameInput}
+            type="text"
+            placeholder="Enter your team name"
             autoComplete="off"
             // isInvalid={}
           />
@@ -88,7 +100,11 @@ export function CreateLeague() {
                 });
             }}
           >
-            {!spinner ? 'Create' : 'Creating...'}
+            {!spinner
+              ? `Create Leage and Join${
+                  leagueEntryCostInput ? ` by paying ${leagueEntryCostInput} SOL` : ''
+                }`
+              : 'Creating...'}
           </button>
         </Card.Body>
       </Card>
