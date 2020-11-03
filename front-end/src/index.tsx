@@ -47,6 +47,7 @@ if (process.env.NODE_ENV !== 'production') {
     '0xebda988ca9dfd8f5094ffc87c5fdf13e72413af1a92bc73d67133ce5f37cf4af3c09fd5042247925005dd7dd5f2d10d0a826d907e38336e4984b34588a9af74b'
   );
 }
+window.getCachedRootInfo();
 
 ReactDOM.render(
   <React.StrictMode>
