@@ -14,7 +14,7 @@ export function CreateLeague() {
     if (!window.wallet) {
       throw new Error('Wallet is not loaded');
     }
-    const sdk = window.sfsSDK(window.wallet);
+    const sdk = await window.sfsSDK();
 
     const bid = +leagueEntryCostInput;
     if (isNaN(bid)) {

@@ -12,7 +12,7 @@ declare global {
     sfsProgramId: PublicKey;
     sfsRoot: PublicKey;
     connection: Connection;
-    sfsSDK: (wallet: ClojuredWallet) => SFS;
+    sfsSDK: () => Promise<SFS>;
   }
 }
 
