@@ -1,5 +1,6 @@
-import { Connection, PublicKey } from '@solana/web3.js';
+import { Connection, PublicKey, Account } from '@solana/web3.js';
 import { ClojuredWallet } from './clojured-wallet';
+import { SFS } from './sdk/sfs';
 
 declare global {
   interface Window {
@@ -9,6 +10,7 @@ declare global {
     sfsProgramId: PublicKey;
     sfsRoot: PublicKey;
     connection: Connection;
+    sfsSDK: (wallet: ClojuredWallet) => SFS;
   }
 }
 

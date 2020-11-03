@@ -7,8 +7,30 @@ export function CreateLeague() {
   const history = useHistory();
 
   const [leagueNameInput, setLeagueNameInput] = useState<string>('');
-  const [leagueSizeInput, setLeagueSizeInput] = useState<string>('');
   const [leagueEntryCostInput, setLeagueEntryCostInput] = useState<string>('');
+  const [leagueSizeInput, setLeagueSizeInput] = useState<string>('');
+
+  const createLeague = async () => {
+    if (!window.wallet) {
+      throw new Error('Wallet is not loaded');
+    }
+    const sdk = window.sfsSDK(window.wallet);
+
+    const bid = +leagueEntryCostInput;
+    if (isNaN(bid)) {
+      throw new Error('Bid value is NaN');
+    }
+    const leagueSize = +leagueSizeInput;
+    if (isNaN(leagueSize)) {
+      throw new Error('leagueSize value is NaN');
+    }
+
+    const resp = await window.wallet.callback('Sign on Create League transaction?', (acc) => {
+      return sdk.createLeague(acc, leagueNameInput, bid * 10 ** 9, leagueSize);
+    });
+
+    console.log({ resp });
+  };
 
   return (
     <Layout heading="Create a League">
@@ -45,7 +67,19 @@ export function CreateLeague() {
           />
 
           {/* <Button>Submit</Button> */}
-          <button className="btn mt-4" onClick={() => history.push(`/leagues`)}>
+          <button
+            className="btn mt-4"
+            onClick={() => {
+              createLeague()
+                .then(() => {
+                  history.push(`/leagues`);
+                })
+                .catch((err) => {
+                  alert('Error:' + err?.message ?? err);
+                  console.log(err);
+                });
+            }}
+          >
             Create
           </button>
         </Card.Body>
