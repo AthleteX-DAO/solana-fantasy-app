@@ -95,5 +95,18 @@ pub fn process_pick_player<'a>(
     user_state.get_user_players()?.set(round, player_id);
     league.set_current_pick(league.get_current_pick() + 1);
 
+    if round < ACTIVE_PLAYERS_COUNT {
+        for i in 1..GAMES_COUNT + 1 {
+            user_state
+                .get_lineups()?
+                .get_by_week(i)?
+                .set(round, player_id);
+        }
+    }
+
+    if round == TEAM_PLAYERS_COUNT {
+        league.set_start_week(root.get_current_week());
+    }
+
     Ok(())
 }

@@ -1,5 +1,5 @@
-import { strictEqual } from 'assert';
-import { TEAM_PLAYERS_COUNT } from '../../../sdk/state';
+import { ok, strictEqual } from 'assert';
+import { ACTIVE_PLAYERS_COUNT, TEAM_PLAYERS_COUNT } from '../../../sdk/state';
 import { throwsAsync } from '../../helpers';
 
 export const DraftSelection = () =>
@@ -43,7 +43,7 @@ export const DraftSelection = () =>
     const getOwnerAccount = (userId: number) =>
       userId === 1 ? global.payerAccount : global.secondAccount;
 
-    for (let i = 0; i <  TEAM_PLAYERS_COUNT * usersCount; i++) {
+    for (let i = 0; i < TEAM_PLAYERS_COUNT * usersCount; i++) {
       if (i === 0) {
         it(`throws on wrong player pick attempt at step ${i}`, async () => {
           const { pickOrderForSmallerTeam, expectedPick, playersToPick } = await getContext(i);
@@ -94,6 +94,12 @@ export const DraftSelection = () =>
           playersToPick[i],
           'should add correct player id to bench'
         );
+        if (i < ACTIVE_PLAYERS_COUNT) {
+          ok(
+            league.userStates[expectedPick - 1].lineups.every((x) => x[round] == playersToPick[i]),
+            'should update lineups with player'
+          );
+        }
         console.log(
           `User ${expectedPick} successfully picked player ${playersToPick[i]} at step ${i}, round ${round}`
         );

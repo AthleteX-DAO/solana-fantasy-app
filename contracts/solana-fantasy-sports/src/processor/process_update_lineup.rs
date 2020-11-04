@@ -41,8 +41,6 @@ pub fn process_update_lineup<'a>(
         return Err(SfsError::InvalidStage.into());
     }
 
-    let user_account_info = next_account_info(account_info_iter)?;
-
     let league = root.get_leagues()?.get(args.get_league_id())?;
     let user_state = league.get_user_states()?.get_by_id(args.get_user_id())?;
 
@@ -72,6 +70,14 @@ pub fn process_update_lineup<'a>(
     for i in 0..ActivePlayersList::ITEM_COUNT {
         let player_id = args.get_active_players()?.get(i);
         lineup.set(i, player_id);
+    }
+
+    // Check for duplicates
+    for i in 0..ActivePlayersList::ITEM_COUNT {
+        let index = lineup.index_of(lineup.get(i));
+        if index.is_ok() && index? != i {
+            return Err(SfsError::AlreadyInUse.into());
+        }
     }
 
     Ok(())

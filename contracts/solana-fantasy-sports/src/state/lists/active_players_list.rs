@@ -34,10 +34,6 @@ impl<'a> ActivePlayersList<'a> {
         LittleEndian::write_u16(self.slice(&mut self.data.borrow_mut(), i), value);
     }
 
-    pub fn contains(&self, player_id: u16) -> bool {
-        return self.index_of(player_id).is_ok();
-    }
-
     pub fn index_of(&self, player_id: u16) -> Result<u8, ProgramError> {
         for i in 0..ActivePlayersList::LEN {
             if self.get(i as u8) == player_id {
@@ -46,6 +42,19 @@ impl<'a> ActivePlayersList<'a> {
         }
 
         return Err(SfsError::PlayerNotFound.into());
+    }
+
+    pub fn contains(&self, player_id: u16) -> bool {
+        return self.index_of(player_id).is_ok();
+    }
+
+    pub fn replace_id(&self, from_id: u16, to_id: u16) -> Result<(), ProgramError> {
+        if self.contains(to_id) {
+            return Err(SfsError::AlreadyInUse.into());
+        }
+        let index = self.index_of(from_id)?;
+        self.set(index, to_id);
+        Ok(())
     }
 
     pub fn copy_to(&self, to: &Self) {
@@ -71,7 +80,6 @@ impl<'a> ActivePlayersList<'a> {
 
 // Pull in syscall stubs when building for non-BPF targets
 #[cfg(not(target_arch = "bpf"))]
-
 #[cfg(test)]
 mod tests {
     use super::*;

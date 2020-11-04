@@ -18,7 +18,7 @@ pub struct ActivePlayersList<'a> {
 }
 impl<'a> ActivePlayersList<'a> {
     pub const ITEM_SIZE: usize = 2;
-    pub const ITEM_COUNT: u8 = LEAGUE_USERS_CAPACITY;
+    pub const ITEM_COUNT: u8 = ACTIVE_PLAYERS_COUNT;
     pub const LEN: usize = ActivePlayersList::ITEM_SIZE * ActivePlayersList::ITEM_COUNT as usize;
     fn slice<'b>(&self, data: &'b [u8], i: u8) -> &'b [u8; 2] {
         array_ref![

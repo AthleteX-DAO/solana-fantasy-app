@@ -20,12 +20,12 @@ impl<'a> LineupList<'a> {
     pub const LEN: usize = LineupList::ITEM_SIZE * LineupList::ITEM_COUNT as usize;
 
     pub fn get_by_week(&self, i: u8) -> Result<ActivePlayersList<'a>, ProgramError> {
-        if i == 0 || i > ActivePlayersList::ITEM_COUNT {
+        if i == 0 || i > LineupList::ITEM_COUNT {
             return Err(SfsError::IndexOutOfRange.into());
         }
         ActivePlayersList::new(
             self.data,
-            self.offset + (i as usize - 1) * ActivePlayersList::ITEM_SIZE,
+            self.offset + (i as usize - 1) * LineupList::ITEM_SIZE,
         )
     }
 

@@ -1,6 +1,7 @@
 import { LoadProgram } from './LoadProgram.test';
 import { InitializeRoot } from './InitializeRoot.test';
 import { InstructionsTests } from './Instructions.test';
+import { UpdateLineup } from './UpdateLineup.test';
 import { DraftSelection } from './DraftSelection.test';
 import { CreateLeague } from './CreateLeague.test';
 import { JoinLeague } from './JoinLeague.test';
@@ -15,4 +16,5 @@ export const SolanaFantasySports = () =>
     JoinLeague();
     DraftSelection();
     UpdatePlayerScore();
+    UpdateLineup();
   });

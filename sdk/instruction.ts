@@ -7,6 +7,7 @@ import {
 
 import * as Layout from './util/layout';
 import { BufferLayout } from './util/layout';
+import { ACTIVE_PLAYERS_COUNT } from './state';
 import {
   Position,
   MAX_PLAYERS_PER_INSTRUCTION,
@@ -343,6 +344,50 @@ export class SfsInstruction {
       const encodeLength = commandDataLayout.encode(
         {
           instruction: Command.IncrementWeek,
+        },
+        data
+      );
+    }
+
+    return new TransactionInstruction({
+      keys,
+      programId,
+      data,
+    });
+  }
+  /**
+   * Construct an UpdateLineup instruction
+   */
+  static createUpdateLineupInstruction(
+    programId: PublicKey,
+    root: PublicKey,
+    leagueId: number,
+    userId: number,
+    week: number,
+    activePlayers: number[],
+    owner: PublicKey
+  ): TransactionInstruction {
+    let keys = [
+      { pubkey: root, isSigner: false, isWritable: true },
+      { pubkey: owner, isSigner: true, isWritable: false },
+    ];
+    const commandDataLayout = BufferLayout.struct([
+      BufferLayout.u8('instruction'),
+      BufferLayout.seq(BufferLayout.u16(), ACTIVE_PLAYERS_COUNT, 'activePlayers'),
+      BufferLayout.u16('leagueId'),
+      BufferLayout.u8('userId'),
+      BufferLayout.u16('week'),
+    ]);
+
+    let data = Buffer.alloc(commandDataLayout.span);
+    {
+      const encodeLength = commandDataLayout.encode(
+        {
+          instruction: Command.UpdateLineup,
+          activePlayers,
+          leagueId,
+          userId,
+          week,
         },
         data
       );

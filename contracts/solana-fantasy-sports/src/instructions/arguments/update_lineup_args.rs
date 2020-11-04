@@ -41,15 +41,15 @@ impl<'a> UpdateLineupArgs<'a> {
     }
 
     pub fn get_league_id(&self) -> u16 {
-        LittleEndian::read_u16(self.slice(&mut self.data.borrow()).0)
+        LittleEndian::read_u16(self.slice(&mut self.data.borrow()).1)
     }
 
     pub fn get_user_id(&self) -> u8 {
-        self.slice(&mut self.data.borrow()).1[0]
+        self.slice(&mut self.data.borrow()).2[0]
     }
 
     pub fn get_week(&self) -> u8 {
-        self.slice(&mut self.data.borrow()).2[0]
+        self.slice(&mut self.data.borrow()).3[0]
     }
 
     pub fn copy_to(&self, to: &mut [u8]) {

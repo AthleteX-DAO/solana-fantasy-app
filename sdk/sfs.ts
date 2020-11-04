@@ -230,6 +230,31 @@ export class SFS {
 
     await sendAndConfirmTransaction('Pick player', this.connection, transaction, owner);
   }
+  /**
+   * Update lineup.
+   */
+  async updateLineup(
+    owner: Account,
+    leagueId: number,
+    userId: number,
+    week: number,
+    activePlayers: number[]
+  ): Promise<void> {
+    const transaction = new Transaction();
+    transaction.add(
+      SfsInstruction.createUpdateLineupInstruction(
+        this.programId,
+        this.publicKey,
+        leagueId,
+        userId,
+        week,
+        activePlayers,
+        owner.publicKey
+      )
+    );
+
+    await sendAndConfirmTransaction('Update lineup', this.connection, transaction, owner);
+  }
 
   /**
    * Retrieve root information
