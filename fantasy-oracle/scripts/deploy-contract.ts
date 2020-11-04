@@ -118,30 +118,30 @@ connection;
     }
     console.log(choosenPlayers.length);
 
-    // sfs = await SFS.initializeRoot(
-    //   connection,
-    //   wallet,
-    //   wallet.publicKey,
-    //   choosenPlayers,
-    //   0,
-    //   programAccount.publicKey
-    // );
-
-    const players = Array.from({ length: PLAYERS_CAPACITY }).map(
-      (_, i): Player => ({
-        externalId: i,
-        position: Position.DB,
-      })
-    );
-
     sfs = await SFS.initializeRoot(
       connection,
       wallet,
       wallet.publicKey,
-      players,
+      choosenPlayers,
       0,
       programAccount.publicKey
     );
+
+    // const players = Array.from({ length: PLAYERS_CAPACITY }).map(
+    //   (_, i): Player => ({
+    //     externalId: i,
+    //     position: Position.DB,
+    //   })
+    // );
+
+    // sfs = await SFS.initializeRoot(
+    //   connection,
+    //   wallet,
+    //   wallet.publicKey,
+    //   players,
+    //   0,
+    //   programAccount.publicKey
+    // );
 
     await sfs.getRootInfo();
 
