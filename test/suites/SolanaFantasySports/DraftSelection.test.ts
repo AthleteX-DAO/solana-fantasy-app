@@ -28,7 +28,7 @@ export const DraftSelection = () =>
       const expectedPick = pickOrderForSmallerTeam[i];
       const round = Math.floor(i / usersCount);
 
-      const playersToPick = pickOrderForSmallerTeam.map((_, i) => i + 100);
+      const playersToPick = pickOrderForSmallerTeam.map((_, i) => i + 50);
       return { league, pickOrderForSmallerTeam, round, expectedPick, playersToPick };
     };
 
