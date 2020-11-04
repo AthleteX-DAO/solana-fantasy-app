@@ -138,10 +138,14 @@ export const JoinLeague: FunctionComponent<RouteComponentProps<MatchParams>> = (
             </tbody>
           </Table>
 
-          {pendingJoins !== null && pendingJoins !== 0 ? (
-            <p>
-              More {pendingJoins} join{pendingJoins > 1 ? 's are' : ' is'} pending.
-            </p>
+          {pendingJoins !== null ? (
+            pendingJoins !== 0 ? (
+              <p>
+                More {pendingJoins} join{pendingJoins > 1 ? 's are' : ' is'} pending.
+              </p>
+            ) : (
+              <p>The league is full.</p>
+            )
           ) : null}
         </div>
       ) : null}
