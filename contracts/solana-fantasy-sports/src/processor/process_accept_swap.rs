@@ -45,7 +45,7 @@ pub fn process_accept_swap<'a>(
     // 2. Check if the want player exists with self user
     // 3. If it does then
 
-    let league = root.get_leagues()?.get(args.get_league_id())?;
+    let league = root.get_leagues()?.get(args.get_league_index())?;
     let accepting_user_state = league
         .get_user_states()?
         .get_by_id(args.get_accepting_user_id())?;

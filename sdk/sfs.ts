@@ -192,14 +192,14 @@ export class SFS {
    * @param owner User account that will own the new account
    * @return Public key of the new empty account
    */
-  async joinLeague(owner: Account, leagueId: number): Promise<void> {
+  async joinLeague(owner: Account, leagueIndex: number): Promise<void> {
     const transaction = new Transaction();
     transaction.add(
       SfsInstruction.createJoinLeagueInstruction(
         this.programId,
         this.publicKey,
         this.bank,
-        leagueId,
+        leagueIndex,
         owner.publicKey
       )
     );
@@ -212,7 +212,7 @@ export class SFS {
    */
   async pickPlayer(
     owner: Account,
-    leagueId: number,
+    leagueIndex: number,
     userId: number,
     playerId: number
   ): Promise<void> {
@@ -221,7 +221,7 @@ export class SFS {
       SfsInstruction.createPickPlayerInstruction(
         this.programId,
         this.publicKey,
-        leagueId,
+        leagueIndex,
         userId,
         playerId,
         owner.publicKey
@@ -235,7 +235,7 @@ export class SFS {
    */
   async updateLineup(
     owner: Account,
-    leagueId: number,
+    leagueIndex: number,
     userId: number,
     week: number,
     activePlayers: number[]
@@ -245,7 +245,7 @@ export class SFS {
       SfsInstruction.createUpdateLineupInstruction(
         this.programId,
         this.publicKey,
-        leagueId,
+        leagueIndex,
         userId,
         week,
         activePlayers,

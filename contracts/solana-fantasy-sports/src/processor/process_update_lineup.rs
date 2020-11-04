@@ -41,7 +41,7 @@ pub fn process_update_lineup<'a>(
         return Err(SfsError::InvalidStage.into());
     }
 
-    let league = root.get_leagues()?.get(args.get_league_id())?;
+    let league = root.get_leagues()?.get(args.get_league_index())?;
     let user_state = league.get_user_states()?.get_by_id(args.get_user_id())?;
 
     helpers::validate_owner(program_id, &user_state.get_pub_key(), user_account_info)?;

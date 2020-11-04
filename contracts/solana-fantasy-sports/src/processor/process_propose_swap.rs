@@ -36,7 +36,7 @@ pub fn process_propose_swap<'a>(
     let root_info = next_account_info(account_info_iter)?;
     let root = Root::new(&root_info.data)?;
 
-    let league = root.get_leagues()?.get(args.get_league_id())?;
+    let league = root.get_leagues()?.get(args.get_league_index())?;
 
     let user_account_info = next_account_info(account_info_iter)?;
     let proposing_user_state = league

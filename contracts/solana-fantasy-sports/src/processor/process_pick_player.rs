@@ -52,7 +52,7 @@ pub fn process_pick_player<'a>(
         return Err(SfsError::IndexOutOfRange.into());
     }
 
-    let league = root.get_leagues()?.get(args.get_league_id())?;
+    let league = root.get_leagues()?.get(args.get_league_index())?;
     let user_state = league.get_user_states()?.get_by_id(args.get_user_id())?;
 
     helpers::validate_owner(program_id, &user_state.get_pub_key(), user_account_info)?;

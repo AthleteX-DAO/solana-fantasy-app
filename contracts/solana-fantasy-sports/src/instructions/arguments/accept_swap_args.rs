@@ -39,7 +39,7 @@ impl<'a> AcceptSwapArgs<'a> {
         ]
     }
 
-    pub fn get_league_id(&self) -> u16 {
+    pub fn get_league_index(&self) -> u16 {
         LittleEndian::read_u16(self.slice(&self.data.borrow()).0)
     }
 

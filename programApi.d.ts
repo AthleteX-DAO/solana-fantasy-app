@@ -58,7 +58,7 @@ interface Program {
    */
   createLeague(bidAmount: number, numberOfPlayers: number, invitedPlayers?: string[]): string;
 
-  joinLeague(leagueId: string): void;
+  joinLeague(leagueIndex: string): void;
 
   /**
    * Participate in auction. Update your bids for players.

@@ -49,7 +49,7 @@ pub fn process_join_league<'a>(
     let system_program_account_info = next_account_info(account_info_iter)?;
 
     helpers::validate_bank(program_id, bank_account_info)?;
-    let league = root.get_leagues()?.get(args.get_league_id())?;
+    let league = root.get_leagues()?.get(args.get_league_index())?;
 
     let instruction = transfer(
         user_account_info.key,

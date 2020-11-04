@@ -22,7 +22,7 @@ impl<'a> JoinLeagueArgs<'a> {
         array_refs![array_ref![data, self.offset, JoinLeagueArgs::LEN], 2, 0]
     }
 
-    pub fn get_league_id(&self) -> u16 {
+    pub fn get_league_index(&self) -> u16 {
         LittleEndian::read_u16(self.slice(&mut self.data.borrow()).0)
     }
 

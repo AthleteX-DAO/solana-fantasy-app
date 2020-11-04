@@ -22,7 +22,7 @@ impl<'a> PickPlayerArgs<'a> {
         array_refs![array_ref![data, self.offset, PickPlayerArgs::LEN], 2, 1, 2]
     }
 
-    pub fn get_league_id(&self) -> u16 {
+    pub fn get_league_index(&self) -> u16 {
         LittleEndian::read_u16(self.slice(&mut self.data.borrow()).0)
     }
 

@@ -9,7 +9,7 @@ export const CreateLeague = () =>
 
       const balanceBefore = await global.connection.getBalance(bank);
 
-      const leagueId = await global.sfs.createLeague(
+      const leagueIndex = await global.sfs.createLeague(
         global.payerAccount,
         'Test League',
         1 * 10 ** 9,
@@ -18,10 +18,10 @@ export const CreateLeague = () =>
 
       const balanceAfter = await global.connection.getBalance(bank);
 
-      console.log(`League id ${leagueId}`);
+      console.log(`League index ${leagueIndex}`);
 
       const root = await global.sfs.getRootInfo();
-      const league = root.leagues[leagueId];
+      const league = root.leagues[leagueIndex];
 
       strictEqual(league.userStateLength, 1, 'should be 1 player joined');
       strictEqual(league.isInitialized, true, 'league should be initialized');

@@ -208,7 +208,7 @@ export class SfsInstruction {
     programId: PublicKey,
     root: PublicKey,
     bank: PublicKey,
-    leagueId: number,
+    leagueIndex: number,
     owner: PublicKey
   ): TransactionInstruction {
     let keys = [
@@ -219,7 +219,7 @@ export class SfsInstruction {
     ];
     const commandDataLayout = BufferLayout.struct([
       BufferLayout.u8('instruction'),
-      BufferLayout.u16('leagueId'),
+      BufferLayout.u16('leagueIndex'),
     ]);
 
     let data = Buffer.alloc(commandDataLayout.span);
@@ -227,7 +227,7 @@ export class SfsInstruction {
       const encodeLength = commandDataLayout.encode(
         {
           instruction: Command.JoinLeague,
-          leagueId,
+          leagueIndex,
         },
         data
       );
@@ -246,7 +246,7 @@ export class SfsInstruction {
   static createPickPlayerInstruction(
     programId: PublicKey,
     root: PublicKey,
-    leagueId: number,
+    leagueIndex: number,
     userId: number,
     playerId: number,
     owner: PublicKey
@@ -257,7 +257,7 @@ export class SfsInstruction {
     ];
     const commandDataLayout = BufferLayout.struct([
       BufferLayout.u8('instruction'),
-      BufferLayout.u16('leagueId'),
+      BufferLayout.u16('leagueIndex'),
       BufferLayout.u8('userId'),
       BufferLayout.u16('playerId'),
     ]);
@@ -267,7 +267,7 @@ export class SfsInstruction {
       const encodeLength = commandDataLayout.encode(
         {
           instruction: Command.PickPlayer,
-          leagueId,
+          leagueIndex,
           userId,
           playerId,
         },
@@ -361,7 +361,7 @@ export class SfsInstruction {
   static createUpdateLineupInstruction(
     programId: PublicKey,
     root: PublicKey,
-    leagueId: number,
+    leagueIndex: number,
     userId: number,
     week: number,
     activePlayers: number[],
@@ -374,7 +374,7 @@ export class SfsInstruction {
     const commandDataLayout = BufferLayout.struct([
       BufferLayout.u8('instruction'),
       BufferLayout.seq(BufferLayout.u16(), ACTIVE_PLAYERS_COUNT, 'activePlayers'),
-      BufferLayout.u16('leagueId'),
+      BufferLayout.u16('leagueIndex'),
       BufferLayout.u8('userId'),
       BufferLayout.u16('week'),
     ]);
@@ -385,7 +385,7 @@ export class SfsInstruction {
         {
           instruction: Command.UpdateLineup,
           activePlayers,
-          leagueId,
+          leagueIndex,
           userId,
           week,
         },
