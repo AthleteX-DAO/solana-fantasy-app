@@ -16,6 +16,9 @@ export const SWAP_PROPOSALS_CAPACITY = 20;
 export const LEAGUE_NAME_LEN = 256;
 export const LEAGUE_NAME_MAX_SYMBOLS = 128;
 
+export const TEAM_NAME_LEN = 256;
+export const TEAM_NAME_MAX_SYMBOLS = 128;
+
 export const PUB_KEY_LEN = 32;
 
 export enum Position {
@@ -53,6 +56,7 @@ export type UserState = {
   lineups: number[][];
   swapProposalsLength: number;
   swapProposals: SwapProposal[];
+  teamName: string;
   pubKey: PublicKey;
   isInitialized: boolean;
 };
@@ -66,6 +70,7 @@ export const UserStateLayout: typeof BufferLayout.Structure = BufferLayout.struc
   ),
   BufferLayout.u8('swapProposalsCount'),
   BufferLayout.seq(SwapProposalLayout, SWAP_PROPOSALS_CAPACITY, 'swapProposals'),
+  Layout.utf16FixedString(TEAM_NAME_MAX_SYMBOLS, 'teamName'),
   Layout.publicKey('pubKey'),
   Layout.boolean('isInitialized'),
 ]);

@@ -17,13 +17,21 @@ pub struct JoinLeagueArgs<'a> {
     offset: usize,
 }
 impl<'a> JoinLeagueArgs<'a> {
-    pub const LEN: usize = 2;
-    fn slice<'b>(&self, data: &'b [u8]) -> (&'b [u8; 2], &'b [u8; 0]) {
-        array_refs![array_ref![data, self.offset, JoinLeagueArgs::LEN], 2, 0]
+    pub const LEN: usize = 2 + TEAM_NAME_LEN;
+    fn slice<'b>(&self, data: &'b [u8]) -> (&'b [u8; 2], &'b [u8; TEAM_NAME_LEN]) {
+        array_refs![
+            array_ref![data, self.offset, JoinLeagueArgs::LEN],
+            2,
+            TEAM_NAME_LEN
+        ]
     }
 
     pub fn get_league_index(&self) -> u16 {
         LittleEndian::read_u16(self.slice(&mut self.data.borrow()).0)
+    }
+
+    pub fn get_team_name(&self) -> &[u8; TEAM_NAME_LEN] {
+        self.slice(&self.data.borrow()).1
     }
 
     pub fn copy_to(&self, to: &mut [u8]) {
@@ -53,7 +61,6 @@ impl Clone for JoinLeagueArgs<'_> {
 
 // Pull in syscall stubs when building for non-BPF targets
 #[cfg(not(target_arch = "bpf"))]
-
 #[cfg(test)]
 mod tests {
     use super::*;

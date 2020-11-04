@@ -51,7 +51,7 @@ impl<'a> UserStateList<'a> {
         )
     }
 
-    pub fn add(&self, pubkey: Pubkey) -> Result<(), ProgramError> {
+    pub fn add(&self, pubkey: Pubkey) -> Result<UserState<'a>, ProgramError> {
         if self.get_count() >= UserStateList::ITEM_CAPACITY {
             return Err(SfsError::OutOfCapacity.into());
         }
@@ -64,7 +64,7 @@ impl<'a> UserStateList<'a> {
         let user_state = self.get_by_id(self.get_count())?;
         user_state.set_pub_key(pubkey);
         user_state.set_is_initialized(true);
-        Ok(())
+        Ok(user_state)
     }
 
     pub fn copy_to(&self, to: &Self) {

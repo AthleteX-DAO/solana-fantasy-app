@@ -17,13 +17,22 @@ pub struct CreateLeagueArgs<'a> {
     offset: usize,
 }
 impl<'a> CreateLeagueArgs<'a> {
-    pub const LEN: usize = LEAGUE_NAME_LEN + 8 + 1;
-    fn slice<'b>(&self, data: &'b [u8]) -> (&'b [u8; LEAGUE_NAME_LEN], &'b [u8; 8], &'b [u8; 1]) {
+    pub const LEN: usize = LEAGUE_NAME_LEN + 8 + 1 + TEAM_NAME_LEN;
+    fn slice<'b>(
+        &self,
+        data: &'b [u8],
+    ) -> (
+        &'b [u8; LEAGUE_NAME_LEN],
+        &'b [u8; 8],
+        &'b [u8; 1],
+        &'b [u8; TEAM_NAME_LEN],
+    ) {
         array_refs![
             array_ref![data, self.offset, CreateLeagueArgs::LEN],
             LEAGUE_NAME_LEN,
             8,
-            1
+            1,
+            TEAM_NAME_LEN
         ]
     }
 
@@ -37,6 +46,10 @@ impl<'a> CreateLeagueArgs<'a> {
 
     pub fn get_users_limit(&self) -> u8 {
         self.slice(&self.data.borrow()).2[0]
+    }
+
+    pub fn get_team_name(&self) -> &[u8; TEAM_NAME_LEN] {
+        self.slice(&self.data.borrow()).3
     }
 
     pub fn copy_to(&self, to: &mut [u8]) {
@@ -69,7 +82,6 @@ impl Clone for CreateLeagueArgs<'_> {
 
 // Pull in syscall stubs when building for non-BPF targets
 #[cfg(not(target_arch = "bpf"))]
-
 #[cfg(test)]
 mod tests {
     use super::*;

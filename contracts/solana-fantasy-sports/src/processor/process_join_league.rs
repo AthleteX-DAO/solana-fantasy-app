@@ -67,7 +67,8 @@ pub fn process_join_league<'a>(
     if user_states.get_count() == league.get_users_limit() {
         return Err(SfsError::OutOfCapacity.into());
     }
-    user_states.add(*user_account_info.key)?;
+    let user_state = user_states.add(*user_account_info.key)?;
+    user_state.set_team_name(args.get_team_name());
 
     Ok(())
 }

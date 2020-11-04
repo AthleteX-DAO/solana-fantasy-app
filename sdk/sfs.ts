@@ -155,7 +155,8 @@ export class SFS {
     owner: Account,
     name: string,
     bid: number | u64,
-    usersLimit: number
+    usersLimit: number,
+    teamName: string
   ): Promise<number> {
     const transaction = new Transaction();
     transaction.add(
@@ -166,6 +167,7 @@ export class SFS {
         name,
         bid,
         usersLimit,
+        teamName,
         owner.publicKey
       )
     );
@@ -192,7 +194,7 @@ export class SFS {
    * @param owner User account that will own the new account
    * @return Public key of the new empty account
    */
-  async joinLeague(owner: Account, leagueIndex: number): Promise<void> {
+  async joinLeague(owner: Account, leagueIndex: number, teamName: string): Promise<void> {
     const transaction = new Transaction();
     transaction.add(
       SfsInstruction.createJoinLeagueInstruction(
@@ -200,6 +202,7 @@ export class SFS {
         this.publicKey,
         this.bank,
         leagueIndex,
+        teamName,
         owner.publicKey
       )
     );

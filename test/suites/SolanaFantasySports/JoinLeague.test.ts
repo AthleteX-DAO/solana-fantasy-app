@@ -7,7 +7,7 @@ export const JoinLeague = () =>
   describe('Join league', () => {
     it('throws on creator join attempt', async () => {
       await throwsAsync(
-        () => global.sfs.joinLeague(global.payerAccount, 0),
+        () => global.sfs.joinLeague(global.payerAccount, 0, 'Test Team'),
         'should not allow double join'
       );
     });
@@ -16,7 +16,7 @@ export const JoinLeague = () =>
 
       const balanceBefore = await global.connection.getBalance(bank);
 
-      await global.sfs.joinLeague(global.secondAccount, 0);
+      await global.sfs.joinLeague(global.secondAccount, 0, 'Test Team');
 
       const balanceAfter = await global.connection.getBalance(bank);
 
@@ -33,10 +33,11 @@ export const JoinLeague = () =>
         global.secondAccount.publicKey.toString(),
         'should correctly set first player pubkey'
       );
+      strictEqual(userState.teamName, 'Test Team', 'should correctly set team name');
     });
     it('throws on joined player double join attempt', async () => {
       await throwsAsync(
-        () => global.sfs.joinLeague(global.secondAccount, 0),
+        () => global.sfs.joinLeague(global.secondAccount, 0, 'Test Team'),
         'should not allow join more than limit players'
       );
     });

@@ -14,8 +14,12 @@ pub struct UserState<'a> {
     offset: usize,
 }
 impl<'a> UserState<'a> {
-    pub const LEN: usize =
-        UserPlayerList::LEN + LineupList::LEN + SwapProposalsList::LEN + PUB_KEY_LEN + 1;
+    pub const LEN: usize = UserPlayerList::LEN
+        + LineupList::LEN
+        + SwapProposalsList::LEN
+        + TEAM_NAME_LEN
+        + PUB_KEY_LEN
+        + 1;
     fn slice<'b>(
         &self,
         data: &'b mut [u8],
@@ -23,6 +27,7 @@ impl<'a> UserState<'a> {
         &'b mut [u8; UserPlayerList::LEN],
         &'b mut [u8; LineupList::LEN],
         &'b mut [u8; SwapProposalsList::LEN],
+        &'b mut [u8; TEAM_NAME_LEN],
         &'b mut [u8; PUB_KEY_LEN],
         &'b mut [u8; 1],
     ) {
@@ -31,6 +36,7 @@ impl<'a> UserState<'a> {
             UserPlayerList::LEN,
             LineupList::LEN,
             SwapProposalsList::LEN,
+            TEAM_NAME_LEN,
             PUB_KEY_LEN,
             1
         ]
@@ -41,10 +47,7 @@ impl<'a> UserState<'a> {
     }
 
     pub fn get_lineups(&self) -> Result<LineupList<'a>, ProgramError> {
-        LineupList::new(
-            self.data,
-            self.offset + UserPlayerList::LEN,
-        )
+        LineupList::new(self.data, self.offset + UserPlayerList::LEN)
     }
 
     pub fn get_swap_proposals(&self) -> Result<SwapProposalsList<'a>, ProgramError> {
@@ -54,20 +57,29 @@ impl<'a> UserState<'a> {
         )
     }
 
+    pub fn get_team_name(&self) -> [u8; TEAM_NAME_LEN] {
+        *self.slice(&mut self.data.borrow_mut()).3
+    }
+    pub fn set_team_name(&self, value: &[u8; TEAM_NAME_LEN]) {
+        self.slice(&mut self.data.borrow_mut())
+            .3
+            .copy_from_slice(value);
+    }
+
     pub fn get_pub_key(&self) -> Pubkey {
-        Pubkey::new_from_array(*self.slice(&mut self.data.borrow_mut()).3)
+        Pubkey::new_from_array(*self.slice(&mut self.data.borrow_mut()).4)
     }
     pub fn set_pub_key(&self, value: Pubkey) {
         self.slice(&mut self.data.borrow_mut())
-            .3
+            .4
             .copy_from_slice(value.as_ref());
     }
 
     pub fn get_is_initialized(&self) -> Result<bool, ProgramError> {
-        unpack_is_initialized(self.slice(&mut self.data.borrow_mut()).4)
+        unpack_is_initialized(self.slice(&mut self.data.borrow_mut()).5)
     }
     pub fn set_is_initialized(&self, value: bool) {
-        self.slice(&mut self.data.borrow_mut()).4[0] = value as u8;
+        self.slice(&mut self.data.borrow_mut()).5[0] = value as u8;
     }
 
     pub fn copy_to(&self, to: &Self) {
@@ -90,7 +102,6 @@ impl<'a> UserState<'a> {
 
 // Pull in syscall stubs when building for non-BPF targets
 #[cfg(not(target_arch = "bpf"))]
-
 #[cfg(test)]
 mod tests {
     use super::*;

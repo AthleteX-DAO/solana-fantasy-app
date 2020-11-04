@@ -7,7 +7,7 @@ import {
 
 import * as Layout from './util/layout';
 import { BufferLayout } from './util/layout';
-import { ACTIVE_PLAYERS_COUNT } from './state';
+import { ACTIVE_PLAYERS_COUNT, TEAM_NAME_MAX_SYMBOLS } from './state';
 import {
   Position,
   MAX_PLAYERS_PER_INSTRUCTION,
@@ -166,6 +166,7 @@ export class SfsInstruction {
     name: string,
     bid: number | Layout.u64,
     usersLimit: number,
+    teamName: string,
     owner: PublicKey
   ): TransactionInstruction {
     let keys = [
@@ -179,6 +180,7 @@ export class SfsInstruction {
       Layout.utf16FixedString(LEAGUE_NAME_MAX_SYMBOLS, 'name'),
       Layout.uint64('bid'),
       BufferLayout.u8('usersLimit'),
+      Layout.utf16FixedString(TEAM_NAME_MAX_SYMBOLS, 'teamName'),
     ]);
 
     let data = Buffer.alloc(commandDataLayout.span);
@@ -189,6 +191,7 @@ export class SfsInstruction {
           name,
           bid,
           usersLimit,
+          teamName,
         },
         data
       );
@@ -209,6 +212,7 @@ export class SfsInstruction {
     root: PublicKey,
     bank: PublicKey,
     leagueIndex: number,
+    teamName: string,
     owner: PublicKey
   ): TransactionInstruction {
     let keys = [
@@ -220,6 +224,7 @@ export class SfsInstruction {
     const commandDataLayout = BufferLayout.struct([
       BufferLayout.u8('instruction'),
       BufferLayout.u16('leagueIndex'),
+      Layout.utf16FixedString(TEAM_NAME_MAX_SYMBOLS, 'teamName'),
     ]);
 
     let data = Buffer.alloc(commandDataLayout.span);
@@ -228,6 +233,7 @@ export class SfsInstruction {
         {
           instruction: Command.JoinLeague,
           leagueIndex,
+          teamName,
         },
         data
       );

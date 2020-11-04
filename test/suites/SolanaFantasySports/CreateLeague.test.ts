@@ -13,7 +13,8 @@ export const CreateLeague = () =>
         global.payerAccount,
         'Test League',
         1 * 10 ** 9,
-        2
+        2,
+        'Test Team'
       );
 
       const balanceAfter = await global.connection.getBalance(bank);
@@ -42,5 +43,6 @@ export const CreateLeague = () =>
         global.payerAccount.publicKey.toString(),
         'should correctly set first player pubkey'
       );
+      strictEqual(userState.teamName, 'Test Team', 'should correctly set team name');
     });
   });
