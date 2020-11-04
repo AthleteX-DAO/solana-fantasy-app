@@ -87,29 +87,23 @@ connection;
         case 'RB':
           position = Position.RB;
           break;
-        case 'LB':
-          position = Position.LB;
-          break;
-        case 'DL':
-          position = Position.DL;
-          break;
-        case 'TE':
-          position = Position.TE;
-          break;
-        case 'DB':
-          position = Position.DB;
+        case 'WR':
+          position = Position.WR;
           break;
         case 'QB':
           position = Position.QB;
           break;
-        case 'WR':
-          position = Position.WR;
+        case 'TE':
+          position = Position.TE;
           break;
-        case 'OL':
-          position = Position.OL;
+        case 'K':
+          position = Position.K;
+          break;
+        case 'DEF':
+          position = Position.DEF;
           break;
         default:
-          continue;
+          throw new Error(`Position from API not recognized: ${p.Position}`);
       }
       choosenPlayers.push({
         externalId: p.PlayerID,

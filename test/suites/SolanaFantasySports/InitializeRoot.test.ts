@@ -15,7 +15,7 @@ export const InitializeRoot = () =>
       const players = Array.from({ length: PLAYERS_CAPACITY }).map(
         (_, i): Player => ({
           externalId: i,
-          position: Position.DB,
+          position: Position.RB,
         })
       );
 

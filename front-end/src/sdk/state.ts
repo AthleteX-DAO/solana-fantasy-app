@@ -24,13 +24,16 @@ export const PUB_KEY_LEN = 32;
 export enum Position {
   Uninitialized,
   RB,
-  LB,
-  DL,
-  TE,
-  DB,
-  QB,
+  //  WR
   WR,
-  OL,
+  //  Q
+  QB,
+  //  TE
+  TE,
+  // K
+  K,
+  //  DEF
+  DEF,
 }
 
 export enum Stage {

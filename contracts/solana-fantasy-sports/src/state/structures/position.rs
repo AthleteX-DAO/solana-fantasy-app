@@ -10,20 +10,17 @@ pub enum Position {
     Uninitialized,
     /// RB
     RB,
-    /// LB
-    LB,
-    /// DL
-    DL,
-    /// TE
-    TE,
-    /// DB
-    DB,
-    /// QB
+    //  WR
+    WR, 
+    //  Q
     QB,
-    /// WR
-    WR,
-    /// OL
-    OL,
+    //  TE
+    TE, 
+    // K
+    K,
+    //  DEF
+    DEF, 
+
 }
 impl Default for Position {
     fn default() -> Self {
