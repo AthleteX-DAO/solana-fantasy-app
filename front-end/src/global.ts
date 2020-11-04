@@ -2,6 +2,7 @@ import { Connection, PublicKey, Account } from '@solana/web3.js';
 import { ClojuredWallet } from './clojured-wallet';
 import { SFS } from './sdk/sfs';
 import { Buffer as Buffer_ } from 'buffer';
+import { Root } from './sdk/state';
 
 declare global {
   interface Window {
@@ -13,6 +14,7 @@ declare global {
     sfsRoot: PublicKey;
     connection: Connection;
     sfsSDK: () => Promise<SFS>;
+    getCachedRootInfo: (forceUpdate?: boolean) => Promise<Root>;
   }
 }
 

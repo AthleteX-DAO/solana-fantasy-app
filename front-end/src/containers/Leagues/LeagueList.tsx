@@ -1,21 +1,23 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
 import { Table } from 'react-bootstrap';
-import { useHistory } from 'react-router-dom';
+import { useHistory, RouteComponentProps } from 'react-router-dom';
 import { League } from '../../sdk/state';
+import { isUserAlreadyJoined } from '../../utils';
 import { Layout } from '../Layout';
 
-export const LeagueList: FunctionComponent<{}> = (props) => {
-  const history = useHistory();
-
+export const LeagueList: FunctionComponent<RouteComponentProps> = (props) => {
   const [leagues, setLeagues] = useState<League[] | null>();
-
   // @ts-ignore
   window.leagues = leagues;
 
   useEffect(() => {
     (async () => {
-      const sdk = await window.sfsSDK();
-      const root = await sdk.getRootInfo();
+      let forceUpdate = false;
+      if (window.URLSearchParams) {
+        const sp = new URLSearchParams(props.location.search);
+        forceUpdate = !!sp.get('forceRootUpdate');
+      }
+      const root = await window.getCachedRootInfo(forceUpdate || undefined);
       setLeagues(root.leagues.filter((league) => league.isInitialized));
     })().catch(console.log);
   }, []);
@@ -35,19 +37,7 @@ export const LeagueList: FunctionComponent<{}> = (props) => {
             </thead>
             <tbody>
               {leagues.map((league, i) => (
-                <tr>
-                  <td>{i}</td>
-                  <td>{league.name || 'No Name'}</td>
-                  <td>{league.bid.toNumber() / 10 ** 9} SOL</td>
-                  <td>
-                    {league.userStateLength}/{league.usersLimit}
-                  </td>
-                  <td>
-                    <button onClick={() => history.push(`/leagues/${0}`)} className="btn">
-                      Join
-                    </button>
-                  </td>
-                </tr>
+                <LeagueRow key={i} league={league} leagueIndex={i} />
               ))}
             </tbody>
           </Table>
@@ -58,5 +48,45 @@ export const LeagueList: FunctionComponent<{}> = (props) => {
         'Loading state from Solana...'
       )}
     </Layout>
+  );
+};
+
+export const LeagueRow: FunctionComponent<{ league: League; leagueIndex: number }> = (props) => {
+  const history = useHistory();
+
+  const [isAlreadyJoined, setIsAlreadyJoined] = useState<boolean>(false);
+
+  useEffect(() => {
+    (async () => {
+      if (window.wallet) {
+        setIsAlreadyJoined(await isUserAlreadyJoined(window.wallet.publicKey, props.leagueIndex));
+      }
+    })().catch(console.error);
+  }, []);
+
+  return (
+    <tr>
+      <td>{props.leagueIndex}</td>
+      <td>{props.league.name || 'No Name'}</td>
+      <td>{props.league.bid.toNumber() / 10 ** 9} SOL</td>
+      <td>
+        {props.league.userStateLength}/{props.league.usersLimit}
+      </td>
+      <td>
+        {isAlreadyJoined ? (
+          <button onClick={() => history.push(`/leagues/${props.leagueIndex}`)} className="btn">
+            View Joined League
+          </button>
+        ) : (
+          <button
+            disabled={props.league.userStateLength >= props.league.usersLimit}
+            onClick={() => history.push(`/leagues/${props.leagueIndex}`)}
+            className="btn"
+          >
+            {props.league.userStateLength >= props.league.usersLimit ? 'Already Full' : 'Join'}
+          </button>
+        )}
+      </td>
+    </tr>
   );
 };
