@@ -12,8 +12,8 @@ import { Buffer } from 'buffer';
 import { Root } from './sdk/state';
 
 window.Buffer = Buffer;
-window.sfsProgramId = new PublicKey('yX8ip4PTAZs261A7s5ZaZjzMYbPjEeRjWYArDA7sZjf');
-window.sfsRoot = new PublicKey('6P4JL1Hc9d1pKnWHeV99Bq3BZRSLudCKM9fi1cCnp3sj');
+window.sfsProgramId = new PublicKey('5opvMTTmNQGZUkWZWWStpsy1yt96XJX4LohpASgFALC4');
+window.sfsRoot = new PublicKey('GJcrSSte2H5BZdhSpZxgso1rSYtbYYef4VqxgNXb3JCQ');
 window.connection = new Connection('https://devnet.solana.com', 'recent');
 const bankPromise = PublicKey.findProgramAddress([Buffer.from([0])], window.sfsProgramId);
 window.sfsSDK = async () =>

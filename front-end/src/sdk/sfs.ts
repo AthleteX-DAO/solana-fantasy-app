@@ -115,7 +115,7 @@ export class SFS {
     }
 
     const pickOrder = Array.from({ length: LEAGUE_USERS_CAPACITY })
-      .map((_, i) => i)
+      .map((_, i) => i + 1)
       .sort(() => 0.5 - Math.random());
 
     transaction = new Transaction().add(
@@ -155,7 +155,8 @@ export class SFS {
     owner: Account,
     name: string,
     bid: number | u64,
-    usersLimit: number
+    usersLimit: number,
+    teamName: string
   ): Promise<number> {
     const transaction = new Transaction();
     transaction.add(
@@ -166,6 +167,7 @@ export class SFS {
         name,
         bid,
         usersLimit,
+        teamName,
         owner.publicKey
       )
     );
@@ -192,7 +194,7 @@ export class SFS {
    * @param owner User account that will own the new account
    * @return Public key of the new empty account
    */
-  async joinLeague(owner: Account, leagueIndex: number): Promise<void> {
+  async joinLeague(owner: Account, leagueIndex: number, teamName: string): Promise<void> {
     const transaction = new Transaction();
     transaction.add(
       SfsInstruction.createJoinLeagueInstruction(
@@ -200,6 +202,7 @@ export class SFS {
         this.publicKey,
         this.bank,
         leagueIndex,
+        teamName,
         owner.publicKey
       )
     );
@@ -229,6 +232,31 @@ export class SFS {
     );
 
     await sendAndConfirmTransaction('Pick player', this.connection, transaction, owner);
+  }
+  /**
+   * Update lineup.
+   */
+  async updateLineup(
+    owner: Account,
+    leagueIndex: number,
+    userId: number,
+    week: number,
+    activePlayers: number[]
+  ): Promise<void> {
+    const transaction = new Transaction();
+    transaction.add(
+      SfsInstruction.createUpdateLineupInstruction(
+        this.programId,
+        this.publicKey,
+        leagueIndex,
+        userId,
+        week,
+        activePlayers,
+        owner.publicKey
+      )
+    );
+
+    await sendAndConfirmTransaction('Update lineup', this.connection, transaction, owner);
   }
 
   /**

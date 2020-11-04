@@ -28,7 +28,7 @@ export function CreateLeague() {
     }
 
     const resp = await window.wallet.callback('Sign on Create League transaction?', (acc) => {
-      return sdk.createLeague(acc, leagueNameInput, bid * 10 ** 9, leagueSize);
+      return sdk.createLeague(acc, leagueNameInput, bid * 10 ** 9, leagueSize, teamNameInput);
     });
 
     console.log({ resp });

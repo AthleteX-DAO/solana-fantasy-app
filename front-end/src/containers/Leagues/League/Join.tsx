@@ -39,7 +39,7 @@ export const JoinLeague: FunctionComponent<RouteComponentProps<MatchParams>> = (
     const sdk = await window.sfsSDK();
 
     const resp = await window.wallet.callback('Sign on Create League transaction?', async (acc) => {
-      await sdk.joinLeague(acc, leagueIndex);
+      await sdk.joinLeague(acc, leagueIndex, teamNameInput);
     });
     console.log({ resp });
   };

@@ -7,6 +7,7 @@ import {
 
 import * as Layout from './util/layout';
 import { BufferLayout } from './util/layout';
+import { ACTIVE_PLAYERS_COUNT, TEAM_NAME_MAX_SYMBOLS } from './state';
 import {
   Position,
   MAX_PLAYERS_PER_INSTRUCTION,
@@ -165,6 +166,7 @@ export class SfsInstruction {
     name: string,
     bid: number | Layout.u64,
     usersLimit: number,
+    teamName: string,
     owner: PublicKey
   ): TransactionInstruction {
     let keys = [
@@ -178,6 +180,7 @@ export class SfsInstruction {
       Layout.utf16FixedString(LEAGUE_NAME_MAX_SYMBOLS, 'name'),
       Layout.uint64('bid'),
       BufferLayout.u8('usersLimit'),
+      Layout.utf16FixedString(TEAM_NAME_MAX_SYMBOLS, 'teamName'),
     ]);
 
     let data = Buffer.alloc(commandDataLayout.span);
@@ -188,6 +191,7 @@ export class SfsInstruction {
           name,
           bid,
           usersLimit,
+          teamName,
         },
         data
       );
@@ -208,6 +212,7 @@ export class SfsInstruction {
     root: PublicKey,
     bank: PublicKey,
     leagueIndex: number,
+    teamName: string,
     owner: PublicKey
   ): TransactionInstruction {
     let keys = [
@@ -219,6 +224,7 @@ export class SfsInstruction {
     const commandDataLayout = BufferLayout.struct([
       BufferLayout.u8('instruction'),
       BufferLayout.u16('leagueIndex'),
+      Layout.utf16FixedString(TEAM_NAME_MAX_SYMBOLS, 'teamName'),
     ]);
 
     let data = Buffer.alloc(commandDataLayout.span);
@@ -227,6 +233,7 @@ export class SfsInstruction {
         {
           instruction: Command.JoinLeague,
           leagueIndex,
+          teamName,
         },
         data
       );
@@ -343,6 +350,50 @@ export class SfsInstruction {
       const encodeLength = commandDataLayout.encode(
         {
           instruction: Command.IncrementWeek,
+        },
+        data
+      );
+    }
+
+    return new TransactionInstruction({
+      keys,
+      programId,
+      data,
+    });
+  }
+  /**
+   * Construct an UpdateLineup instruction
+   */
+  static createUpdateLineupInstruction(
+    programId: PublicKey,
+    root: PublicKey,
+    leagueIndex: number,
+    userId: number,
+    week: number,
+    activePlayers: number[],
+    owner: PublicKey
+  ): TransactionInstruction {
+    let keys = [
+      { pubkey: root, isSigner: false, isWritable: true },
+      { pubkey: owner, isSigner: true, isWritable: false },
+    ];
+    const commandDataLayout = BufferLayout.struct([
+      BufferLayout.u8('instruction'),
+      BufferLayout.seq(BufferLayout.u16(), ACTIVE_PLAYERS_COUNT, 'activePlayers'),
+      BufferLayout.u16('leagueIndex'),
+      BufferLayout.u8('userId'),
+      BufferLayout.u16('week'),
+    ]);
+
+    let data = Buffer.alloc(commandDataLayout.span);
+    {
+      const encodeLength = commandDataLayout.encode(
+        {
+          instruction: Command.UpdateLineup,
+          activePlayers,
+          leagueIndex,
+          userId,
+          week,
         },
         data
       );
