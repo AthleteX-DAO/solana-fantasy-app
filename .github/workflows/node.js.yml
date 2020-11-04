@@ -21,6 +21,13 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
+      - name: Install dependencies
+        run: |
+          cargo install rustfilt || true
+          sh -c "$(curl -sSfL https://release.solana.com/$SOLANA_VERSION/install)"
+          echo "PATH=/home/runner/.local/share/solana/install/active_release/bin:$PATH" >> $GITHUB_ENV
+          export PATH="/home/runner/.local/share/solana/install/active_release/bin:$PATH"
+          cargo build-bpf --version
       - run: yarn install
       - run: yarn test
         env:
