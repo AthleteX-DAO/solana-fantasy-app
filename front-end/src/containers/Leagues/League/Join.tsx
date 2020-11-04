@@ -1,9 +1,10 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
-import { Alert, Card, Form, InputGroup } from 'react-bootstrap';
+import { Alert, Card, Form, InputGroup, Table } from 'react-bootstrap';
 import { RouteComponentProps, useHistory } from 'react-router-dom';
 import { MatchParams } from './Forwarder';
 import { Layout } from '../../Layout';
 import { isUserAlreadyJoined } from '../../../utils';
+import { UserState } from '../../../sdk/state';
 
 export const JoinLeague: FunctionComponent<RouteComponentProps<MatchParams>> = (props) => {
   const leagueIndex = +props.match.params.index;
@@ -43,6 +44,17 @@ export const JoinLeague: FunctionComponent<RouteComponentProps<MatchParams>> = (
     });
     console.log({ resp });
   };
+
+  const [joinedTeams, setJoinedTeams] = useState<UserState[] | null>(null);
+  const [pendingJoins, setPendingJoins] = useState<number | null>(null);
+  useEffect(() => {
+    (async () => {
+      const root = await window.getCachedRootInfo();
+      const league = root.leagues[leagueIndex];
+      setJoinedTeams(league.userStates.filter((u) => u.isInitialized));
+      setPendingJoins(league.usersLimit - league.userStateLength);
+    })().catch(console.error);
+  }, []);
 
   return (
     <Layout removeTopMargin heading="Join League">
@@ -105,6 +117,34 @@ export const JoinLeague: FunctionComponent<RouteComponentProps<MatchParams>> = (
           </Card.Body>
         </Card>
       )}
+
+      {joinedTeams !== null ? (
+        <div className="mt-4">
+          <h3>Joined users</h3>
+          <Table responsive>
+            <thead>
+              <tr>
+                <th>User Public Key</th>
+                <th>Team Name</th>
+              </tr>
+            </thead>
+            <tbody>
+              {joinedTeams.map((team) => (
+                <tr>
+                  <td>{team.pubKey.toBase58()}</td>
+                  <td>{team.teamName}</td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+
+          {pendingJoins !== null && pendingJoins !== 0 ? (
+            <p>
+              More {pendingJoins} join{pendingJoins > 1 ? 's are' : ' is'} pending.
+            </p>
+          ) : null}
+        </div>
+      ) : null}
     </Layout>
   );
 };
