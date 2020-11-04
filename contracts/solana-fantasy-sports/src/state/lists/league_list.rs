@@ -62,7 +62,7 @@ impl<'a> LeagueList<'a> {
     pub fn copy_to(&self, to: &Self) {
         let mut dst = to.data.borrow_mut();
         let mut src = self.data.borrow_mut();
-        array_mut_ref![dst, self.offset, LeagueList::LEN].copy_from_slice(array_mut_ref![
+        array_mut_ref![dst, to.offset, LeagueList::LEN].copy_from_slice(array_mut_ref![
             src,
             self.offset,
             LeagueList::LEN

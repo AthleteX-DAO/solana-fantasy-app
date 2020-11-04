@@ -32,7 +32,7 @@ impl<'a> LineupList<'a> {
     pub fn copy_to(&self, to: &Self) {
         let mut dst = to.data.borrow_mut();
         let mut src = self.data.borrow_mut();
-        array_mut_ref![dst, self.offset, LineupList::LEN].copy_from_slice(array_mut_ref![
+        array_mut_ref![dst, to.offset, LineupList::LEN].copy_from_slice(array_mut_ref![
             src,
             self.offset,
             LineupList::LEN

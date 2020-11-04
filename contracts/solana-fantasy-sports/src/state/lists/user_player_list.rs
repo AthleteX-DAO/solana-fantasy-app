@@ -36,7 +36,7 @@ impl<'a> UserPlayerList<'a> {
     }
 
     pub fn index_of(&self, player_id: u16) -> Result<u8, ProgramError> {
-        for i in 0..UserPlayerList::LEN {
+        for i in 0..UserPlayerList::ITEM_COUNT {
             if self.get(i as u8) == player_id {
                 return Ok(i as u8);
             }
@@ -118,7 +118,7 @@ impl<'a> UserPlayerList<'a> {
     pub fn copy_to<'b>(&self, to: &UserPlayerList<'b>) {
         let mut dst = to.data.borrow_mut();
         let mut src = self.data.borrow_mut();
-        array_mut_ref![dst, self.offset, UserPlayerList::LEN].copy_from_slice(array_mut_ref![
+        array_mut_ref![dst, to.offset, UserPlayerList::LEN].copy_from_slice(array_mut_ref![
             src,
             self.offset,
             UserPlayerList::LEN

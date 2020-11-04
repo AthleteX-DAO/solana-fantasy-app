@@ -37,7 +37,7 @@ impl<'a> ActivePlayersList<'a> {
     }
 
     pub fn index_of(&self, player_id: u16) -> Result<u8, ProgramError> {
-        for i in 0..ActivePlayersList::LEN {
+        for i in 0..ActivePlayersList::ITEM_COUNT {
             if self.get(i as u8) == player_id {
                 return Ok(i as u8);
             }
