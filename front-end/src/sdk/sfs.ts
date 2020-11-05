@@ -258,6 +258,60 @@ export class SFS {
 
     await sendAndConfirmTransaction('Update lineup', this.connection, transaction, owner);
   }
+  /**
+   * Propose swap.
+   */
+  async proposeSwap(
+    owner: Account,
+    leagueIndex: number,
+    proposingUserId: number,
+    acceptingUserId: number,
+    givePlayerId: number,
+    wantPlayerId: number
+  ): Promise<void> {
+    const transaction = new Transaction();
+    transaction.add(
+      SfsInstruction.createProposeSwapInstruction(
+        this.programId,
+        this.publicKey,
+        leagueIndex,
+        proposingUserId,
+        acceptingUserId,
+        givePlayerId,
+        wantPlayerId,
+        owner.publicKey
+      )
+    );
+
+    await sendAndConfirmTransaction('Propose swap', this.connection, transaction, owner);
+  }
+  /**
+   * Accept swap.
+   */
+  async acceptSwap(
+    owner: Account,
+    leagueIndex: number,
+    acceptingUserId: number,
+    proposingUserId: number,
+    wantPlayerId: number,
+    givePlayerId: number
+  ): Promise<void> {
+    const transaction = new Transaction();
+    transaction.add(
+      SfsInstruction.createAcceptSwapInstruction(
+        this.programId,
+        this.publicKey,
+        leagueIndex,
+        acceptingUserId,
+        proposingUserId,
+        wantPlayerId,
+        givePlayerId,
+        owner.publicKey
+      )
+    );
+
+    await sendAndConfirmTransaction('Accept swap', this.connection, transaction, owner);
+  }
 
   /**
    * Retrieve root information

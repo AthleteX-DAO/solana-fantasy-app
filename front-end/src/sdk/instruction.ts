@@ -25,7 +25,7 @@ enum Command {
   JoinLeague,
   UpdateLineup,
   PickPlayer,
-  ProposeSwaps,
+  ProposeSwap,
   AcceptSwap,
   UpdatePlayerScore,
   IncrementWeek,
@@ -394,6 +394,100 @@ export class SfsInstruction {
           leagueIndex,
           userId,
           week,
+        },
+        data
+      );
+    }
+
+    return new TransactionInstruction({
+      keys,
+      programId,
+      data,
+    });
+  }
+  /**
+   * Construct an ProposeSwap instruction
+   */
+  static createProposeSwapInstruction(
+    programId: PublicKey,
+    root: PublicKey,
+    leagueIndex: number,
+    proposingUserId: number,
+    acceptingUserId: number,
+    givePlayerId: number,
+    wantPlayerId: number,
+    owner: PublicKey
+  ): TransactionInstruction {
+    let keys = [
+      { pubkey: root, isSigner: false, isWritable: true },
+      { pubkey: owner, isSigner: true, isWritable: false },
+    ];
+    const commandDataLayout = BufferLayout.struct([
+      BufferLayout.u8('instruction'),
+      BufferLayout.u16('leagueIndex'),
+      BufferLayout.u8('proposingUserId'),
+      BufferLayout.u8('acceptingUserId'),
+      BufferLayout.u16('givePlayerId'),
+      BufferLayout.u16('wantPlayerId'),
+    ]);
+
+    let data = Buffer.alloc(commandDataLayout.span);
+    {
+      const encodeLength = commandDataLayout.encode(
+        {
+          instruction: Command.ProposeSwap,
+          leagueIndex,
+          proposingUserId,
+          acceptingUserId,
+          givePlayerId,
+          wantPlayerId,
+        },
+        data
+      );
+    }
+
+    return new TransactionInstruction({
+      keys,
+      programId,
+      data,
+    });
+  }
+  /**
+   * Construct an AcceptSwap instruction
+   */
+  static createAcceptSwapInstruction(
+    programId: PublicKey,
+    root: PublicKey,
+    leagueIndex: number,
+    acceptingUserId: number,
+    proposingUserId: number,
+    wantPlayerId: number,
+    givePlayerId: number,
+    owner: PublicKey
+  ): TransactionInstruction {
+    let keys = [
+      { pubkey: root, isSigner: false, isWritable: true },
+      { pubkey: owner, isSigner: true, isWritable: false },
+    ];
+    const commandDataLayout = BufferLayout.struct([
+      BufferLayout.u8('instruction'),
+      BufferLayout.u16('leagueIndex'),
+      BufferLayout.u8('acceptingUserId'),
+      BufferLayout.u8('proposingUserId'),
+      BufferLayout.u16('givePlayerId'),
+      BufferLayout.u16('wantPlayerId'),
+    ]);
+
+    let data = Buffer.alloc(commandDataLayout.span);
+    {
+      const encodeLength = commandDataLayout.encode(
+        {
+          instruction: Command.AcceptSwap,
+          leagueIndex,
+          proposingUserId,
+          acceptingUserId,
+          givePlayerId,
+          wantPlayerId,
         },
         data
       );

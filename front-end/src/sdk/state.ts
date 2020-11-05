@@ -6,8 +6,8 @@ import * as Layout from './util/layout';
 export const MAX_PLAYERS_PER_INSTRUCTION = 255;
 export const PLAYERS_CAPACITY = 100;
 export const GAMES_COUNT = 17;
-export const ACTIVE_PLAYERS_COUNT = 3;
-export const BENCH_PLAYERS_COUNT = 3;
+export const ACTIVE_PLAYERS_COUNT = 8;
+export const BENCH_PLAYERS_COUNT = 8;
 export const TEAM_PLAYERS_COUNT = ACTIVE_PLAYERS_COUNT + BENCH_PLAYERS_COUNT;
 export const LEAGUES_CAPACITY = 10;
 export const LEAGUE_USERS_CAPACITY = Math.floor(PLAYERS_CAPACITY / TEAM_PLAYERS_COUNT);
@@ -57,7 +57,7 @@ export const SwapProposalLayout: typeof BufferLayout.Structure = BufferLayout.st
 export type UserState = {
   userPlayers: number[];
   lineups: number[][];
-  swapProposalsLength: number;
+  swapProposalsCount: number;
   swapProposals: SwapProposal[];
   teamName: string;
   pubKey: PublicKey;
