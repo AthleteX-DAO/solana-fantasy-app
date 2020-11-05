@@ -3,10 +3,14 @@ import { ok, strictEqual } from 'assert';
 import { resolve } from 'path';
 import { readFileSync } from 'fs';
 import { connection, sfsFn, wallet } from './commons';
-import { SFS } from '../../sdk/sfs';
-import { PLAYERS_CAPACITY, Position, Stage, LEAGUE_USERS_CAPACITY } from '../../sdk/state';
-import { Player } from '../../sdk/instruction';
-import { hasDuplicates } from '../../test/helpers';
+import { SFS } from '../../front-end/src/sdk/sfs';
+import {
+  PLAYERS_CAPACITY,
+  Position,
+  Stage,
+  LEAGUE_USERS_CAPACITY,
+} from '../../front-end/src/sdk/state';
+import { Player } from '../../front-end/src/sdk/instruction';
 import { getPlayerList } from '../src/players-list';
 
 connection;
@@ -124,7 +128,7 @@ connection;
     // const players = Array.from({ length: PLAYERS_CAPACITY }).map(
     //   (_, i): Player => ({
     //     externalId: i,
-    //     position: Position.DB,
+    //     position: Position.RB,
     //   })
     // );
 

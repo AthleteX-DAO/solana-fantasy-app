@@ -1,6 +1,6 @@
 import { Connection, Account, PublicKey } from '@solana/web3.js';
 import { arrayify } from '@ethersproject/bytes';
-import { SFS } from '../../sdk/sfs';
+import { SFS } from '../../front-end/src/sdk/sfs';
 
 export const connection = new Connection('https://devnet.solana.com', 'recent');
 // export const connection = new Connection('http://localhost:8899', 'recent');
@@ -17,8 +17,8 @@ console.log('Wallet loaded', wallet.publicKey.toBase58());
 // export const rootPublicKey = new PublicKey('3WSGdDabgaPZfG2ZrqCBNv1FoHV68bvv7T4sWCKwYTxm');
 
 // devnet program
-export const programId = new PublicKey('5opvMTTmNQGZUkWZWWStpsy1yt96XJX4LohpASgFALC4');
-export const rootPublicKey = new PublicKey('GJcrSSte2H5BZdhSpZxgso1rSYtbYYef4VqxgNXb3JCQ');
+export const programId = new PublicKey('CGbaNbYQMSVC3uGodgk9fEnU3FH3DqjdRWc1FW1i2hC5');
+export const rootPublicKey = new PublicKey('DXteceA873QEePuEnjwHE2hmBQ8kuWnfAwPm6Y7Gd2PU');
 const bankPromise = PublicKey.findProgramAddress([Buffer.from([0])], programId);
 export const sfsFn = async () =>
   new SFS(connection, rootPublicKey, programId, (await bankPromise)[0]);
