@@ -265,21 +265,37 @@ export const DraftSelection: FunctionComponent<RouteComponentProps<MatchParams>>
         </Row>
         <Row className="pt-3">
           <Col>
-            <Card>
-              <Card.Body>
-                <strong>Roster Limits</strong>
-                <br />
-                {Object.keys(MAX_SELECT_COUNT).map((key) => {
-                  const _key = (key as unknown) as 'QB' | 'RB' | 'WR' | 'TE' | 'K' | 'D/ST';
-                  return (
-                    <>
-                      {_key}: {selectCount[_key]}/{MAX_SELECT_COUNT[_key]}
-                      <br />
-                    </>
-                  );
-                })}
-              </Card.Body>
-            </Card>
+            <Row>
+              <Col xs={12} className="pb-3">
+                <Card className="mb-3">
+                  <Card.Body>
+                    {pickOrder !== null && league !== null && selfTeamIndex !== null
+                      ? selfTeamIndex + 1 === pickOrder.slice(league.currentPick)[0]
+                        ? "It's your turn!!"
+                        : `It's turn of Team #${pickOrder.slice(league.currentPick)[0]}`
+                      : 'Finding whose turn it is...'}
+                  </Card.Body>
+                </Card>
+              </Col>
+
+              <Col xs={12}>
+                <Card>
+                  <Card.Body>
+                    <strong>Roster Limits</strong>
+                    <br />
+                    {Object.keys(MAX_SELECT_COUNT).map((key) => {
+                      const _key = (key as unknown) as 'QB' | 'RB' | 'WR' | 'TE' | 'K' | 'D/ST';
+                      return (
+                        <>
+                          {_key}: {selectCount[_key]}/{MAX_SELECT_COUNT[_key]}
+                          <br />
+                        </>
+                      );
+                    })}
+                  </Card.Body>
+                </Card>
+              </Col>
+            </Row>
           </Col>
           <Col xs={9}>
             <Table responsive>
