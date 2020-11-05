@@ -3,6 +3,7 @@ import { PublicKey } from '@solana/web3.js';
 
 import * as Layout from './util/layout';
 
+export const MAX_PLAYERS_SCORES_PER_TRANSACTION = 50;
 export const MAX_PLAYERS_PER_INSTRUCTION = 255;
 export const PLAYERS_CAPACITY = 100;
 export const GAMES_COUNT = 17;
@@ -79,7 +80,7 @@ export const UserStateLayout: typeof BufferLayout.Structure = BufferLayout.struc
 ]);
 
 export type League = {
-  userStateLength: number;
+  userStateCount: number;
   userStates: UserState[];
   name: string;
   bid: u64;
@@ -91,7 +92,7 @@ export type League = {
 };
 
 export const LeagueLayout: typeof BufferLayout.Structure = BufferLayout.struct([
-  BufferLayout.u8('userStateLength'),
+  BufferLayout.u8('userStateCount'),
   BufferLayout.seq(UserStateLayout, LEAGUE_USERS_CAPACITY, 'userStates'),
   Layout.utf16FixedString(LEAGUE_NAME_MAX_SYMBOLS, 'name'),
   Layout.uint64('bid'),

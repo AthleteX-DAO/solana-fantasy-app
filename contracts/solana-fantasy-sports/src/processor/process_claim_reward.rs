@@ -56,7 +56,7 @@ pub fn process_claim_reward<'a>(
   for user_id in 1..user_states.get_count() + 1 {
     let lineups = user_states.get_by_id(user_id)?.get_lineups()?;
     let mut user_score = 0;
-    for week in league.get_start_week() + 1..GAMES_COUNT + 1 {
+    for week in league.get_start_week()..GAMES_COUNT + 1 {
       let lineup = lineups.get_by_week(week)?;
       for i in 0..ActivePlayersList::ITEM_COUNT {
         user_score += players

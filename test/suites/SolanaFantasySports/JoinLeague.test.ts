@@ -23,7 +23,7 @@ export const JoinLeague = () =>
       const root = await global.sfs.getRootInfo();
       const league = root.leagues[0];
 
-      strictEqual(league.userStateLength, 2, 'should be 2 player joined');
+      strictEqual(league.userStateCount, 2, 'should be 2 player joined');
       strictEqual(balanceAfter - balanceBefore, league.bid.toNumber(), 'should transfer funds');
 
       const userState = league.userStates[1];

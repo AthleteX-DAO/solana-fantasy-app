@@ -24,7 +24,7 @@ export const CreateLeague = () =>
       const root = await global.sfs.getRootInfo();
       const league = root.leagues[leagueIndex];
 
-      strictEqual(league.userStateLength, 1, 'should be 1 player joined');
+      strictEqual(league.userStateCount, 1, 'should be 1 player joined');
       strictEqual(league.isInitialized, true, 'league should be initialized');
       strictEqual(league.name, 'Test League', 'should correctly set name');
       strictEqual(league.usersLimit, 2, 'should correctly set users limit');

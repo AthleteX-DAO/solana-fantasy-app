@@ -50,10 +50,9 @@ export const ClaimReward = () =>
       root = await global.sfs.getRootInfo();
       league = root.leagues[0];
 
-      ok(
-        balancesAfter
-          .map((x, index) => x - balancesBefore[index])
-          .every((x) => x === league.bid.div(new BN(winners.length)).toNumber()),
+      deepStrictEqual(
+        balancesAfter,
+        balancesBefore.map((x) => x + league.bid.div(new BN(winners.length)).toNumber()),
         'should correctly increase winners balances'
       );
 

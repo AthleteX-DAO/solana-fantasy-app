@@ -93,7 +93,6 @@ pub fn process_pick_player<'a>(
     }
 
     user_state.get_user_players()?.set(round, player_id);
-    league.set_current_pick(league.get_current_pick() + 1);
 
     if round < ACTIVE_PLAYERS_COUNT {
         for i in 1..GAMES_COUNT + 1 {
@@ -104,8 +103,12 @@ pub fn process_pick_player<'a>(
         }
     }
 
+    league.set_current_pick(league.get_current_pick() + 1);
+
+    let round = league.get_pick_round()?;
+
     if round == TEAM_PLAYERS_COUNT {
-        league.set_start_week(root.get_current_week());
+        league.set_start_week(root.get_current_week() + 1);
     }
 
     Ok(())

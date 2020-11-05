@@ -11,6 +11,7 @@ import {
   GAMES_COUNT,
   League,
   ACTIVE_PLAYERS_COUNT,
+  MAX_PLAYERS_SCORES_PER_TRANSACTION,
 } from './state';
 import { SfsInstruction, Player as PlayerInit } from './instruction';
 import { u64 } from './util/layout';
@@ -339,12 +340,14 @@ export class SFS {
 
   static getUserScores(root: Root, leagueIndex: number) {
     let league = root.leagues[leagueIndex];
-    return league.userStates.slice(0, league.userStateLength).map((userState, i) => {
-      const score = userState.lineups.slice(league.startWeek + 1).reduce(
+    return league.userStates.slice(0, league.userStateCount).map((userState, i) => {
+      const score = userState.lineups.slice(league.startWeek - 1).reduce(
         (sum, lineup, lineupIndex) =>
           sum +
           lineup.reduce((sum2, playerId) => {
-            return sum2 + root.players[playerId - 1].scores[lineupIndex + 1].score1;
+            return (
+              sum2 + root.players[playerId - 1].scores[lineupIndex + league.startWeek - 1].score1
+            );
           }, 0),
         0
       );
@@ -359,27 +362,49 @@ export class SFS {
 
   static getWinners(root: Root, leagueIndex: number) {
     const scores = SFS.getUserScores(root, leagueIndex);
-    const maxScore = scores.reduce((max, x) => (x.score > max ? max : x.score), 0);
+    const maxScore = scores.reduce((max, x) => (x.score > max ? x.score : max), 0);
     return scores.filter((x) => x.score === maxScore);
   }
 
   /**
-   * Update player score
+   * Update player scores
    */
-  async updatePlayerScore(owner: Account, playerId: number, playerScore: number): Promise<void> {
-    const transaction = new Transaction();
-    transaction.add(
-      SfsInstruction.createUpdatePlayerScoreInstruction(
-        this.programId,
-        this.publicKey,
-        this.bank,
-        playerId,
-        playerScore,
-        owner.publicKey
-      )
-    );
-
-    await sendAndConfirmTransaction('Update Player Score', this.connection, transaction, owner);
+  async updatePlayerScores(
+    owner: Account,
+    scores: { playerId: number; playerScore: number }[]
+  ): Promise<void> {
+    for (let i = 0; i < scores.length / MAX_PLAYERS_SCORES_PER_TRANSACTION; i++) {
+      console.log(
+        `Uploading scores ${i * MAX_PLAYERS_SCORES_PER_TRANSACTION} of ${Math.min(
+          scores.length - 1,
+          (i + 1) * MAX_PLAYERS_SCORES_PER_TRANSACTION
+        )}`
+      );
+      const transaction = new Transaction();
+      scores
+        .slice(i * MAX_PLAYERS_SCORES_PER_TRANSACTION, (i + 1) * MAX_PLAYERS_SCORES_PER_TRANSACTION)
+        .forEach((x) => {
+          transaction.add(
+            SfsInstruction.createUpdatePlayerScoreInstruction(
+              this.programId,
+              this.publicKey,
+              this.bank,
+              x.playerId,
+              x.playerScore,
+              owner.publicKey
+            )
+          );
+        });
+      await sendAndConfirmTransaction(
+        `Uploading scores ${i * MAX_PLAYERS_SCORES_PER_TRANSACTION} of ${Math.min(
+          scores.length - 1,
+          (i + 1) * MAX_PLAYERS_SCORES_PER_TRANSACTION
+        )}`,
+        this.connection,
+        transaction,
+        owner
+      );
+    }
   }
 
   /**

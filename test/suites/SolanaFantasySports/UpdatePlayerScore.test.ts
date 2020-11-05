@@ -1,5 +1,5 @@
 import { PublicKey } from '@solana/web3.js';
-import { ok, strictEqual } from 'assert';
+import { deepStrictEqual, ok, strictEqual } from 'assert';
 import { u64 } from '../../../sdk/util/layout';
 
 export const UpdatePlayerScore = () =>
@@ -13,8 +13,6 @@ export const UpdatePlayerScore = () =>
 
       await global.sfs.incrementWeek(global.payerAccount);
 
-      await new Promise((res) => setTimeout(res, 1000));
-
       const balanceAfter = await global.connection.getBalance(bank);
       const rootAfter = await global.sfs.getRootInfo();
       strictEqual(rootAfter.currentWeek, 1, 'week should be 1 after increment');
@@ -22,22 +20,24 @@ export const UpdatePlayerScore = () =>
 
     it('updates score of a player', async () => {
       const bank = (global.sfs as any).bank as PublicKey;
+      const rootBefore = await global.sfs.getRootInfo();
 
       const balanceBefore = await global.connection.getBalance(bank);
 
-      const PLAYER_ID = 2;
-      const SCORE = 3;
+      const scores = rootBefore.players.map((player, index) => ({
+        playerId: index + 1,
+        playerScore: Math.round(Math.random() * 100),
+      }));
 
-      await global.sfs.updatePlayerScore(global.payerAccount, PLAYER_ID, SCORE);
-
-      await new Promise((res) => setTimeout(res, 1000));
+      await global.sfs.updatePlayerScores(global.payerAccount, scores);
 
       const balanceAfter = await global.connection.getBalance(bank);
 
       const root = await global.sfs.getRootInfo();
-      const scores = root.players.map((p) => p.scores);
-
-      const _storedScore = scores[PLAYER_ID - 1][root.currentWeek - 1].score1;
-      strictEqual(SCORE, _storedScore, 'score should be set');
+      const scoresAfter = root.players.map((p, index) => ({
+        playerId: index + 1,
+        playerScore: p.scores[root.currentWeek - 1].score1,
+      }));
+      deepStrictEqual(scores, scoresAfter, 'score should be set');
     });
   });
