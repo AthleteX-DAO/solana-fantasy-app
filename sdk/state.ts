@@ -57,7 +57,7 @@ export const SwapProposalLayout: typeof BufferLayout.Structure = BufferLayout.st
 export type UserState = {
   userPlayers: number[];
   lineups: number[][];
-  swapProposalsLength: number;
+  swapProposalsCount: number;
   swapProposals: SwapProposal[];
   teamName: string;
   pubKey: PublicKey;

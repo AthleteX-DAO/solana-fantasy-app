@@ -48,18 +48,18 @@ pub fn process_propose_swap<'a>(
         user_account_info,
     )?;
 
-    // validate a user can make a proposal
-
     let mut buffer = [0u8; UserPlayerList::LEN];
     let buffer_cell = RefCell::new(&mut buffer as &mut [u8]);
-    let proposing_user_player_list_copy = UserPlayerList::new(&buffer_cell, 0)?;
+    let user_player_list_copy = UserPlayerList::new(&buffer_cell, 0)?;
+
+    // validate a user can make a proposal
+
     proposing_user_state
         .get_user_players()?
-        .copy_to(&proposing_user_player_list_copy);
+        .copy_to(&user_player_list_copy);
 
-    proposing_user_player_list_copy
-        .replace_id(args.get_give_player_id(), args.get_want_player_id())?;
-    proposing_user_player_list_copy.validate_team_composition(&root.get_players()?)?;
+    user_player_list_copy.replace_id(args.get_give_player_id(), args.get_want_player_id())?;
+    user_player_list_copy.validate_team_composition(&root.get_players()?)?;
 
     // validate a user can accept proposal
 
@@ -67,16 +67,12 @@ pub fn process_propose_swap<'a>(
         .get_user_states()?
         .get_by_id(args.get_accepting_user_id())?;
 
-    let mut buffer = [0u8; UserPlayerList::LEN];
-    let buffer_cell = RefCell::new(&mut buffer as &mut [u8]);
-    let accepting_user_player_list_copy = UserPlayerList::new(&buffer_cell, 0)?;
     accepting_user_state
         .get_user_players()?
-        .copy_to(&proposing_user_player_list_copy);
+        .copy_to(&user_player_list_copy);
 
-    accepting_user_player_list_copy
-        .replace_id(args.get_give_player_id(), args.get_want_player_id())?;
-    accepting_user_player_list_copy.validate_team_composition(&root.get_players()?)?;
+    user_player_list_copy.replace_id(args.get_want_player_id(), args.get_give_player_id())?;
+    user_player_list_copy.validate_team_composition(&root.get_players()?)?;
 
     // inserting swap proposal in self user
     proposing_user_state

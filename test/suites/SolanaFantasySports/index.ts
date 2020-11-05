@@ -6,6 +6,7 @@ import { DraftSelection } from './DraftSelection.test';
 import { CreateLeague } from './CreateLeague.test';
 import { JoinLeague } from './JoinLeague.test';
 import { UpdatePlayerScore } from './UpdatePlayerScore.test';
+import { PlayerSwaps } from './PlayerSwaps.test';
 
 export const SolanaFantasySports = () =>
   describe('Solana Fantasy Sports', () => {
@@ -17,4 +18,5 @@ export const SolanaFantasySports = () =>
     DraftSelection();
     UpdatePlayerScore();
     UpdateLineup();
+    PlayerSwaps();
   });

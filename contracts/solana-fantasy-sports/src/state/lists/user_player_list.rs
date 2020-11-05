@@ -65,7 +65,7 @@ impl<'a> UserPlayerList<'a> {
         let mut te_count = 0; // max 3
         let mut k_count = 0; // max 3
         let mut d_count = 0; // max 3
-        for i in 1..UserPlayerList::LEN + 1 {
+        for i in 0..UserPlayerList::ITEM_COUNT {
             match player_list.get_by_id(self.get(i as u8))?.get_position()? {
                 Position::RB => {
                     rb_count += 1;

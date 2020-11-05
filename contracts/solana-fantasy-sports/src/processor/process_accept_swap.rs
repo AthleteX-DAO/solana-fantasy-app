@@ -95,5 +95,16 @@ pub fn process_accept_swap<'a>(
         .get_swap_proposals()?
         .remove(args.get_want_player_id(), args.get_give_player_id())?;
 
+    for i in root.get_current_week() + 1..GAMES_COUNT + 1 {
+        proposing_user_state
+            .get_lineups()?
+            .get_by_week(i)?
+            .replace_id(args.get_want_player_id(), args.get_give_player_id())?;
+        accepting_user_state
+            .get_lineups()?
+            .get_by_week(i)?
+            .replace_id(args.get_want_player_id(), args.get_give_player_id())?;
+    }
+
     Ok(())
 }
