@@ -56,7 +56,12 @@ export const DraftSelection: FunctionComponent<RouteComponentProps<MatchParams>>
   };
 
   useEffect(() => {
-    refreshRoot(false).catch(console.error);
+    const intervalId = setInterval(() => {
+      refreshRoot(false).catch(console.error);
+    }, 3000);
+    return () => {
+      clearInterval(intervalId);
+    };
   }, []);
 
   const [league, setLeague] = useState<League | null>(null);
