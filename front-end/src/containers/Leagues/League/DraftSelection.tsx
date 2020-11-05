@@ -213,12 +213,16 @@ export const DraftSelection: FunctionComponent<RouteComponentProps<MatchParams>>
                 <br />
                 <strong>Round</strong>
                 <br />
-                {teams !== null ? (
-                  <>
-                    {Math.floor((league?.currentPick ?? 0) / teams.length) + 1}/{TEAM_PLAYERS_COUNT}{' '}
-                  </>
+                {teams !== null && league !== null ? (
+                  league.currentPick / teams.length < TEAM_PLAYERS_COUNT ? (
+                    <>
+                      {Math.floor(league.currentPick / teams.length) + 1}/{TEAM_PLAYERS_COUNT}{' '}
+                    </>
+                  ) : (
+                    <>All {TEAM_PLAYERS_COUNT} rounds finished! You may proceed to lineups.</>
+                  )
                 ) : (
-                  'Loading...'
+                  <>Loading...</>
                 )}
                 <br />
                 <br />
@@ -265,14 +269,16 @@ export const DraftSelection: FunctionComponent<RouteComponentProps<MatchParams>>
                     {pickOrder !== null && league !== null && selfTeamIndex !== null
                       ? selfTeamIndex + 1 === pickOrder[league.currentPick]
                         ? "It's your turn!!"
-                        : `It's turn of Team ${
+                        : `It's turn of ${
                             pickOrder[league.currentPick] !== undefined &&
                             teams !== null &&
                             teams[pickOrder[league.currentPick]] !== undefined
-                              ? `${teams[pickOrder[league.currentPick] - 1].teamName} (#${
+                              ? `Team ${teams[pickOrder[league.currentPick] - 1].teamName} (#${
                                   pickOrder[league.currentPick]
                                 })`
-                              : `#${pickOrder[league.currentPick]}`
+                              : pickOrder[league.currentPick] !== undefined
+                              ? `Team #${pickOrder[league.currentPick]}`
+                              : 'nobody.'
                           }`
                       : 'Finding whose turn it is...'}
                   </Card.Body>
@@ -323,6 +329,15 @@ export const DraftSelection: FunctionComponent<RouteComponentProps<MatchParams>>
                         <span
                           className="cursor-pointer"
                           onClick={() => {
+                            if (
+                              league !== null &&
+                              teams !== null &&
+                              league.currentPick / teams.length >= TEAM_PLAYERS_COUNT
+                            ) {
+                              alert('Draft Selection is over. You may proceed to lineups.');
+                              return;
+                            }
+
                             if (players && !doesRosterLimitHold(players, player.position)) {
                               alert(
                                 `You are breaking the roster limit criteria! You already own ${
