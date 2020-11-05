@@ -35,8 +35,16 @@ pub fn process_increment_week<'a>(
   let account_info_iter = &mut accounts.iter();
   let root_info = next_account_info(account_info_iter)?;
   let root = Root::new(&root_info.data)?;
+  let user_account_info = next_account_info(account_info_iter)?;
+
+  helpers::validate_owner(program_id, &root.get_oracle_authority(), user_account_info)?;
 
   let current_week = root.get_current_week();
+
+  if current_week > GAMES_COUNT {
+    return Err(SfsError::InvalidState.into());
+  }
+
   root.set_current_week(current_week + 1);
 
   Ok(())

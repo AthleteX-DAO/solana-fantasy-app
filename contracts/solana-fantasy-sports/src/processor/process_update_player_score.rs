@@ -35,13 +35,20 @@ pub fn process_update_player_score<'a>(
   let account_info_iter = &mut accounts.iter();
   let root_info = next_account_info(account_info_iter)?;
   let root = Root::new(&root_info.data)?;
+  let user_account_info = next_account_info(account_info_iter)?;
 
-  // add a check that only owner can call
+  helpers::validate_owner(program_id, &root.get_oracle_authority(), user_account_info)?;
 
-  let score = root.get_players()?.get_by_id(args.get_player_id())?.get_scores()?.get(root.get_current_week() - 1)?;
-  if score.get_score1() != 0 {
-    return Err(SfsError::ScoreAlreadyUpdated.into());
+  let current_week = root.get_current_week();
+  if current_week == 0 || current_week > GAMES_COUNT {
+    return Err(SfsError::InvalidState.into());
   }
+
+  let score = root
+    .get_players()?
+    .get_by_id(args.get_player_id())?
+    .get_scores()?
+    .get_by_week(root.get_current_week())?;
 
   score.set_score1(args.get_player_score());
 

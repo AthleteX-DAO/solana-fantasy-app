@@ -1,5 +1,6 @@
 //! State transition types
 
+use crate::error::SfsError;
 use crate::state::*;
 use arrayref::{array_mut_ref, array_ref};
 use solana_program::{
@@ -19,8 +20,14 @@ impl<'a> ScoreList<'a> {
     pub const ITEM_COUNT: u8 = consts::GAMES_COUNT;
     pub const LEN: usize = ScoreList::ITEM_SIZE * ScoreList::ITEM_COUNT as usize;
 
-    pub fn get(&self, i: u8) -> Result<Score<'a>, ProgramError> {
-        Score::new(self.data, self.offset + i as usize * ScoreList::ITEM_SIZE)
+    pub fn get_by_week(&self, i: u8) -> Result<Score<'a>, ProgramError> {
+        if i == 0 || i > ScoreList::ITEM_COUNT {
+            return Err(SfsError::IndexOutOfRange.into());
+        }
+        Score::new(
+            self.data,
+            self.offset + (i as usize - 1) * ScoreList::ITEM_SIZE,
+        )
     }
 
     pub fn copy_to(&self, to: &Self) {
@@ -43,7 +50,6 @@ impl<'a> ScoreList<'a> {
 
 // Pull in syscall stubs when building for non-BPF targets
 #[cfg(not(target_arch = "bpf"))]
-
 #[cfg(test)]
 mod tests {
     use super::*;
