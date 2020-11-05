@@ -38,13 +38,6 @@ pub fn process_accept_swap<'a>(
 
     let user_account_info = next_account_info(account_info_iter)?;
 
-    // @TODO: before mutating check if the condition of players bench is satisfied after the swap
-
-    // Sudo code
-    // 1. Get the swap proposal
-    // 2. Check if the want player exists with self user
-    // 3. If it does then
-
     let league = root.get_leagues()?.get(args.get_league_index())?;
     let accepting_user_state = league
         .get_user_states()?
@@ -68,7 +61,7 @@ pub fn process_accept_swap<'a>(
         return Err(SfsError::AlreadyInUse.into());
     }
 
-    if accepting_user_state
+    if proposing_user_state
         .get_lineups()?
         .get_by_week(root.get_current_week())?
         .contains(args.get_give_player_id())
@@ -93,17 +86,20 @@ pub fn process_accept_swap<'a>(
 
     proposing_user_state
         .get_swap_proposals()?
-        .remove(args.get_want_player_id(), args.get_give_player_id())?;
+        .remove(args.get_give_player_id(), args.get_want_player_id())?;
 
     for i in root.get_current_week() + 1..GAMES_COUNT + 1 {
-        proposing_user_state
-            .get_lineups()?
-            .get_by_week(i)?
-            .replace_id(args.get_want_player_id(), args.get_give_player_id())?;
-        accepting_user_state
-            .get_lineups()?
-            .get_by_week(i)?
-            .replace_id(args.get_want_player_id(), args.get_give_player_id())?;
+        let lineup = proposing_user_state.get_lineups()?.get_by_week(i)?;
+
+        if lineup.contains(args.get_give_player_id()) {
+            lineup.replace_id(args.get_give_player_id(), args.get_want_player_id())?;
+        }
+
+        let lineup = accepting_user_state.get_lineups()?.get_by_week(i)?;
+
+        if lineup.contains(args.get_want_player_id()) {
+            lineup.replace_id(args.get_want_player_id(), args.get_give_player_id())?;
+        }
     }
 
     Ok(())

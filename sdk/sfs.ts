@@ -263,7 +263,7 @@ export class SFS {
    */
   async proposeSwap(
     owner: Account,
-    leagueId: number,
+    leagueIndex: number,
     proposingUserId: number,
     acceptingUserId: number,
     givePlayerId: number,
@@ -274,7 +274,7 @@ export class SFS {
       SfsInstruction.createProposeSwapInstruction(
         this.programId,
         this.publicKey,
-        leagueId,
+        leagueIndex,
         proposingUserId,
         acceptingUserId,
         givePlayerId,
@@ -284,6 +284,33 @@ export class SFS {
     );
 
     await sendAndConfirmTransaction('Propose swap', this.connection, transaction, owner);
+  }
+  /**
+   * Accept swap.
+   */
+  async acceptSwap(
+    owner: Account,
+    leagueIndex: number,
+    acceptingUserId: number,
+    proposingUserId: number,
+    wantPlayerId: number,
+    givePlayerId: number
+  ): Promise<void> {
+    const transaction = new Transaction();
+    transaction.add(
+      SfsInstruction.createAcceptSwapInstruction(
+        this.programId,
+        this.publicKey,
+        leagueIndex,
+        acceptingUserId,
+        proposingUserId,
+        wantPlayerId,
+        givePlayerId,
+        owner.publicKey
+      )
+    );
+
+    await sendAndConfirmTransaction('Accept swap', this.connection, transaction, owner);
   }
 
   /**

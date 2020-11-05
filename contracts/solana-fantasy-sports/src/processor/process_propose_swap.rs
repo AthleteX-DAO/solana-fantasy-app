@@ -54,6 +54,14 @@ pub fn process_propose_swap<'a>(
 
     // validate a user can make a proposal
 
+    if proposing_user_state
+        .get_lineups()?
+        .get_by_week(root.get_current_week())?
+        .contains(args.get_give_player_id())
+    {
+        return Err(SfsError::AlreadyInUse.into());
+    }
+
     proposing_user_state
         .get_user_players()?
         .copy_to(&user_player_list_copy);
