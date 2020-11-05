@@ -2,6 +2,7 @@ target
 node_modules
 bin
 build
+dist
 
 # build file of contract
 contracts/solana-fantasy-sports/solana_fantasy_sports.so
