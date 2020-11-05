@@ -17,7 +17,7 @@ interface Player_ {
   // avgDraftPosition: string;
   externalId: number;
   position: Position_;
-  choosenByTeam: number;
+  choosenByTeamIndex: number;
 }
 
 const MAX_SELECT_COUNT = {
@@ -49,11 +49,14 @@ export const DraftSelection: FunctionComponent<RouteComponentProps<MatchParams>>
   });
 
   const [root, setRoot] = useState<Root | null>(null);
+
+  const refreshRoot = async (forceUpdate?: boolean) => {
+    const _root = await window.getCachedRootInfo(forceUpdate);
+    setRoot(_root);
+  };
+
   useEffect(() => {
-    (async () => {
-      const _root = await window.getCachedRootInfo();
-      setRoot(_root);
-    })().catch(console.error);
+    refreshRoot(false).catch(console.error);
   }, []);
 
   const [league, setLeague] = useState<League | null>(null);
@@ -96,14 +99,14 @@ export const DraftSelection: FunctionComponent<RouteComponentProps<MatchParams>>
           throw new Error(`Position from API not recognized: ${p.position}`);
       }
 
-      const choosenByTeam = root.leagues[leagueIndex].userStates.findIndex((usr) => {
+      const choosenByTeamIndex = root.leagues[leagueIndex].userStates.findIndex((usr) => {
         return usr.userPlayers.includes(i + 1); // id and index (+ 1) thing
       });
 
       return {
         externalId: p.externalId,
         position,
-        choosenByTeam,
+        choosenByTeamIndex,
       };
     });
     setPlayers(_players);
@@ -125,8 +128,9 @@ export const DraftSelection: FunctionComponent<RouteComponentProps<MatchParams>>
     const index = root.leagues[leagueIndex].userStates.findIndex((usr) => {
       return !!window.wallet && window.wallet.publicKey === usr.pubKey.toBase58();
     });
+
     if (index !== -1) {
-      setSelfTeamIndex(selfTeamIndex);
+      setSelfTeamIndex(index);
     }
   }, [root]);
 
@@ -195,6 +199,22 @@ export const DraftSelection: FunctionComponent<RouteComponentProps<MatchParams>>
   //   ]);
   // }, []);
 
+  const [spinner, setSpinner] = useState<boolean>(false);
+  const pickPlayerTx = async (playerId: number) => {
+    if (!window.wallet) {
+      throw new Error('Wallet not loaded');
+    }
+    const sdk = await window.sfsSDK();
+
+    if (selfTeamIndex === null) {
+      throw new Error('selfTeamIndex is null');
+    }
+    const resp = await window.wallet.callback('Sign on Pick Player transaction?', async (acc) => {
+      await sdk.pickPlayer(acc, leagueIndex, selfTeamIndex + 1, playerId);
+    });
+    console.log({ resp });
+  };
+
   return (
     <Layout removeTopMargin heading="Draft Selection">
       <Container>
@@ -205,7 +225,7 @@ export const DraftSelection: FunctionComponent<RouteComponentProps<MatchParams>>
                 <br />
                 <strong>Round</strong>
                 <br />
-                {Math.floor((league?.currentPick ?? 0) / (league?.usersLimit ?? 1)) + 1}/
+                {Math.floor((league?.currentPick ?? 0) / TEAM_PLAYERS_COUNT) + 1}/
                 {TEAM_PLAYERS_COUNT}
                 <br />
                 <br />
@@ -225,7 +245,6 @@ export const DraftSelection: FunctionComponent<RouteComponentProps<MatchParams>>
                     {pickOrder !== null && league !== null
                       ? (() => {
                           const nextPicks = pickOrder.slice(league.currentPick);
-                          console.log({ nextPicks, pickOrder });
 
                           const n = nextPicks.findIndex((u) => u === index + 1);
                           switch (n) {
@@ -279,71 +298,52 @@ export const DraftSelection: FunctionComponent<RouteComponentProps<MatchParams>>
                     <tr
                       key={index}
                       style={{
-                        backgroundColor:
-                          player.choosenByTeam === selfTeamIndex ? '#0002' : undefined,
+                        backgroundColor: player.choosenByTeamIndex !== -1 ? '#0002' : undefined,
                       }}
                     >
                       <td>
                         <span
                           className="cursor-pointer"
                           onClick={() => {
-                            switch (player.choosenByTeam) {
-                              case -1:
-                                if (
-                                  selectCount[player.position] >= MAX_SELECT_COUNT[player.position]
-                                ) {
-                                  window.alert('Roster limit is being exceeded');
-                                  return;
-                                }
-                                setSelectCount((oldValue) => {
-                                  const newValue = { ...oldValue };
-                                  newValue[player.position] += 1;
-                                  return newValue;
-                                });
-                                setPlayers((oldValue) => {
-                                  if (oldValue !== null && selfTeamIndex !== null) {
-                                    const newValue = [...oldValue];
-                                    newValue[index] = { ...newValue[index] };
-                                    newValue[index].choosenByTeam = selfTeamIndex;
-                                    return newValue;
-                                  } else {
-                                    return oldValue;
-                                  }
-                                });
-                                break;
-                              case selfTeamIndex:
-                                setSelectCount((oldValue) => {
-                                  const newValue = { ...oldValue };
-                                  newValue[player.position] -= 1;
-                                  return newValue;
-                                });
-                                setPlayers((oldValue) => {
-                                  if (oldValue !== null && selfTeamIndex !== null) {
-                                    const newValue = [...oldValue];
-                                    newValue[index] = { ...newValue[index] };
-                                    newValue[index].choosenByTeam = -1;
-                                    return newValue;
-                                  } else {
-                                    return oldValue;
-                                  }
-                                });
-                                break;
-                              default:
-                                window.alert('The player is already selected');
-                                break;
+                            if (pickOrder !== null && league !== null && selfTeamIndex !== null) {
+                              const currentPickerTeamId = pickOrder.slice(league.currentPick)[0];
+                              if (selfTeamIndex + 1 !== currentPickerTeamId) {
+                                alert(
+                                  `Currently it's turn of Team #${currentPickerTeamId} while you are Team #${
+                                    selfTeamIndex + 1
+                                  }. So your transaction would fail.`
+                                );
+                              }
                             }
+                            setSpinner(true);
+                            pickPlayerTx(index + 1)
+                              .then(() => {
+                                setSpinner(false);
+                                setTimeout(() => {
+                                  refreshRoot(true).catch(console.error);
+                                  alert('Tx sent!');
+                                }, 1000);
+                              })
+                              .catch((err) => {
+                                alert('Error:' + err?.message ?? err);
+                                console.log(err);
+                                setSpinner(false);
+                              });
                           }}
                         >
-                          {(() => {
-                            switch (player.choosenByTeam) {
-                              case -1:
-                                return <>(+)</>;
-                              case selfTeamIndex:
-                                return <>(-)</>;
-                              default:
-                                return <>( )</>;
-                            }
-                          })()}
+                          {player.choosenByTeamIndex !== -1 ? (
+                            <>
+                              [Taken by{' '}
+                              {player.choosenByTeamIndex === selfTeamIndex ? (
+                                'You'
+                              ) : (
+                                <>#{player.choosenByTeamIndex + 1}</>
+                              )}
+                              ]
+                            </>
+                          ) : (
+                            <>[Select]</>
+                          )}
                         </span>
                       </td>
                       <td>{player.externalId}</td>
