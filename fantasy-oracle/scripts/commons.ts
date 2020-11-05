@@ -17,8 +17,8 @@ console.log('Wallet loaded', wallet.publicKey.toBase58());
 // export const rootPublicKey = new PublicKey('3WSGdDabgaPZfG2ZrqCBNv1FoHV68bvv7T4sWCKwYTxm');
 
 // devnet program
-export const programId = new PublicKey('CGbaNbYQMSVC3uGodgk9fEnU3FH3DqjdRWc1FW1i2hC5');
-export const rootPublicKey = new PublicKey('DXteceA873QEePuEnjwHE2hmBQ8kuWnfAwPm6Y7Gd2PU');
+export const programId = new PublicKey('FGW83vLemzkrtYvWgq5m1jcfHZEEa33UkRzAGkavmydg');
+export const rootPublicKey = new PublicKey('FkMYzn154qxDBgCsGAgxh2iA58tZtef57FMHXg1S8RB5');
 const bankPromise = PublicKey.findProgramAddress([Buffer.from([0])], programId);
 export const sfsFn = async () =>
   new SFS(connection, rootPublicKey, programId, (await bankPromise)[0]);
