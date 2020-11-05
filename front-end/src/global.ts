@@ -15,6 +15,14 @@ declare global {
     connection: Connection;
     sfsSDK: () => Promise<SFS>;
     getCachedRootInfo: (forceUpdate?: boolean) => Promise<Root>;
+    getCachedPlayers: () => Promise<
+      {
+        PlayerID: number; // 19801,
+        Name: string; // 'Josh Allen',
+        Position: string; // 'QB',
+        AverageDraftPosition: number; // 108.9,
+      }[]
+    >;
   }
 }
 

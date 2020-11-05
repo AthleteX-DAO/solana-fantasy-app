@@ -10,6 +10,7 @@ import { SFS } from './sdk/sfs';
 import { CreateClojuredWallet } from './clojured-wallet';
 import { Buffer } from 'buffer';
 import { Root } from './sdk/state';
+import axios, { AxiosResponse } from 'axios';
 
 window.Buffer = Buffer;
 window.sfsProgramId = new PublicKey('FGW83vLemzkrtYvWgq5m1jcfHZEEa33UkRzAGkavmydg');
@@ -48,6 +49,26 @@ if (process.env.NODE_ENV !== 'production') {
   );
 }
 window.getCachedRootInfo();
+
+interface PlayerResp {
+  PlayerID: number; // 19801,
+  Name: string; // 'Josh Allen',
+  Position: string; // 'QB',
+  AverageDraftPosition: number; // 108.9,
+}
+
+let playersResp: PlayerResp[] | null = null;
+window.getCachedPlayers = async () => {
+  if (playersResp) {
+    return playersResp;
+  }
+  const response: AxiosResponse<PlayerResp[]> = await axios.get(
+    'https://api.sportsdata.io/v3/nfl/stats/json/FantasyPlayers?key=014d8886bd8f40dfabc9f75bc0451a0d'
+  );
+  playersResp = response.data;
+  return playersResp;
+};
+// window.getCachedPlayers();
 
 ReactDOM.render(
   <React.StrictMode>

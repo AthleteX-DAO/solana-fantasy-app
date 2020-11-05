@@ -160,49 +160,20 @@ export const DraftSelection: FunctionComponent<RouteComponentProps<MatchParams>>
     })().catch(console.error);
   }, [root]);
 
-  // useEffect(() => {
-  //   setSelfTeamIndex(1);
-
-  //   setTeams([
-  //     { name: 'HellYeah', selectionStatus: 'Done' },
-  //     { name: 'BlueBull', selectionStatus: 'Current' },
-  //     { name: 'Mango', selectionStatus: 'Waiting' },
-  //     { name: 'MegaHard', selectionStatus: 'Waiting' },
-  //   ]);
-
-  //   setPlayers([
-  //     { name: 'Ron Weisly1a', avgDraftPosition: 'abc', position: 'QB', choosenByTeam: -1 },
-  //     { name: 'Ron Weisly1b', avgDraftPosition: 'abc', position: 'QB', choosenByTeam: -1 },
-  //     { name: 'Ron Weisly1c', avgDraftPosition: 'abc', position: 'QB', choosenByTeam: -1 },
-  //     { name: 'Ron Weisly1d', avgDraftPosition: 'abc', position: 'QB', choosenByTeam: -1 },
-  //     { name: 'Ron Weisly1e', avgDraftPosition: 'abc', position: 'QB', choosenByTeam: -1 },
-  //     { name: 'Emiway1a', avgDraftPosition: 'abc', position: 'RB', choosenByTeam: -1 },
-  //     { name: 'Emiway1b', avgDraftPosition: 'abc', position: 'RB', choosenByTeam: -1 },
-  //     { name: 'Emiway1c', avgDraftPosition: 'abc', position: 'RB', choosenByTeam: -1 },
-  //     { name: 'Emiway1d', avgDraftPosition: 'abc', position: 'RB', choosenByTeam: -1 },
-  //     { name: 'Emiway1e', avgDraftPosition: 'abc', position: 'RB', choosenByTeam: -1 },
-  //     { name: 'SomePlayer1a', avgDraftPosition: 'abc', position: 'WR', choosenByTeam: -1 },
-  //     { name: 'SomePlayer1b', avgDraftPosition: 'abc', position: 'WR', choosenByTeam: -1 },
-  //     { name: 'SomePlayer1c', avgDraftPosition: 'abc', position: 'WR', choosenByTeam: -1 },
-  //     { name: 'SomePlayer1d', avgDraftPosition: 'abc', position: 'WR', choosenByTeam: -1 },
-  //     { name: 'SomePlayer1e', avgDraftPosition: 'abc', position: 'WR', choosenByTeam: -1 },
-  //     { name: 'SomePlayer2a', avgDraftPosition: 'abc', position: 'TE', choosenByTeam: -1 },
-  //     { name: 'SomePlayer2b', avgDraftPosition: 'abc', position: 'TE', choosenByTeam: -1 },
-  //     { name: 'SomePlayer2c', avgDraftPosition: 'abc', position: 'TE', choosenByTeam: -1 },
-  //     { name: 'SomePlayer2d', avgDraftPosition: 'abc', position: 'TE', choosenByTeam: -1 },
-  //     { name: 'SomePlayer2e', avgDraftPosition: 'abc', position: 'TE', choosenByTeam: -1 },
-  //     { name: 'SomePlayer3a', avgDraftPosition: 'abc', position: 'K', choosenByTeam: -1 },
-  //     { name: 'SomePlayer3b', avgDraftPosition: 'abc', position: 'K', choosenByTeam: -1 },
-  //     { name: 'SomePlayer3c', avgDraftPosition: 'abc', position: 'K', choosenByTeam: -1 },
-  //     { name: 'SomePlayer3d', avgDraftPosition: 'abc', position: 'K', choosenByTeam: -1 },
-  //     { name: 'SomePlayer3e', avgDraftPosition: 'abc', position: 'K', choosenByTeam: -1 },
-  //     { name: 'SomePlayer4a', avgDraftPosition: 'abc', position: 'D/ST', choosenByTeam: -1 },
-  //     { name: 'SomePlayer4b', avgDraftPosition: 'abc', position: 'D/ST', choosenByTeam: -1 },
-  //     { name: 'SomePlayer4c', avgDraftPosition: 'abc', position: 'D/ST', choosenByTeam: -1 },
-  //     { name: 'SomePlayer4d', avgDraftPosition: 'abc', position: 'D/ST', choosenByTeam: -1 },
-  //     { name: 'SomePlayer4e', avgDraftPosition: 'abc', position: 'D/ST', choosenByTeam: -1 },
-  //   ]);
-  // }, []);
+  const [playersResp, setPlayersResp] = useState<
+    {
+      PlayerID: number;
+      Name: string;
+      Position: string;
+      AverageDraftPosition: number;
+    }[]
+  >();
+  useEffect(() => {
+    (async () => {
+      const _playersResp = await window.getCachedPlayers();
+      setPlayersResp(_playersResp);
+    })().catch(console.error);
+  }, []);
 
   const [spinner, setSpinner] = useState<boolean>(false);
   const pickPlayerTx = async (playerId: number) => {
@@ -387,8 +358,24 @@ export const DraftSelection: FunctionComponent<RouteComponentProps<MatchParams>>
                         </span>
                       </td>
                       <td>{player.externalId}</td>
-                      <td>-</td>
-                      <td>-</td>
+                      {(() => {
+                        const p = playersResp?.find((p) => p.PlayerID === player.externalId);
+                        if (p) {
+                          return (
+                            <>
+                              <td>{p.Name}</td>
+                              <td>{p.AverageDraftPosition}</td>
+                            </>
+                          );
+                        } else {
+                          return (
+                            <>
+                              <td>-</td>
+                              <td>-</td>
+                            </>
+                          );
+                        }
+                      })()}
                       <td>{player.position}</td>
                     </tr>
                   );
