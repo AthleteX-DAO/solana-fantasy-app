@@ -86,6 +86,7 @@ export type League = {
   usersLimit: number;
   currentPick: number;
   startWeek: number;
+  isRewardClaimed: boolean;
   isInitialized: boolean;
 };
 
@@ -97,6 +98,7 @@ export const LeagueLayout: typeof BufferLayout.Structure = BufferLayout.struct([
   BufferLayout.u8('usersLimit'),
   BufferLayout.u16('currentPick'),
   BufferLayout.u8('startWeek'),
+  Layout.boolean('isRewardClaimed'),
   Layout.boolean('isInitialized'),
 ]);
 

@@ -14,7 +14,7 @@ pub struct League<'a> {
     offset: usize,
 }
 impl<'a> League<'a> {
-    pub const LEN: usize = UserStateList::LEN + LEAGUE_NAME_LEN + 8 + 1 + 2 + 1 + 1;
+    pub const LEN: usize = UserStateList::LEN + LEAGUE_NAME_LEN + 8 + 1 + 2 + 1 + 1 + 1;
     fn slice<'b>(
         &self,
         data: &'b mut [u8],
@@ -26,6 +26,7 @@ impl<'a> League<'a> {
         &'b mut [u8; 2],
         &'b mut [u8; 1],
         &'b mut [u8; 1],
+        &'b mut [u8; 1],
     ) {
         mut_array_refs![
             array_mut_ref![data, self.offset, League::LEN],
@@ -34,6 +35,7 @@ impl<'a> League<'a> {
             8,
             1,
             2,
+            1,
             1,
             1
         ]
@@ -80,11 +82,18 @@ impl<'a> League<'a> {
         self.slice(&mut self.data.borrow_mut()).5[0] = value;
     }
 
+    pub fn get_is_reward_claimed(&self) -> Result<bool, ProgramError> {
+        unpack_bool(self.slice(&mut self.data.borrow_mut()).6)
+    }
+    pub fn set_is_reward_claimed(&self, value: bool) {
+        self.slice(&mut self.data.borrow_mut()).6[0] = value as u8;
+    }
+
     pub fn get_is_initialized(&self) -> Result<bool, ProgramError> {
-        unpack_is_initialized(self.slice(&mut self.data.borrow_mut()).6)
+        unpack_bool(self.slice(&mut self.data.borrow_mut()).7)
     }
     pub fn set_is_initialized(&self, value: bool) {
-        self.slice(&mut self.data.borrow_mut()).6[0] = value as u8;
+        self.slice(&mut self.data.borrow_mut()).7[0] = value as u8;
     }
 
     pub fn get_pick_round(&self) -> Result<u8, ProgramError> {

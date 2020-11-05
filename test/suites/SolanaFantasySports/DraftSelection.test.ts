@@ -41,7 +41,7 @@ export const DraftSelection = () =>
     });
 
     const getOwnerAccount = (userId: number) =>
-      userId === 1 ? global.payerAccount : global.secondAccount;
+      userId === 1 ? global.firstAccount : global.secondAccount;
 
     for (let i = 0; i < TEAM_PLAYERS_COUNT * usersCount; i++) {
       if (i === 0) {

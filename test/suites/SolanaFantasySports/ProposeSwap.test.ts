@@ -32,7 +32,7 @@ export const ProposeSwap = () =>
       const wantPlayerId = league.userStates[1].userPlayers[0];
 
       await throwsAsync(
-        () => global.sfs.proposeSwap(global.payerAccount, 0, 1, 2, givePlayerId, wantPlayerId),
+        () => global.sfs.proposeSwap(global.firstAccount, 0, 1, 2, givePlayerId, wantPlayerId),
         'should not allow make proposal with active player'
       );
     });
@@ -44,7 +44,7 @@ export const ProposeSwap = () =>
       const wantPlayerId = league.userStates[1].userPlayers[0];
 
       await throwsAsync(
-        () => global.sfs.proposeSwap(global.payerAccount, 0, 1, 2, givePlayerId, wantPlayerId),
+        () => global.sfs.proposeSwap(global.firstAccount, 0, 1, 2, givePlayerId, wantPlayerId),
         'should not allow make proposal with players not owned'
       );
     });
@@ -61,7 +61,7 @@ export const ProposeSwap = () =>
           (x) => !league.userStates[1].lineups[root.currentWeek - 1].includes(x)
         ) || 0;
 
-      await global.sfs.proposeSwap(global.payerAccount, 0, 1, 2, givePlayerId, wantPlayerId);
+      await global.sfs.proposeSwap(global.firstAccount, 0, 1, 2, givePlayerId, wantPlayerId);
 
       root = await global.sfs.getRootInfo();
       league = root.leagues[0];
@@ -74,7 +74,7 @@ export const ProposeSwap = () =>
       );
 
       await throwsAsync(
-        () => global.sfs.proposeSwap(global.payerAccount, 0, 1, 2, givePlayerId, wantPlayerId),
+        () => global.sfs.proposeSwap(global.firstAccount, 0, 1, 2, givePlayerId, wantPlayerId),
         'should not allow make same proposal twice'
       );
     });

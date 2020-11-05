@@ -6,6 +6,7 @@ declare global {
     interface Global {
       connection: Connection;
       payerAccount: Account;
+      firstAccount: Account;
       secondAccount: Account;
       helloWorldPPK: PublicKey; // PPK => Program Public Key
       solanaFantasySportsPPK: PublicKey;

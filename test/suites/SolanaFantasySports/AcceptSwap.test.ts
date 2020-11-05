@@ -14,7 +14,7 @@ export const AcceptSwap = () =>
       const wantPlayerId = league.userStates[0].swapProposals[0].wantPlayerId;
 
       await throwsAsync(
-        () => global.sfs.acceptSwap(global.payerAccount, 0, 2, 1, wantPlayerId, givePlayerId),
+        () => global.sfs.acceptSwap(global.firstAccount, 0, 2, 1, wantPlayerId, givePlayerId),
         'should not allow accept proposal from another user'
       );
     });
@@ -67,7 +67,7 @@ export const AcceptSwap = () =>
       );
 
       await throwsAsync(
-        () => global.sfs.acceptSwap(global.payerAccount, 0, 2, 1, wantPlayerId, givePlayerId),
+        () => global.sfs.acceptSwap(global.firstAccount, 0, 2, 1, wantPlayerId, givePlayerId),
         'should not allow accept same proposal twice'
       );
     });

@@ -7,7 +7,7 @@ export const JoinLeague = () =>
   describe('Join league', () => {
     it('throws on creator join attempt', async () => {
       await throwsAsync(
-        () => global.sfs.joinLeague(global.payerAccount, 0, 'Test Team'),
+        () => global.sfs.joinLeague(global.firstAccount, 0, 'Test Team'),
         'should not allow double join'
       );
     });

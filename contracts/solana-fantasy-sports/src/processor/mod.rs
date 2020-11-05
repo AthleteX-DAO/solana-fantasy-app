@@ -22,6 +22,8 @@ pub mod process_update_player_score;
 pub use process_update_player_score::*;
 pub mod process_increment_week;
 pub use process_increment_week::*;
+pub mod process_claim_reward;
+pub use process_claim_reward::*;
 pub mod process;
 pub use process::*;
 pub mod helpers;

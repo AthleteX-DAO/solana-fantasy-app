@@ -40,7 +40,7 @@ impl<'a> SwapProposal<'a> {
     }
 
     pub fn get_is_initialized(&self) -> Result<bool, ProgramError> {
-        unpack_is_initialized(self.slice(&mut self.data.borrow_mut()).2)
+        unpack_bool(self.slice(&mut self.data.borrow_mut()).2)
     }
     pub fn set_is_initialized(&self, value: bool) {
         self.slice(&mut self.data.borrow_mut()).2[0] = value as u8;

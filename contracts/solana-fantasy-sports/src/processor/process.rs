@@ -86,6 +86,10 @@ pub fn process<'a>(
             info!("Instruction: IncrementWeek");
             processor::process_increment_week(program_id, accounts)
         }
+        SfsInstruction::ClaimReward { args } => {
+            info!("Instruction: ClaimReward");
+            processor::process_claim_reward(program_id, accounts, args)
+        }
 
         _ => return Err(SfsError::InvalidInstruction.into()),
     }

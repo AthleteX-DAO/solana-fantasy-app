@@ -30,7 +30,7 @@ export const UpdateLineup = () =>
         .slice(0, ACTIVE_PLAYERS_COUNT);
 
       await throwsAsync(
-        () => global.sfs.updateLineup(global.payerAccount, 0, 2, 3, newLineup),
+        () => global.sfs.updateLineup(global.firstAccount, 0, 2, 3, newLineup),
         'should not allow use players not owned'
       );
     });
@@ -43,7 +43,7 @@ export const UpdateLineup = () =>
         .slice(0, ACTIVE_PLAYERS_COUNT);
 
       await throwsAsync(
-        () => global.sfs.updateLineup(global.payerAccount, 0, 1, 1, newLineup),
+        () => global.sfs.updateLineup(global.firstAccount, 0, 1, 1, newLineup),
         'should not allow update past week lineup'
       );
     });
@@ -58,7 +58,7 @@ export const UpdateLineup = () =>
       newLineup[0] = newLineup[1];
 
       await throwsAsync(
-        () => global.sfs.updateLineup(global.payerAccount, 0, 1, 1, newLineup),
+        () => global.sfs.updateLineup(global.firstAccount, 0, 1, 1, newLineup),
         'should not allow dublicate player ids'
       );
     });

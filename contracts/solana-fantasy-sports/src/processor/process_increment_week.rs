@@ -27,7 +27,7 @@ use solana_program::{
 use std::cell::RefCell;
 use std::convert::TryInto;
 
-/// Processes an [StartSeason](enum.SfsInstruction.html) instruction.
+/// Processes an [IncrementWeek](enum.SfsInstruction.html) instruction.
 pub fn process_increment_week<'a>(
   program_id: &Pubkey,
   accounts: &'a [AccountInfo<'a>],

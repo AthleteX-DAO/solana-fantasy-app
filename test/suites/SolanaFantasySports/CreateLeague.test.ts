@@ -10,7 +10,7 @@ export const CreateLeague = () =>
       const balanceBefore = await global.connection.getBalance(bank);
 
       const leagueIndex = await global.sfs.createLeague(
-        global.payerAccount,
+        global.firstAccount,
         'Test League',
         1 * 10 ** 9,
         2,
@@ -40,7 +40,7 @@ export const CreateLeague = () =>
       strictEqual(userState.isInitialized, true, 'userState should be initialized');
       strictEqual(
         userState.pubKey.toBase58(),
-        global.payerAccount.publicKey.toString(),
+        global.firstAccount.publicKey.toString(),
         'should correctly set first player pubkey'
       );
       strictEqual(userState.teamName, 'Test Team', 'should correctly set team name');

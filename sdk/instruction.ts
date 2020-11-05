@@ -29,6 +29,7 @@ enum Command {
   AcceptSwap,
   UpdatePlayerScore,
   IncrementWeek,
+  ClaimReward,
 }
 
 export type Player = {
@@ -217,7 +218,7 @@ export class SfsInstruction {
   ): TransactionInstruction {
     let keys = [
       { pubkey: root, isSigner: false, isWritable: true },
-      { pubkey: owner, isSigner: true, isWritable: false },
+      { pubkey: owner, isSigner: true, isWritable: true },
       { pubkey: bank, isSigner: false, isWritable: true },
       { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
     ];
@@ -488,6 +489,44 @@ export class SfsInstruction {
           acceptingUserId,
           givePlayerId,
           wantPlayerId,
+        },
+        data
+      );
+    }
+
+    return new TransactionInstruction({
+      keys,
+      programId,
+      data,
+    });
+  }
+  /**
+   * Construct an ClaimReward instruction
+   */
+  static createClaimRewardInstruction(
+    programId: PublicKey,
+    root: PublicKey,
+    bank: PublicKey,
+    leagueIndex: number,
+    winners: PublicKey[]
+  ): TransactionInstruction {
+    let keys = [
+      { pubkey: root, isSigner: false, isWritable: true },
+      { pubkey: bank, isSigner: false, isWritable: true },
+      { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
+      ...winners.map((x) => ({ pubkey: x, isSigner: false, isWritable: true })),
+    ];
+    const commandDataLayout = BufferLayout.struct([
+      BufferLayout.u8('instruction'),
+      BufferLayout.u16('leagueIndex'),
+    ]);
+
+    let data = Buffer.alloc(commandDataLayout.span);
+    {
+      const encodeLength = commandDataLayout.encode(
+        {
+          instruction: Command.ClaimReward,
+          leagueIndex,
         },
         data
       );

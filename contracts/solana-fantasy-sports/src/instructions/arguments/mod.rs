@@ -18,3 +18,5 @@ pub mod join_league_args;
 pub use join_league_args::*;
 pub mod update_player_score_args;
 pub use update_player_score_args::*;
+pub mod claim_reward_args;
+pub use claim_reward_args::*;

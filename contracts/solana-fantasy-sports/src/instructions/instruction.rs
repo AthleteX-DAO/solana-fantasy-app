@@ -86,6 +86,9 @@ pub enum SfsInstruction<'a> {
         args: UpdatePlayerScoreArgs<'a>,
     },
     IncrementWeek,
+    ClaimReward {
+        args: ClaimRewardArgs<'a>,
+    },
 }
 impl<'a> SfsInstruction<'a> {
     pub fn unpack(input: &'a RefCell<&'a [u8]>) -> Result<Self, ProgramError> {
@@ -129,6 +132,9 @@ impl<'a> SfsInstruction<'a> {
                 args: UpdatePlayerScoreArgs::new(input, 1)?,
             },
             12 => Self::IncrementWeek,
+            13 => Self::ClaimReward {
+                args: ClaimRewardArgs::new(input, 1)?,
+            },
 
             _ => return Err(SfsError::InvalidInstruction.into()),
         })
@@ -196,6 +202,11 @@ impl<'a> SfsInstruction<'a> {
             }
             Self::IncrementWeek => {
                 buf.push(12);
+            }
+            Self::ClaimReward { args } => {
+                buf.push(13);
+                buf.extend_from_slice(&[0u8; ClaimRewardArgs::LEN]);
+                args.copy_to(array_mut_ref![buf, 1, ClaimRewardArgs::LEN]);
             }
         };
         buf

@@ -43,7 +43,7 @@ pub fn unpack_coption_u64(src: &[u8; 12]) -> Result<COption<u64>, ProgramError> 
         _ => Err(ProgramError::InvalidAccountData),
     }
 }
-pub fn unpack_is_initialized(src: &[u8; 1]) -> Result<bool, ProgramError> {
+pub fn unpack_bool(src: &[u8; 1]) -> Result<bool, ProgramError> {
     let is_initialized = match src {
         [0] => false,
         [1] => true,
