@@ -230,8 +230,13 @@ export const DraftSelection: FunctionComponent<RouteComponentProps<MatchParams>>
                 <br />
                 <strong>Round</strong>
                 <br />
-                {Math.floor((league?.currentPick ?? 0) / TEAM_PLAYERS_COUNT) + 1}/
-                {TEAM_PLAYERS_COUNT}
+                {teams !== null ? (
+                  <>
+                    {Math.floor((league?.currentPick ?? 0) / teams.length) + 1}/{TEAM_PLAYERS_COUNT}{' '}
+                  </>
+                ) : (
+                  'Loading...'
+                )}
                 <br />
                 <br />
               </Card.Body>
