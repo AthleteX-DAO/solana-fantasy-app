@@ -280,9 +280,17 @@ export const DraftSelection: FunctionComponent<RouteComponentProps<MatchParams>>
                 <Card className="mb-3">
                   <Card.Body>
                     {pickOrder !== null && league !== null && selfTeamIndex !== null
-                      ? selfTeamIndex + 1 === pickOrder.slice(league.currentPick)[0]
+                      ? selfTeamIndex + 1 === pickOrder[league.currentPick]
                         ? "It's your turn!!"
-                        : `It's turn of Team #${pickOrder.slice(league.currentPick)[0]}`
+                        : `It's turn of Team ${
+                            pickOrder[league.currentPick] !== undefined &&
+                            teams !== null &&
+                            teams[pickOrder[league.currentPick]] !== undefined
+                              ? `${teams[pickOrder[league.currentPick] - 1].teamName} (#${
+                                  pickOrder[league.currentPick]
+                                })`
+                              : `#${pickOrder[league.currentPick]}`
+                          }`
                       : 'Finding whose turn it is...'}
                   </Card.Body>
                 </Card>
@@ -332,7 +340,7 @@ export const DraftSelection: FunctionComponent<RouteComponentProps<MatchParams>>
                           className="cursor-pointer"
                           onClick={() => {
                             if (pickOrder !== null && league !== null && selfTeamIndex !== null) {
-                              const currentPickerTeamId = pickOrder.slice(league.currentPick)[0];
+                              const currentPickerTeamId = pickOrder[league.currentPick];
                               if (selfTeamIndex + 1 !== currentPickerTeamId) {
                                 alert(
                                   `Currently it's turn of Team #${currentPickerTeamId} while you are Team #${
@@ -363,7 +371,13 @@ export const DraftSelection: FunctionComponent<RouteComponentProps<MatchParams>>
                               {player.choosenByTeamIndex === selfTeamIndex ? (
                                 'You'
                               ) : (
-                                <>#{player.choosenByTeamIndex + 1}</>
+                                <>
+                                  {teams !== null
+                                    ? `${teams[player.choosenByTeamIndex].teamName} (#${
+                                        player.choosenByTeamIndex + 1
+                                      })`
+                                    : `#${player.choosenByTeamIndex + 1}`}
+                                </>
                               )}
                               ]
                             </>
