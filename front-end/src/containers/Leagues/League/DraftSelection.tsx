@@ -374,8 +374,10 @@ export const DraftSelection: FunctionComponent<RouteComponentProps<MatchParams>>
                               )}
                               ]
                             </>
-                          ) : (
+                          ) : players && doesRosterLimitHold(players, player.position) ? (
                             <>[Select]</>
+                          ) : (
+                            <>[Roster Full]</>
                           )}
                         </span>
                       </td>
