@@ -32,22 +32,6 @@ const MAX_SELECT_COUNT = {
 export const DraftSelection: FunctionComponent<RouteComponentProps<MatchParams>> = (props) => {
   const leagueIndex = +props.match.params.index;
 
-  const [selectCount, setSelectCount] = useState<{
-    QB: number;
-    RB: number;
-    WR: number;
-    TE: number;
-    K: number;
-    'D/ST': number;
-  }>({
-    QB: 0,
-    RB: 0,
-    WR: 0,
-    TE: 0,
-    K: 0,
-    'D/ST': 0,
-  });
-
   const [root, setRoot] = useState<Root | null>(null);
 
   const refreshRoot = async (forceUpdate?: boolean) => {
@@ -138,6 +122,34 @@ export const DraftSelection: FunctionComponent<RouteComponentProps<MatchParams>>
       setSelfTeamIndex(index);
     }
   }, [root]);
+
+  const getSelectCount = (_players: Player_[]) => {
+    const choosenP = _players.filter((p) => p.choosenByTeamIndex === selfTeamIndex);
+    const selectCount = {
+      QB: 0,
+      RB: 0,
+      WR: 0,
+      TE: 0,
+      K: 0,
+      'D/ST': 0,
+    };
+    for (const p of choosenP) {
+      selectCount[p.position] += 1;
+    }
+    return selectCount;
+  };
+
+  const doesRosterLimitHold = (_players: Player_[], newPlayerPosition: Position_) => {
+    const selectCount = getSelectCount(_players);
+    selectCount[newPlayerPosition] += 1;
+    for (const position of ['QB', 'RB', 'WR', 'TE', 'K', 'D/ST']) {
+      // @ts-ignore
+      if (selectCount[position] > MAX_SELECT_COUNT[position]) {
+        return false;
+      }
+    }
+    return true;
+  };
 
   const [pickOrder, setPickOrder] = useState<number[] | null>(null);
   useEffect(() => {
@@ -276,7 +288,8 @@ export const DraftSelection: FunctionComponent<RouteComponentProps<MatchParams>>
                       const _key = (key as unknown) as 'QB' | 'RB' | 'WR' | 'TE' | 'K' | 'D/ST';
                       return (
                         <>
-                          {_key}: {selectCount[_key]}/{MAX_SELECT_COUNT[_key]}
+                          {_key}: {players ? getSelectCount(players)[_key] : 'Loading..'}/
+                          {MAX_SELECT_COUNT[_key]}
                           <br />
                         </>
                       );
@@ -310,6 +323,15 @@ export const DraftSelection: FunctionComponent<RouteComponentProps<MatchParams>>
                         <span
                           className="cursor-pointer"
                           onClick={() => {
+                            if (players && !doesRosterLimitHold(players, player.position)) {
+                              alert(
+                                `You are breaking the roster limit criteria! You already own ${
+                                  getSelectCount(players)[player.position]
+                                } ${player.position}s, and it is the max limit.`
+                              );
+                              return;
+                            }
+
                             if (pickOrder !== null && league !== null && selfTeamIndex !== null) {
                               const currentPickerTeamId = pickOrder[league.currentPick];
                               if (selfTeamIndex + 1 !== currentPickerTeamId) {
