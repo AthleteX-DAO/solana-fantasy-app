@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
-import { Container, Row, Col, Card, Form, Table, CardDeck } from 'react-bootstrap';
+import { Container, Row, Col, Card, Form, Table, CardDeck, Alert } from 'react-bootstrap';
 import { RouteComponentProps } from 'react-router-dom';
 import { League, Player, Position, Root, UserState } from '../../../sdk/state';
 import { publicKey } from '../../../sdk/util/layout';
@@ -259,28 +259,35 @@ export const Lineups: FunctionComponent<RouteComponentProps<MatchParams>> = (pro
                   ))}
 
                   {newLineup.length === 8 ? (
-                    <button
-                      className="btn mt-4"
-                      disabled={!isLineupChanged}
-                      onClick={() => {
-                        setSpinner(true);
-                        updateLineupTx()
-                          .then(() => {
-                            setSpinner(false);
-                            setTimeout(() => {
-                              refreshRoot(true).catch(console.error);
-                              alert('Tx sent!');
-                            }, 1000);
-                          })
-                          .catch((err) => {
-                            alert('Error:' + err?.message ?? err);
-                            console.log(err);
-                            setSpinner(false);
-                          });
-                      }}
-                    >
-                      {isLineupChanged ? 'Submit Lineup Selection' : 'Lineup not changed'}
-                    </button>
+                    isLineupChanged ? (
+                      <button
+                        className="btn mt-4"
+                        disabled={!isLineupChanged}
+                        onClick={() => {
+                          setSpinner(true);
+                          updateLineupTx()
+                            .then(() => {
+                              setSpinner(false);
+                              setTimeout(() => {
+                                refreshRoot(true).catch(console.error);
+                                alert('Tx sent!');
+                              }, 1000);
+                            })
+                            .catch((err) => {
+                              alert('Error:' + err?.message ?? err);
+                              console.log(err);
+                              setSpinner(false);
+                            });
+                        }}
+                      >
+                        Submit Lineup Selection
+                      </button>
+                    ) : (
+                      <Alert variant="success" className="mb-0 mt-3">
+                        This lineup is set in the contract for the upcoming week. To change, remove
+                        a player and add another.
+                      </Alert>
+                    )
                   ) : null}
                 </Card.Body>
               </Card>
