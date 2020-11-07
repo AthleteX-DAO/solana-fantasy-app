@@ -126,8 +126,7 @@ export const Lineups: FunctionComponent<RouteComponentProps<MatchParams>> = (pro
   useEffect(() => {
     if (root === null || league === null || selfTeamIndex === null) return;
     if (newLineup === null) {
-      const lineupsNextWeek = league.userStates[selfTeamIndex].lineups[root.currentWeek + 1];
-      console.log('setting iniitla lineups', lineupsNextWeek);
+      const lineupsNextWeek = league.userStates[selfTeamIndex].lineups[root.currentWeek];
 
       console.log({ lineupsNextWeek });
       setNewLineup(lineupsNextWeek);
@@ -310,38 +309,41 @@ export const Lineups: FunctionComponent<RouteComponentProps<MatchParams>> = (pro
               next week using above.
             </p>
           ) : null}
-          <Row className="pb-3">
-            <Col>
-              <div className="team-card-scroll-deck">
-                {teams?.map((team, index) => (
-                  <Card key={index}>
-                    <Card.Body>
-                      <strong>Team #{index}</strong>
-                      <br />
-                      {team.teamName}
-                      <br />
-                      <br />
-                      <u>Lineups</u>
-                      <br />
-                      {root &&
-                        team.lineups[root.currentWeek].map((playerId) => (
-                          <>
-                            {players ? (
-                              <>
-                                {getNameByPlayerIndex(playerId - 1)} ({players[playerId].position})
-                              </>
-                            ) : (
-                              playerId
-                            )}
-                            <br />
-                          </>
-                        ))}
-                    </Card.Body>
-                  </Card>
-                ))}
-              </div>
-            </Col>
-          </Row>
+          {root !== null && root.currentWeek > 0 ? (
+            <Row className="pb-3">
+              <Col>
+                <div className="team-card-scroll-deck">
+                  {teams?.map((team, index) => (
+                    <Card key={index}>
+                      <Card.Body>
+                        <strong>Team #{index}</strong>
+                        <br />
+                        {team.teamName}
+                        <br />
+                        <br />
+                        <u>Lineups</u>
+                        <br />
+                        {root &&
+                          team.lineups[root.currentWeek - 1].map((playerId) => (
+                            <>
+                              {players ? (
+                                <>
+                                  {getNameByPlayerIndex(playerId - 1)} ({players[playerId].position}
+                                  )
+                                </>
+                              ) : (
+                                playerId
+                              )}
+                              <br />
+                            </>
+                          ))}
+                      </Card.Body>
+                    </Card>
+                  ))}
+                </div>
+              </Col>
+            </Row>
+          ) : null}
         </Container>
       )}
     </Layout>
