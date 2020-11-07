@@ -80,7 +80,13 @@ export const LeagueRow: FunctionComponent<{ league: League; leagueIndex: number 
         ) : (
           <button
             disabled={props.league.userStateLength >= props.league.usersLimit}
-            onClick={() => history.push(`/leagues/${props.leagueIndex}`)}
+            onClick={() => {
+              if (!!window.wallet) {
+                history.push(`/leagues/${props.leagueIndex}`);
+              } else {
+                alert('Please connect your wallet..');
+              }
+            }}
             className="btn"
           >
             {props.league.userStateLength >= props.league.usersLimit ? 'Already Full' : 'Join'}
