@@ -94,12 +94,6 @@ export const DraftSelection = () =>
           playersToPick[i],
           'should add correct player id to bench'
         );
-        if (i < ACTIVE_PLAYERS_COUNT) {
-          ok(
-            league.userStates[expectedPick - 1].lineups.every((x) => x[round] == playersToPick[i]),
-            'should update lineups with player'
-          );
-        }
         console.log(
           `User ${expectedPick} successfully picked player ${playersToPick[i]} at step ${i}, round ${round}`
         );

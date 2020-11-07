@@ -39,6 +39,11 @@ pub fn process_accept_swap<'a>(
     let user_account_info = next_account_info(account_info_iter)?;
 
     let league = root.get_leagues()?.get(args.get_league_index())?;
+
+    if league.get_start_week() == 0 {
+        return Err(SfsError::InvalidState.into());
+    }
+
     let accepting_user_state = league
         .get_user_states()?
         .get_by_id(args.get_accepting_user_id())?;
@@ -53,20 +58,22 @@ pub fn process_accept_swap<'a>(
         .get_user_states()?
         .get_by_id(args.get_proposing_user_id())?;
 
-    if accepting_user_state
-        .get_lineups()?
-        .get_by_week(root.get_current_week())?
-        .contains(args.get_want_player_id())
-    {
-        return Err(SfsError::AlreadyInUse.into());
-    }
+    if root.get_current_week() > 0 {
+        if accepting_user_state
+            .get_lineups()?
+            .get_by_week(root.get_current_week())?
+            .contains(args.get_want_player_id())
+        {
+            return Err(SfsError::AlreadyInUse.into());
+        }
 
-    if proposing_user_state
-        .get_lineups()?
-        .get_by_week(root.get_current_week())?
-        .contains(args.get_give_player_id())
-    {
-        return Err(SfsError::AlreadyInUse.into());
+        if proposing_user_state
+            .get_lineups()?
+            .get_by_week(root.get_current_week())?
+            .contains(args.get_give_player_id())
+        {
+            return Err(SfsError::AlreadyInUse.into());
+        }
     }
 
     // Executing the swap

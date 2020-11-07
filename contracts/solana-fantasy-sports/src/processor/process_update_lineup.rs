@@ -42,7 +42,8 @@ pub fn process_update_lineup<'a>(
     }
 
     let league = root.get_leagues()?.get(args.get_league_index())?;
-    let user_state = league.get_user_states()?.get_by_id(args.get_user_id())?;
+    let user_states = league.get_user_states()?;
+    let user_state = user_states.get_by_id(args.get_user_id())?;
 
     helpers::validate_owner(program_id, &user_state.get_pub_key(), user_account_info)?;
 
@@ -61,23 +62,35 @@ pub fn process_update_lineup<'a>(
         }
     }
 
-    let week = args.get_week();
-    if week <= root.get_current_week() {
+    if args.get_week() != root.get_current_week() + 1 {
         return Err(SfsError::InvalidState.into());
     }
 
-    let lineup = user_state.get_lineups()?.get_by_week(week)?;
-    for i in 0..ActivePlayersList::ITEM_COUNT {
-        let player_id = args.get_active_players()?.get(i);
-        lineup.set(i, player_id);
+    for week in args.get_week()..GAMES_COUNT + 1 {
+        let lineup = user_state.get_lineups()?.get_by_week(week)?;
+        for i in 0..ActivePlayersList::ITEM_COUNT {
+            let player_id = args.get_active_players()?.get(i);
+            lineup.set(i, player_id);
+        }
     }
 
     // Check for duplicates
+    let lineup = user_state.get_lineups()?.get_by_week(args.get_week())?;
     for i in 0..ActivePlayersList::ITEM_COUNT {
         let index = lineup.index_of(lineup.get(i));
         if index.is_ok() && index? != i {
             return Err(SfsError::AlreadyInUse.into());
         }
+    }
+
+    if !user_state.get_is_lineup_set()? {
+        user_state.set_is_lineup_set(true);
+        for id in 1..user_states.get_count() + 1 {
+            if !user_states.get_by_id(id)?.get_is_lineup_set()? {
+                return Ok(());
+            }
+        }
+        league.set_start_week(root.get_current_week() + 1);
     }
 
     Ok(())

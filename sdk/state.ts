@@ -62,6 +62,7 @@ export type UserState = {
   swapProposals: SwapProposal[];
   teamName: string;
   pubKey: PublicKey;
+  isLineupSet: boolean;
   isInitialized: boolean;
 };
 
@@ -76,6 +77,7 @@ export const UserStateLayout: typeof BufferLayout.Structure = BufferLayout.struc
   BufferLayout.seq(SwapProposalLayout, SWAP_PROPOSALS_CAPACITY, 'swapProposals'),
   Layout.utf16FixedString(TEAM_NAME_MAX_SYMBOLS, 'teamName'),
   Layout.publicKey('pubKey'),
+  Layout.boolean('isLineupSet'),
   Layout.boolean('isInitialized'),
 ]);
 

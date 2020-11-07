@@ -38,6 +38,10 @@ pub fn process_propose_swap<'a>(
 
     let league = root.get_leagues()?.get(args.get_league_index())?;
 
+    if league.get_start_week() == 0 {
+        return Err(SfsError::InvalidState.into());
+    }
+
     let user_account_info = next_account_info(account_info_iter)?;
     let proposing_user_state = league
         .get_user_states()?
@@ -54,10 +58,11 @@ pub fn process_propose_swap<'a>(
 
     // validate a user can make a proposal
 
-    if proposing_user_state
-        .get_lineups()?
-        .get_by_week(root.get_current_week())?
-        .contains(args.get_give_player_id())
+    if root.get_current_week() > 0
+        && proposing_user_state
+            .get_lineups()?
+            .get_by_week(root.get_current_week())?
+            .contains(args.get_give_player_id())
     {
         return Err(SfsError::AlreadyInUse.into());
     }

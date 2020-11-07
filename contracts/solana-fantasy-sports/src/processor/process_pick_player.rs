@@ -59,6 +59,10 @@ pub fn process_pick_player<'a>(
 
     let users_count = league.get_user_states()?.get_count();
 
+    if users_count != league.get_users_limit() {
+        return Err(SfsError::InvalidState.into());
+    }
+
     let mut league_pick_order = Vec::<u8>::with_capacity(users_count as usize);
     for i in 0..PickOrderList::ITEM_COUNT {
         let pick = root.get_pick_order()?.get(i);
@@ -93,23 +97,7 @@ pub fn process_pick_player<'a>(
     }
 
     user_state.get_user_players()?.set(round, player_id);
-
-    if round < ACTIVE_PLAYERS_COUNT {
-        for i in 1..GAMES_COUNT + 1 {
-            user_state
-                .get_lineups()?
-                .get_by_week(i)?
-                .set(round, player_id);
-        }
-    }
-
     league.set_current_pick(league.get_current_pick() + 1);
-
-    let round = league.get_pick_round()?;
-
-    if round == TEAM_PLAYERS_COUNT {
-        league.set_start_week(root.get_current_week() + 1);
-    }
 
     Ok(())
 }

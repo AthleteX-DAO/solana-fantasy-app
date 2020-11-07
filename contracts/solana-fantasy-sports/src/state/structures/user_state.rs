@@ -19,6 +19,7 @@ impl<'a> UserState<'a> {
         + SwapProposalsList::LEN
         + TEAM_NAME_LEN
         + PUB_KEY_LEN
+        + 1
         + 1;
     fn slice<'b>(
         &self,
@@ -30,6 +31,7 @@ impl<'a> UserState<'a> {
         &'b mut [u8; TEAM_NAME_LEN],
         &'b mut [u8; PUB_KEY_LEN],
         &'b mut [u8; 1],
+        &'b mut [u8; 1],
     ) {
         mut_array_refs![
             array_mut_ref![data, self.offset, UserState::LEN],
@@ -38,6 +40,7 @@ impl<'a> UserState<'a> {
             SwapProposalsList::LEN,
             TEAM_NAME_LEN,
             PUB_KEY_LEN,
+            1,
             1
         ]
     }
@@ -75,11 +78,18 @@ impl<'a> UserState<'a> {
             .copy_from_slice(value.as_ref());
     }
 
-    pub fn get_is_initialized(&self) -> Result<bool, ProgramError> {
+    pub fn get_is_lineup_set(&self) -> Result<bool, ProgramError> {
         unpack_bool(self.slice(&mut self.data.borrow_mut()).5)
     }
-    pub fn set_is_initialized(&self, value: bool) {
+    pub fn set_is_lineup_set(&self, value: bool) {
         self.slice(&mut self.data.borrow_mut()).5[0] = value as u8;
+    }
+
+    pub fn get_is_initialized(&self) -> Result<bool, ProgramError> {
+        unpack_bool(self.slice(&mut self.data.borrow_mut()).6)
+    }
+    pub fn set_is_initialized(&self, value: bool) {
+        self.slice(&mut self.data.borrow_mut()).6[0] = value as u8;
     }
 
     pub fn copy_to(&self, to: &Self) {
