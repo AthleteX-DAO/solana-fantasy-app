@@ -1,21 +1,17 @@
-import React, { FunctionComponent, useEffect, useState, StyleHTMLAttributes } from 'react';
+import React, { FunctionComponent, useEffect, useState } from 'react';
 import { Container, Row, Col, Card, Dropdown } from 'react-bootstrap';
 import { RouteComponentProps } from 'react-router-dom';
+import { League, Player, Position, Root, UserState } from '../../../sdk/state';
 import { Layout } from '../../Layout';
 import { MatchParams } from './Forwarder';
 
-interface Team {
-  name: string;
-  selectionStatus: 'Current' | 'Waiting' | 'Done';
-  lineups: number[];
+interface Player_ {
+  externalId: number;
+  position: Position_;
+  choosenByTeamIndex: number;
 }
 
-interface Player {
-  name: string;
-  avgDraftPosition: string;
-  position: 'QB' | 'RB' | 'WR' | 'TE' | 'K' | 'D/ST';
-  choosenByTeam: number;
-}
+type Position_ = 'QB' | 'RB' | 'WR' | 'TE' | 'K' | 'D/ST';
 
 const MAX_SELECT_COUNT = {
   QB: 4,
@@ -29,65 +25,191 @@ const MAX_SELECT_COUNT = {
 export const Swaps: FunctionComponent<RouteComponentProps<MatchParams>> = (props) => {
   const leagueIndex = +props.match.params.index;
 
-  const [selfTeamIndex, setSelfTeamIndex] = useState<number | null>(null);
-  const [otherTeamIndex, setOtherTeamIndex] = useState<number>(0);
+  const [root, setRoot] = useState<Root | null>(null);
+  const refreshRoot = async (forceUpdate?: boolean) => {
+    const _root = await window.getCachedRootInfo(forceUpdate);
+    setRoot(_root);
+  };
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      refreshRoot(false).catch(console.error);
+    }, 3000);
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, []);
 
-  const [teams, setTeams] = useState<Team[] | null>(null);
-  const [players, setPlayers] = useState<Player[] | null>(null);
+  const [league, setLeague] = useState<League | null>(null);
+  useEffect(() => {
+    if (root === null) return;
+
+    const _league = root.leagues[leagueIndex];
+
+    setLeague(_league);
+  }, [root]);
+
+  const [players, setPlayers] = useState<Player_[] | null>(null);
+  useEffect(() => {
+    if (root === null) return;
+
+    const _players = root.players.map((p, i) => {
+      let position: Position_;
+      switch (p.position) {
+        case Position.RB:
+          position = 'RB';
+          break;
+        case Position.WR:
+          position = 'WR';
+          break;
+        case Position.QB:
+          position = 'QB';
+          break;
+        case Position.TE:
+          position = 'TE';
+          break;
+        case Position.K:
+          position = 'K';
+          break;
+        case Position.DEF:
+          position = 'D/ST';
+          break;
+        default:
+          throw new Error(`Position from API not recognized: ${p.position}`);
+      }
+
+      const choosenByTeamIndex = root.leagues[leagueIndex].userStates.findIndex((usr) => {
+        return usr.userPlayers.includes(i + 1); // id and index (+ 1) thing
+      });
+
+      return {
+        externalId: p.externalId,
+        position,
+        choosenByTeamIndex,
+      };
+    });
+    setPlayers(_players);
+  }, [root]);
+
+  const [selfTeamIndex, setSelfTeamIndex] = useState<number | null>(null);
+  useEffect(() => {
+    if (league === null) return;
+
+    const index = league.userStates.findIndex((usr) => {
+      return !!window.wallet && window.wallet.publicKey === usr.pubKey.toBase58();
+    });
+
+    if (index !== -1) {
+      setSelfTeamIndex(index);
+    }
+  }, [league]);
+
+  const [playersResp, setPlayersResp] = useState<
+    {
+      PlayerID: number;
+      Name: string;
+      Position: string;
+      AverageDraftPosition: number;
+    }[]
+  >();
+  useEffect(() => {
+    (async () => {
+      const _playersResp = await window.getCachedPlayers();
+      setPlayersResp(_playersResp);
+    })().catch(console.error);
+  }, []);
+
+  const getNameByPlayerIndex = (playerIndex: number) => {
+    return players !== null && playersResp !== undefined
+      ? playersResp.find((p) => p.PlayerID === players[playerIndex].externalId)?.Name ?? 'No Name'
+      : 'Loading...';
+  };
+  const getNameByPlayerExternalId = (playerExternalId: number) => {
+    return players !== null && playersResp !== undefined
+      ? playersResp.find((p) => p.PlayerID === playerExternalId)?.Name ?? 'No Name'
+      : 'Loading...';
+  };
+
+  const [teams, setTeams] = useState<UserState[] | null>(null);
+  useEffect(() => {
+    if (league === null) return;
+    setTeams(league.userStates.filter((u) => u.isInitialized));
+  }, [league]);
+
+  // const [selfTeamIndex, setSelfTeamIndex] = useState<number | null>(null);
+  const [otherTeamIndex, setOtherTeamIndex] = useState<number>(0);
 
   const [givePlayer, setGivePlayer] = useState<number | null>(null);
   const [wantPlayer, setWantPlayer] = useState<number | null>(null);
 
-  useEffect(() => {
-    setSelfTeamIndex(1);
-
-    setTeams([
-      { name: 'HellYeah', selectionStatus: 'Done', lineups: [1, 2, 3, 4] },
-      { name: 'BlueBull', selectionStatus: 'Current', lineups: [5, 6, 7, 8] },
-      { name: 'Mango', selectionStatus: 'Waiting', lineups: [9, 10, 11, 12] },
-      { name: 'MegaHard', selectionStatus: 'Waiting', lineups: [13, 14, 15, 16] },
-    ]);
-
-    setPlayers([
-      { name: 'Ron Weisly1a', avgDraftPosition: 'abc', position: 'QB', choosenByTeam: 0 },
-      { name: 'Ron Weisly1b', avgDraftPosition: 'abc', position: 'QB', choosenByTeam: 1 },
-      { name: 'Ron Weisly1c', avgDraftPosition: 'abc', position: 'QB', choosenByTeam: 1 },
-      { name: 'Ron Weisly1d', avgDraftPosition: 'abc', position: 'QB', choosenByTeam: 0 },
-      { name: 'Ron Weisly1e', avgDraftPosition: 'abc', position: 'QB', choosenByTeam: 1 },
-      { name: 'Emiway1a', avgDraftPosition: 'abc', position: 'RB', choosenByTeam: 0 },
-      { name: 'Emiway1b', avgDraftPosition: 'abc', position: 'RB', choosenByTeam: 0 },
-      { name: 'Emiway1c', avgDraftPosition: 'abc', position: 'RB', choosenByTeam: 1 },
-      { name: 'Emiway1d', avgDraftPosition: 'abc', position: 'RB', choosenByTeam: 2 },
-      { name: 'Emiway1e', avgDraftPosition: 'abc', position: 'RB', choosenByTeam: 1 },
-      { name: 'SomePlayer1a', avgDraftPosition: 'abc', position: 'WR', choosenByTeam: 2 },
-      { name: 'SomePlayer1b', avgDraftPosition: 'abc', position: 'WR', choosenByTeam: 1 },
-      { name: 'SomePlayer1c', avgDraftPosition: 'abc', position: 'WR', choosenByTeam: 2 },
-      { name: 'SomePlayer1d', avgDraftPosition: 'abc', position: 'WR', choosenByTeam: 1 },
-      { name: 'SomePlayer1e', avgDraftPosition: 'abc', position: 'WR', choosenByTeam: 2 },
-      { name: 'SomePlayer2a', avgDraftPosition: 'abc', position: 'TE', choosenByTeam: 1 },
-      { name: 'SomePlayer2b', avgDraftPosition: 'abc', position: 'TE', choosenByTeam: 3 },
-      { name: 'SomePlayer2c', avgDraftPosition: 'abc', position: 'TE', choosenByTeam: 2 },
-      { name: 'SomePlayer2d', avgDraftPosition: 'abc', position: 'TE', choosenByTeam: 3 },
-      { name: 'SomePlayer2e', avgDraftPosition: 'abc', position: 'TE', choosenByTeam: 1 },
-      { name: 'SomePlayer3a', avgDraftPosition: 'abc', position: 'K', choosenByTeam: 3 },
-      { name: 'SomePlayer3b', avgDraftPosition: 'abc', position: 'K', choosenByTeam: 3 },
-      { name: 'SomePlayer3c', avgDraftPosition: 'abc', position: 'K', choosenByTeam: 2 },
-      { name: 'SomePlayer3d', avgDraftPosition: 'abc', position: 'K', choosenByTeam: 1 },
-      { name: 'SomePlayer3e', avgDraftPosition: 'abc', position: 'K', choosenByTeam: 0 },
-      { name: 'SomePlayer4a', avgDraftPosition: 'abc', position: 'D/ST', choosenByTeam: 0 },
-      { name: 'SomePlayer4b', avgDraftPosition: 'abc', position: 'D/ST', choosenByTeam: 2 },
-      { name: 'SomePlayer4c', avgDraftPosition: 'abc', position: 'D/ST', choosenByTeam: 1 },
-      { name: 'SomePlayer4d', avgDraftPosition: 'abc', position: 'D/ST', choosenByTeam: 3 },
-      { name: 'SomePlayer4e', avgDraftPosition: 'abc', position: 'D/ST', choosenByTeam: 1 },
-    ]);
-  }, []);
-
-  const getPlayersOfTeamId = (teamId: number) => {
+  const getPlayersOfTeamIndex = (teamIndex: number) => {
     return (
       players
-        ?.map((p, i): [Player, number] => [p, i])
-        .filter((playerEntry) => playerEntry[0].choosenByTeam === teamId) ?? []
+        ?.map((p, i): [Player_, number] => [p, i])
+        .filter((playerEntry) => playerEntry[0].choosenByTeamIndex === teamIndex) ?? []
     );
+  };
+
+  const [spinner, setSpinner] = useState<boolean>(false);
+  const proposeSwapTx = async () => {
+    if (!window.wallet) {
+      throw new Error('Wallet not loaded');
+    }
+    const sdk = await window.sfsSDK();
+
+    if (root === null) {
+      throw new Error('root is null');
+    }
+    if (league === null) {
+      throw new Error('league is null');
+    }
+    if (selfTeamIndex === null) {
+      throw new Error('selfTeamIndex is null');
+    }
+    if (otherTeamIndex === null) {
+      throw new Error('otherTeamIndex is null');
+    }
+    if (givePlayer === null) {
+      throw new Error('givePlayer is null');
+    }
+    if (wantPlayer === null) {
+      throw new Error('wantPlayer is null');
+    }
+
+    // const givePlayerInSelfUserPlayers = league.userStates[selfTeamIndex].userPlayers.indexOf(
+    //   givePlayer + 1
+    // );
+    // if (givePlayerInSelfUserPlayers === -1) {
+    //   throw new Error('givePlayer is not in self user players array');
+    // }
+    // const wantPlayerInOtherUserPlayers = league.userStates[otherTeamIndex].userPlayers.indexOf(
+    //   wantPlayer + 1
+    // );
+    // if (wantPlayerInOtherUserPlayers === -1) {
+    //   throw new Error('wantPlayer is not in other user players array');
+    // }
+    const resp = await window.wallet.callback('Sign on Propose Swap transaction?', async (acc) => {
+      console.log(
+        leagueIndex,
+        selfTeamIndex + 1,
+        otherTeamIndex + 1,
+        // givePlayerInSelfUserPlayers,
+        // wantPlayerInOtherUserPlayers
+        givePlayer,
+        wantPlayer
+      );
+
+      return await sdk.proposeSwap(
+        acc,
+        leagueIndex,
+        selfTeamIndex + 1,
+        otherTeamIndex + 1,
+        // givePlayerInSelfUserPlayers,
+        // wantPlayerInOtherUserPlayers
+        givePlayer,
+        wantPlayer
+      );
+    });
+    console.log({ resp });
   };
 
   return (
@@ -100,21 +222,26 @@ export const Swaps: FunctionComponent<RouteComponentProps<MatchParams>> = (props
               <Card.Body>
                 <strong>My Team (Players on the Bench)</strong>
                 <br />
-                {getPlayersOfTeamId(selfTeamIndex ?? 0).map((playerEntry) => {
-                  const [player, index] = playerEntry;
-                  return (
-                    <>
-                      <span
-                        className="cursor-pointer"
-                        style={{ backgroundColor: givePlayer === index ? '#3333' : undefined }}
-                        onClick={setGivePlayer.bind(null, index)}
-                      >
-                        {player.name} ({player.position})
-                      </span>
-                      <br />
-                    </>
-                  );
-                })}
+                {selfTeamIndex !== null
+                  ? getPlayersOfTeamIndex(selfTeamIndex).map((playerEntry) => {
+                      const [player, index] = playerEntry;
+                      return (
+                        <>
+                          <span
+                            className="cursor-pointer"
+                            style={{
+                              backgroundColor: givePlayer === index + 1 ? '#3333' : undefined,
+                            }}
+                            onClick={setGivePlayer.bind(null, index + 1)}
+                          >
+                            {index + 1} {getNameByPlayerExternalId(player.externalId)} (
+                            {player.position})
+                          </span>
+                          <br />
+                        </>
+                      );
+                    })
+                  : 'Loading...'}
               </Card.Body>
             </Card>
           </Col>
@@ -128,7 +255,7 @@ export const Swaps: FunctionComponent<RouteComponentProps<MatchParams>> = (props
                   <Dropdown.Toggle variant="success" id="dropdown-basic">
                     {teams ? (
                       <>
-                        Team#{otherTeamIndex} {teams[otherTeamIndex].name}
+                        Team#{otherTeamIndex} {teams[otherTeamIndex].teamName}
                       </>
                     ) : (
                       'Loading...'
@@ -137,7 +264,7 @@ export const Swaps: FunctionComponent<RouteComponentProps<MatchParams>> = (props
 
                   <Dropdown.Menu>
                     {teams
-                      ?.map((t, i): [Team, number] => [t, i])
+                      ?.map((t, i): [UserState, number] => [t, i])
                       .filter((tEntry) => tEntry[1] !== selfTeamIndex)
                       .map((tEntry) => (
                         <Dropdown.Item
@@ -146,22 +273,22 @@ export const Swaps: FunctionComponent<RouteComponentProps<MatchParams>> = (props
                             setWantPlayer(null);
                           }}
                         >
-                          Team#{tEntry[1]} {tEntry[0].name}
+                          Team#{tEntry[1]} {tEntry[0].teamName}
                         </Dropdown.Item>
                       ))}
                   </Dropdown.Menu>
                 </Dropdown>
 
-                {getPlayersOfTeamId(otherTeamIndex).map((playerEntry) => {
+                {getPlayersOfTeamIndex(otherTeamIndex).map((playerEntry) => {
                   const [player, index] = playerEntry;
                   return (
                     <>
                       <span
                         className="cursor-pointer"
-                        style={{ backgroundColor: wantPlayer === index ? '#3333' : undefined }}
-                        onClick={setWantPlayer.bind(null, index)}
+                        style={{ backgroundColor: wantPlayer === index + 1 ? '#3333' : undefined }}
+                        onClick={setWantPlayer.bind(null, index + 1)}
                       >
-                        {player.name} ({player.position})
+                        {getNameByPlayerExternalId(player.externalId)} ({player.position})
                       </span>
                       <br />
                     </>
@@ -176,19 +303,35 @@ export const Swaps: FunctionComponent<RouteComponentProps<MatchParams>> = (props
           <Col>
             {givePlayer !== null && players !== null ? (
               <p>
-                Swapping {players[givePlayer].name} for{' '}
-                {wantPlayer !== null ? players[wantPlayer].name : '...'}
+                Requesting Swap of {getNameByPlayerIndex(givePlayer)} for{' '}
+                {wantPlayer !== null ? getNameByPlayerIndex(wantPlayer) : '...'}
               </p>
             ) : null}
 
-            <button className="btn m-4" disabled={givePlayer === null || wantPlayer === null}>
+            <button
+              className="btn m-4"
+              disabled={givePlayer === null || wantPlayer === null}
+              onClick={() => {
+                setSpinner(true);
+                proposeSwapTx()
+                  .then(() => {
+                    setSpinner(false);
+                    setTimeout(() => {
+                      refreshRoot(true).catch(console.error);
+                      alert('Tx sent!');
+                    }, 1000);
+                  })
+                  .catch((err) => {
+                    alert('Error:' + err?.message ?? err);
+                    console.log(err);
+                    setSpinner(false);
+                  });
+              }}
+            >
               Request
             </button>
             <button className="btn m-4" disabled={givePlayer === null || wantPlayer === null}>
               Accept
-            </button>
-            <button className="btn m-4" disabled={givePlayer === null || wantPlayer === null}>
-              Reject
             </button>
           </Col>
         </Row>
