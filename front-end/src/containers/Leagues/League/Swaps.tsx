@@ -184,18 +184,6 @@ export const Swaps: FunctionComponent<RouteComponentProps<MatchParams>> = (props
       throw new Error('wantPlayer is null');
     }
 
-    // const givePlayerInSelfUserPlayers = league.userStates[selfTeamIndex].userPlayers.indexOf(
-    //   givePlayer + 1
-    // );
-    // if (givePlayerInSelfUserPlayers === -1) {
-    //   throw new Error('givePlayer is not in self user players array');
-    // }
-    // const wantPlayerInOtherUserPlayers = league.userStates[otherTeamIndex].userPlayers.indexOf(
-    //   wantPlayer + 1
-    // );
-    // if (wantPlayerInOtherUserPlayers === -1) {
-    //   throw new Error('wantPlayer is not in other user players array');
-    // }
     const resp = await window.wallet.callback('Sign on Propose Swap transaction?', async (acc) => {
       console.log(
         leagueIndex,
@@ -263,6 +251,29 @@ export const Swaps: FunctionComponent<RouteComponentProps<MatchParams>> = (props
     selfTeamIndex !== null && swapProposals !== null
       ? swapProposals.filter((sp) => sp.acceptingUserId !== selfTeamIndex + 1)
       : null;
+
+  const acceptSwapTx = async (
+    acceptingUserId: number,
+    proposingUserId: number,
+    wantPlayerId: number,
+    givePlayerId: number
+  ) => {
+    if (!window.wallet) {
+      throw new Error('Wallet not loaded');
+    }
+    const sdk = await window.sfsSDK();
+    const resp = await window.wallet.callback('Sign on Accept Swap transaction?', async (acc) => {
+      return await sdk.acceptSwap(
+        acc,
+        leagueIndex,
+        acceptingUserId,
+        proposingUserId,
+        wantPlayerId,
+        givePlayerId
+      );
+    });
+    console.log({ resp });
+  };
 
   return (
     <Layout removeTopMargin heading="Swaps">
@@ -399,7 +410,7 @@ export const Swaps: FunctionComponent<RouteComponentProps<MatchParams>> = (props
             <Col xs={12}>
               <Card>
                 <Card.Body>
-                  <h5>Proposals for you</h5>
+                  <h5>Open Swap Proposals for you</h5>
                   {swapProposalsForSelf !== null ? (
                     swapProposalsForSelf.length !== 0 ? (
                       <Table responsive>
@@ -420,7 +431,32 @@ export const Swaps: FunctionComponent<RouteComponentProps<MatchParams>> = (props
                               </td>
                               <td>{getNameByPlayerIndex(sp.givePlayerId - 1)}</td>
                               <td>{getNameByPlayerIndex(sp.wantPlayerId - 1)}</td>
-                              <td>Accept</td>
+                              <td>
+                                <button
+                                  className="btn"
+                                  disabled={spinner}
+                                  onClick={() => {
+                                    setSpinner(true);
+                                    acceptSwapTx(
+                                      sp.acceptingUserId,
+                                      sp.proposingUserId,
+                                      sp.wantPlayerId,
+                                      sp.givePlayerId
+                                    )
+                                      .then(() => {
+                                        setSpinner(false);
+                                        alert('Tx sent!');
+                                      })
+                                      .catch((err) => {
+                                        alert('Error:' + err?.message ?? err);
+                                        console.log(err);
+                                        setSpinner(false);
+                                      });
+                                  }}
+                                >
+                                  Accept
+                                </button>
+                              </td>
                             </tr>
                           ))}
                         </tbody>
@@ -437,7 +473,7 @@ export const Swaps: FunctionComponent<RouteComponentProps<MatchParams>> = (props
             <Col xs={12} className="mt-4">
               <Card>
                 <Card.Body>
-                  <h5>Proposals created by you</h5>
+                  <h5>Open Swap Proposals created by you</h5>
                   {swapProposalsBySelf !== null ? (
                     swapProposalsBySelf.length !== 0 ? (
                       <Table responsive>
