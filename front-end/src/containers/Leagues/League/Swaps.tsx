@@ -255,6 +255,15 @@ export const Swaps: FunctionComponent<RouteComponentProps<MatchParams>> = (props
     })().catch(console.error);
   }, [league, selfTeamIndex]);
 
+  const swapProposalsForSelf =
+    selfTeamIndex !== null && swapProposals !== null
+      ? swapProposals.filter((sp) => sp.acceptingUserId === selfTeamIndex + 1)
+      : null;
+  const swapProposalsBySelf =
+    selfTeamIndex !== null && swapProposals !== null
+      ? swapProposals.filter((sp) => sp.acceptingUserId !== selfTeamIndex + 1)
+      : null;
+
   return (
     <Layout removeTopMargin heading="Swaps">
       {!window.wallet ? (
@@ -301,7 +310,7 @@ export const Swaps: FunctionComponent<RouteComponentProps<MatchParams>> = (props
             <Col>
               <Card>
                 <Card.Body>
-                  <Dropdown>
+                  <Dropdown className="mb-2">
                     <Dropdown.Toggle variant="success" id="dropdown-basic">
                       {teams ? (
                         <>
@@ -387,12 +396,12 @@ export const Swaps: FunctionComponent<RouteComponentProps<MatchParams>> = (props
             </Col>
           </Row>
           <Row>
-            <Col>
+            <Col xs={12}>
               <Card>
                 <Card.Body>
                   <h5>Proposals for you</h5>
-                  {swapProposals !== null && selfTeamIndex !== null ? (
-                    swapProposals.length !== 0 ? (
+                  {swapProposalsForSelf !== null ? (
+                    swapProposalsForSelf.length !== 0 ? (
                       <Table responsive>
                         <thead>
                           <tr>
@@ -403,19 +412,55 @@ export const Swaps: FunctionComponent<RouteComponentProps<MatchParams>> = (props
                           </tr>
                         </thead>
                         <tbody>
-                          {swapProposals
-                            .filter((sp) => sp.acceptingUserId === selfTeamIndex + 1)
-                            .map((sp) => (
-                              <tr>
-                                <td>
-                                  Team #{sp.proposingUserId}{' '}
-                                  {league?.userStates[sp.proposingUserId - 1].teamName}
-                                </td>
-                                <td>{getNameByPlayerIndex(sp.givePlayerId - 1)}</td>
-                                <td>{getNameByPlayerIndex(sp.wantPlayerId - 1)}</td>
-                                <td>Accept</td>
-                              </tr>
-                            ))}
+                          {swapProposalsForSelf.map((sp) => (
+                            <tr>
+                              <td>
+                                Team #{sp.proposingUserId}{' '}
+                                {league?.userStates[sp.proposingUserId - 1].teamName}
+                              </td>
+                              <td>{getNameByPlayerIndex(sp.givePlayerId - 1)}</td>
+                              <td>{getNameByPlayerIndex(sp.wantPlayerId - 1)}</td>
+                              <td>Accept</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </Table>
+                    ) : (
+                      'No swap proposals'
+                    )
+                  ) : (
+                    'Loading...'
+                  )}
+                </Card.Body>
+              </Card>
+            </Col>
+            <Col xs={12} className="mt-4">
+              <Card>
+                <Card.Body>
+                  <h5>Proposals created by you</h5>
+                  {swapProposalsBySelf !== null ? (
+                    swapProposalsBySelf.length !== 0 ? (
+                      <Table responsive>
+                        <thead>
+                          <tr>
+                            <th>For Team</th>
+                            <th>Give Player</th>
+                            <th>Want Player</th>
+                            {/* <th>Action</th> */}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {swapProposalsBySelf.map((sp) => (
+                            <tr>
+                              <td>
+                                Team #{sp.acceptingUserId}{' '}
+                                {league?.userStates[sp.acceptingUserId - 1].teamName}
+                              </td>
+                              <td>{getNameByPlayerIndex(sp.givePlayerId - 1)}</td>
+                              <td>{getNameByPlayerIndex(sp.wantPlayerId - 1)}</td>
+                              {/* <td>Accept</td> */}
+                            </tr>
+                          ))}
                         </tbody>
                       </Table>
                     ) : (
