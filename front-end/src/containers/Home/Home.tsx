@@ -8,7 +8,10 @@ export function Home() {
         <div className="container position-relative">
           <h1>Welcome to Solana Fantasy Sports</h1>
           <h2>Create a league or join a league to start playing</h2>
-          <Link to="/leagues/create" className="btn-get-started scrollto">
+          <Link
+            to={!!window.wallet ? '/leagues/create' : '/wallet/import'}
+            className="btn-get-started scrollto"
+          >
             Get Started
           </Link>
         </div>
