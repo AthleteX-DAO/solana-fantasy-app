@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
-import { Container, Row, Col, Card, Dropdown } from 'react-bootstrap';
+import { Container, Row, Col, Card, Dropdown, Alert } from 'react-bootstrap';
 import { RouteComponentProps } from 'react-router-dom';
 import { League, Player, Position, Root, UserState } from '../../../sdk/state';
 import { Layout } from '../../Layout';
@@ -214,128 +214,138 @@ export const Swaps: FunctionComponent<RouteComponentProps<MatchParams>> = (props
 
   return (
     <Layout removeTopMargin heading="Swaps">
-      <Container>
-        <h4 className="align-left mb-4">Swap a player</h4>
-        <Row className="pb-3">
-          <Col>
-            <Card>
-              <Card.Body>
-                <strong>My Team (Players on the Bench)</strong>
-                <br />
-                {selfTeamIndex !== null
-                  ? getPlayersOfTeamIndex(selfTeamIndex).map((playerEntry) => {
-                      const [player, index] = playerEntry;
-                      return (
+      {!window.wallet ? (
+        <Alert variant="danger">
+          Wallet is not loaded. If you just refreshed the page, then your wallet was flushed from
+          memory when you refreshed the page. When you import your wallet, you can choose to cache
+          it locally to prevent this behaviour.
+        </Alert>
+      ) : (
+        <Container>
+          <h4 className="align-left mb-4">Swap a player</h4>
+          <Row className="pb-3">
+            <Col>
+              <Card>
+                <Card.Body>
+                  <strong>My Team (Players on the Bench)</strong>
+                  <br />
+                  {selfTeamIndex !== null
+                    ? getPlayersOfTeamIndex(selfTeamIndex).map((playerEntry) => {
+                        const [player, index] = playerEntry;
+                        return (
+                          <>
+                            <span
+                              className="cursor-pointer"
+                              style={{
+                                backgroundColor: givePlayer === index + 1 ? '#3333' : undefined,
+                              }}
+                              onClick={setGivePlayer.bind(null, index + 1)}
+                            >
+                              {index + 1} {getNameByPlayerExternalId(player.externalId)} (
+                              {player.position})
+                            </span>
+                            <br />
+                          </>
+                        );
+                      })
+                    : 'Loading...'}
+                </Card.Body>
+              </Card>
+            </Col>
+            <Col xs={2}>
+              <Card.Body>{'<==>'}</Card.Body>
+            </Col>
+            <Col>
+              <Card>
+                <Card.Body>
+                  <Dropdown>
+                    <Dropdown.Toggle variant="success" id="dropdown-basic">
+                      {teams ? (
                         <>
-                          <span
-                            className="cursor-pointer"
-                            style={{
-                              backgroundColor: givePlayer === index + 1 ? '#3333' : undefined,
-                            }}
-                            onClick={setGivePlayer.bind(null, index + 1)}
-                          >
-                            {index + 1} {getNameByPlayerExternalId(player.externalId)} (
-                            {player.position})
-                          </span>
-                          <br />
+                          Team#{otherTeamIndex} {teams[otherTeamIndex].teamName}
                         </>
-                      );
-                    })
-                  : 'Loading...'}
-              </Card.Body>
-            </Card>
-          </Col>
-          <Col xs={2}>
-            <Card.Body>{'<==>'}</Card.Body>
-          </Col>
-          <Col>
-            <Card>
-              <Card.Body>
-                <Dropdown>
-                  <Dropdown.Toggle variant="success" id="dropdown-basic">
-                    {teams ? (
+                      ) : (
+                        'Loading...'
+                      )}
+                    </Dropdown.Toggle>
+
+                    <Dropdown.Menu>
+                      {teams
+                        ?.map((t, i): [UserState, number] => [t, i])
+                        .filter((tEntry) => tEntry[1] !== selfTeamIndex)
+                        .map((tEntry) => (
+                          <Dropdown.Item
+                            onClick={() => {
+                              setOtherTeamIndex(tEntry[1]);
+                              setWantPlayer(null);
+                            }}
+                          >
+                            Team#{tEntry[1]} {tEntry[0].teamName}
+                          </Dropdown.Item>
+                        ))}
+                    </Dropdown.Menu>
+                  </Dropdown>
+
+                  {getPlayersOfTeamIndex(otherTeamIndex).map((playerEntry) => {
+                    const [player, index] = playerEntry;
+                    return (
                       <>
-                        Team#{otherTeamIndex} {teams[otherTeamIndex].teamName}
-                      </>
-                    ) : (
-                      'Loading...'
-                    )}
-                  </Dropdown.Toggle>
-
-                  <Dropdown.Menu>
-                    {teams
-                      ?.map((t, i): [UserState, number] => [t, i])
-                      .filter((tEntry) => tEntry[1] !== selfTeamIndex)
-                      .map((tEntry) => (
-                        <Dropdown.Item
-                          onClick={() => {
-                            setOtherTeamIndex(tEntry[1]);
-                            setWantPlayer(null);
+                        <span
+                          className="cursor-pointer"
+                          style={{
+                            backgroundColor: wantPlayer === index + 1 ? '#3333' : undefined,
                           }}
+                          onClick={setWantPlayer.bind(null, index + 1)}
                         >
-                          Team#{tEntry[1]} {tEntry[0].teamName}
-                        </Dropdown.Item>
-                      ))}
-                  </Dropdown.Menu>
-                </Dropdown>
+                          {getNameByPlayerExternalId(player.externalId)} ({player.position})
+                        </span>
+                        <br />
+                      </>
+                    );
+                  })}
+                </Card.Body>
+              </Card>
+            </Col>
+          </Row>
 
-                {getPlayersOfTeamIndex(otherTeamIndex).map((playerEntry) => {
-                  const [player, index] = playerEntry;
-                  return (
-                    <>
-                      <span
-                        className="cursor-pointer"
-                        style={{ backgroundColor: wantPlayer === index + 1 ? '#3333' : undefined }}
-                        onClick={setWantPlayer.bind(null, index + 1)}
-                      >
-                        {getNameByPlayerExternalId(player.externalId)} ({player.position})
-                      </span>
-                      <br />
-                    </>
-                  );
-                })}
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
+          <Row className="pb-3 mt-4">
+            <Col>
+              {givePlayer !== null && players !== null ? (
+                <p>
+                  Requesting Swap of {getNameByPlayerIndex(givePlayer)} for{' '}
+                  {wantPlayer !== null ? getNameByPlayerIndex(wantPlayer) : '...'}
+                </p>
+              ) : null}
 
-        <Row className="pb-3 mt-4">
-          <Col>
-            {givePlayer !== null && players !== null ? (
-              <p>
-                Requesting Swap of {getNameByPlayerIndex(givePlayer)} for{' '}
-                {wantPlayer !== null ? getNameByPlayerIndex(wantPlayer) : '...'}
-              </p>
-            ) : null}
-
-            <button
-              className="btn m-4"
-              disabled={givePlayer === null || wantPlayer === null}
-              onClick={() => {
-                setSpinner(true);
-                proposeSwapTx()
-                  .then(() => {
-                    setSpinner(false);
-                    setTimeout(() => {
-                      refreshRoot(true).catch(console.error);
-                      alert('Tx sent!');
-                    }, 1000);
-                  })
-                  .catch((err) => {
-                    alert('Error:' + err?.message ?? err);
-                    console.log(err);
-                    setSpinner(false);
-                  });
-              }}
-            >
-              Request
-            </button>
-            <button className="btn m-4" disabled={givePlayer === null || wantPlayer === null}>
-              Accept
-            </button>
-          </Col>
-        </Row>
-      </Container>
+              <button
+                className="btn m-4"
+                disabled={givePlayer === null || wantPlayer === null}
+                onClick={() => {
+                  setSpinner(true);
+                  proposeSwapTx()
+                    .then(() => {
+                      setSpinner(false);
+                      setTimeout(() => {
+                        refreshRoot(true).catch(console.error);
+                        alert('Tx sent!');
+                      }, 1000);
+                    })
+                    .catch((err) => {
+                      alert('Error:' + err?.message ?? err);
+                      console.log(err);
+                      setSpinner(false);
+                    });
+                }}
+              >
+                Request
+              </button>
+              <button className="btn m-4" disabled={givePlayer === null || wantPlayer === null}>
+                Accept
+              </button>
+            </Col>
+          </Row>
+        </Container>
+      )}
     </Layout>
   );
 };

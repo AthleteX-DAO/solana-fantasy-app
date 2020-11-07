@@ -58,64 +58,74 @@ export const JoinLeague: FunctionComponent<RouteComponentProps<MatchParams>> = (
 
   return (
     <Layout removeTopMargin heading="Join League">
-      {isJoined ? (
-        <Alert variant="danger">Already Joined</Alert>
+      {!window.wallet ? (
+        <Alert variant="danger">
+          Wallet is not loaded. If you just refreshed the page, then your wallet was flushed from
+          memory when you refreshed the page. When you import your wallet, you can choose to cache
+          it locally to prevent this behaviour.
+        </Alert>
       ) : (
-        <Card style={{ maxWidth: '400px', margin: '0 auto' }}>
-          <p className="mt-2 mb-0">
-            Join the{' '}
-            <strong>{leagueName ? <>{leagueName} league</> : <>leage {leagueIndex}</>}</strong> by
-            creating a team
-          </p>
-          <Card.Body>
-            <Form.Control
-              disabled={spinner}
-              className="align-items-center"
-              onChange={(event) => setTeamNameInput(event.target.value)}
-              value={teamNameInput}
-              type="text"
-              placeholder="Enter Team Name"
-              autoComplete="off"
-              // isInvalid={}
-            />
+        <>
+          {isJoined ? (
+            <Alert variant="danger">Already Joined</Alert>
+          ) : (
+            <Card style={{ maxWidth: '400px', margin: '0 auto' }}>
+              <p className="mt-2 mb-0">
+                Join the{' '}
+                <strong>{leagueName ? <>{leagueName} league</> : <>leage {leagueIndex}</>}</strong>{' '}
+                by creating a team
+              </p>
+              <Card.Body>
+                <Form.Control
+                  disabled={spinner}
+                  className="align-items-center"
+                  onChange={(event) => setTeamNameInput(event.target.value)}
+                  value={teamNameInput}
+                  type="text"
+                  placeholder="Enter Team Name"
+                  autoComplete="off"
+                  // isInvalid={}
+                />
 
-            <InputGroup className="my-4">
-              <Form.Control
-                disabled={spinner}
-                className="align-items-center"
-                onChange={(event) => setFeesInput(event.target.value)}
-                value={feesInput}
-                type="text"
-                placeholder="Enter fees"
-                autoComplete="off"
-                isInvalid={isNaN(+feesInput)}
-              />
-              <InputGroup.Append>
-                <InputGroup.Text id="basic-addon2">SOL</InputGroup.Text>
-              </InputGroup.Append>
-            </InputGroup>
+                <InputGroup className="my-4">
+                  <Form.Control
+                    disabled={spinner}
+                    className="align-items-center"
+                    onChange={(event) => setFeesInput(event.target.value)}
+                    value={feesInput}
+                    type="text"
+                    placeholder="Enter fees"
+                    autoComplete="off"
+                    isInvalid={isNaN(+feesInput)}
+                  />
+                  <InputGroup.Append>
+                    <InputGroup.Text id="basic-addon2">SOL</InputGroup.Text>
+                  </InputGroup.Append>
+                </InputGroup>
 
-            <button
-              disabled={spinner}
-              onClick={() => {
-                setSpinner(true);
-                joinLeague()
-                  .then(() => {
-                    setSpinner(false);
-                    history.push(`/leagues/${leagueIndex}/draft-selection`);
-                  })
-                  .catch((err) => {
-                    alert('Error:' + err?.message ?? err);
-                    console.log(err);
-                    setSpinner(false);
-                  });
-              }}
-              className="btn mt-4"
-            >
-              {spinner ? 'Joining...' : <>Join by paying {feesInput} SOL</>}
-            </button>
-          </Card.Body>
-        </Card>
+                <button
+                  disabled={spinner}
+                  onClick={() => {
+                    setSpinner(true);
+                    joinLeague()
+                      .then(() => {
+                        setSpinner(false);
+                        history.push(`/leagues/${leagueIndex}/draft-selection`);
+                      })
+                      .catch((err) => {
+                        alert('Error:' + err?.message ?? err);
+                        console.log(err);
+                        setSpinner(false);
+                      });
+                  }}
+                  className="btn mt-4"
+                >
+                  {spinner ? 'Joining...' : <>Join by paying {feesInput} SOL</>}
+                </button>
+              </Card.Body>
+            </Card>
+          )}
+        </>
       )}
 
       {joinedTeams !== null ? (

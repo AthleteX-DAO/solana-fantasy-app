@@ -173,169 +173,177 @@ export const Lineups: FunctionComponent<RouteComponentProps<MatchParams>> = (pro
 
   return (
     <Layout removeTopMargin heading="Lineups">
-      <Container>
-        <h4 className="align-left mb-4">
-          Upcomming Week's Lineup Selection (Week{' '}
-          {root !== null ? root.currentWeek + 1 : 'Loading...'})
-        </h4>
-        {newLineup === null ? (
-          <p>Loading existing lineups set for the next week...</p>
-        ) : (
-          <Row className="pb-3">
-            <Col>
-              <Card>
-                <Card.Body>
-                  <strong>Bench List</strong>
-                  {newLineup.length !== 0 ? (
-                    <p className="small mb-0">Click on player to include</p>
-                  ) : null}
-                  <br />
-                  {players
-                    ?.map((p, i): [Player_, number] => [p, i])
-                    .filter(
-                      (playerEntry) =>
-                        playerEntry[0].choosenByTeamIndex === selfTeamIndex &&
-                        !newLineup.includes(playerEntry[1] + 1)
-                    )
-                    .map((playerEntry) => {
-                      const [player, index] = playerEntry;
-                      return (
-                        <>
-                          <span
-                            className="cursor-pointer"
-                            onClick={() => {
-                              if (newLineup.length < 8) {
-                                setNewLineup((prevNewLineup) => {
-                                  const _newLineup = [...(prevNewLineup ?? [])];
-                                  _newLineup.push(index + 1);
-                                  return _newLineup;
-                                });
-                              } else {
-                                window.alert('Max 8 players can be selected in lineup');
-                              }
-                            }}
-                          >
-                            {playersResp?.find((p) => p.PlayerID === player.externalId)?.Name} (
-                            {player.position})
-                          </span>
-                          <br />
-                        </>
-                      );
-                    })}
-                </Card.Body>
-              </Card>
-            </Col>
-            <Col xs={2}>
-              <Card.Body>{'==>'}</Card.Body>
-            </Col>
-            <Col>
-              <Card>
-                <Card.Body>
-                  <strong>Weekly Lineup (8 Players)</strong>
-                  {newLineup.length !== 0 ? (
-                    <p className="small mb-0">Click on player to remove</p>
-                  ) : null}
-                  <br />
-                  {newLineup.map((playerId, index) => (
-                    <span
-                      className="cursor-pointer"
-                      onClick={() => {
-                        setNewLineup((prevNewLineup) => {
-                          const _newLineup = (prevNewLineup ?? []).slice();
-                          _newLineup.splice(index, 1);
-                          return _newLineup;
-                        });
-                      }}
-                    >
-                      {players ? (
-                        <>
-                          {getNameByPlayerIndex(playerId - 1)} ({players[playerId - 1].position})
-                        </>
-                      ) : (
-                        playerId
-                      )}
-                      <br />
-                    </span>
-                  ))}
-
-                  {newLineup.length === 8 ? (
-                    isLineupChanged ? (
-                      <button
-                        className="btn mt-4"
-                        disabled={!isLineupChanged}
-                        onClick={() => {
-                          setSpinner(true);
-                          updateLineupTx()
-                            .then(() => {
-                              setSpinner(false);
-                              setTimeout(() => {
-                                refreshRoot(true).catch(console.error);
-                                alert('Tx sent!');
-                              }, 1000);
-                            })
-                            .catch((err) => {
-                              alert('Error:' + err?.message ?? err);
-                              console.log(err);
-                              setSpinner(false);
-                            });
-                        }}
-                      >
-                        Submit Lineup Selection
-                      </button>
-                    ) : (
-                      <Alert variant="success" className="mb-0 mt-3">
-                        This lineup is set in the contract for the upcoming week. To change, remove
-                        a player and add another.
-                      </Alert>
-                    )
-                  ) : null}
-                </Card.Body>
-              </Card>
-            </Col>
-          </Row>
-        )}
-
-        <h4 className="align-left my-4">Current Lineup (Week {root?.currentWeek})</h4>
-
-        {root !== null && league !== null && root.currentWeek === league.startWeek ? (
-          <p>
-            This league started this week so you have these default lineups. You can choose for next
-            week using above.
-          </p>
-        ) : null}
-        <Row className="pb-3">
-          <Col>
-            <div className="team-card-scroll-deck">
-              {teams?.map((team, index) => (
-                <Card key={index}>
+      {!window.wallet ? (
+        <Alert variant="danger">
+          Wallet is not loaded. If you just refreshed the page, then your wallet was flushed from
+          memory when you refreshed the page. When you import your wallet, you can choose to cache
+          it locally to prevent this behaviour.
+        </Alert>
+      ) : (
+        <Container>
+          <h4 className="align-left mb-4">
+            Upcomming Week's Lineup Selection (Week{' '}
+            {root !== null ? root.currentWeek + 1 : 'Loading...'})
+          </h4>
+          {newLineup === null ? (
+            <p>Loading existing lineups set for the next week...</p>
+          ) : (
+            <Row className="pb-3">
+              <Col>
+                <Card>
                   <Card.Body>
-                    <strong>Team #{index}</strong>
+                    <strong>Bench List</strong>
+                    {newLineup.length !== 0 ? (
+                      <p className="small mb-0">Click on player to include</p>
+                    ) : null}
                     <br />
-                    {team.teamName}
-                    <br />
-                    <br />
-                    <u>Lineups</u>
-                    <br />
-                    {root &&
-                      team.lineups[root.currentWeek].map((playerId) => (
-                        <>
-                          {players ? (
-                            <>
-                              {getNameByPlayerIndex(playerId - 1)} ({players[playerId].position})
-                            </>
-                          ) : (
-                            playerId
-                          )}
-                          <br />
-                        </>
-                      ))}
+                    {players
+                      ?.map((p, i): [Player_, number] => [p, i])
+                      .filter(
+                        (playerEntry) =>
+                          playerEntry[0].choosenByTeamIndex === selfTeamIndex &&
+                          !newLineup.includes(playerEntry[1] + 1)
+                      )
+                      .map((playerEntry) => {
+                        const [player, index] = playerEntry;
+                        return (
+                          <>
+                            <span
+                              className="cursor-pointer"
+                              onClick={() => {
+                                if (newLineup.length < 8) {
+                                  setNewLineup((prevNewLineup) => {
+                                    const _newLineup = [...(prevNewLineup ?? [])];
+                                    _newLineup.push(index + 1);
+                                    return _newLineup;
+                                  });
+                                } else {
+                                  window.alert('Max 8 players can be selected in lineup');
+                                }
+                              }}
+                            >
+                              {playersResp?.find((p) => p.PlayerID === player.externalId)?.Name} (
+                              {player.position})
+                            </span>
+                            <br />
+                          </>
+                        );
+                      })}
                   </Card.Body>
                 </Card>
-              ))}
-            </div>
-          </Col>
-        </Row>
-      </Container>
+              </Col>
+              <Col xs={2}>
+                <Card.Body>{'==>'}</Card.Body>
+              </Col>
+              <Col>
+                <Card>
+                  <Card.Body>
+                    <strong>Weekly Lineup (8 Players)</strong>
+                    {newLineup.length !== 0 ? (
+                      <p className="small mb-0">Click on player to remove</p>
+                    ) : null}
+                    <br />
+                    {newLineup.map((playerId, index) => (
+                      <span
+                        className="cursor-pointer"
+                        onClick={() => {
+                          setNewLineup((prevNewLineup) => {
+                            const _newLineup = (prevNewLineup ?? []).slice();
+                            _newLineup.splice(index, 1);
+                            return _newLineup;
+                          });
+                        }}
+                      >
+                        {players ? (
+                          <>
+                            {getNameByPlayerIndex(playerId - 1)} ({players[playerId - 1].position})
+                          </>
+                        ) : (
+                          playerId
+                        )}
+                        <br />
+                      </span>
+                    ))}
+
+                    {newLineup.length === 8 ? (
+                      isLineupChanged ? (
+                        <button
+                          className="btn mt-4"
+                          disabled={!isLineupChanged}
+                          onClick={() => {
+                            setSpinner(true);
+                            updateLineupTx()
+                              .then(() => {
+                                setSpinner(false);
+                                setTimeout(() => {
+                                  refreshRoot(true).catch(console.error);
+                                  alert('Tx sent!');
+                                }, 1000);
+                              })
+                              .catch((err) => {
+                                alert('Error:' + err?.message ?? err);
+                                console.log(err);
+                                setSpinner(false);
+                              });
+                          }}
+                        >
+                          Submit Lineup Selection
+                        </button>
+                      ) : (
+                        <Alert variant="success" className="mb-0 mt-3">
+                          This lineup is set in the contract for the upcoming week. To change,
+                          remove a player and add another.
+                        </Alert>
+                      )
+                    ) : null}
+                  </Card.Body>
+                </Card>
+              </Col>
+            </Row>
+          )}
+
+          <h4 className="align-left my-4">Current Lineup (Week {root?.currentWeek})</h4>
+
+          {root !== null && league !== null && root.currentWeek === league.startWeek ? (
+            <p>
+              This league started this week so you have these default lineups. You can choose for
+              next week using above.
+            </p>
+          ) : null}
+          <Row className="pb-3">
+            <Col>
+              <div className="team-card-scroll-deck">
+                {teams?.map((team, index) => (
+                  <Card key={index}>
+                    <Card.Body>
+                      <strong>Team #{index}</strong>
+                      <br />
+                      {team.teamName}
+                      <br />
+                      <br />
+                      <u>Lineups</u>
+                      <br />
+                      {root &&
+                        team.lineups[root.currentWeek].map((playerId) => (
+                          <>
+                            {players ? (
+                              <>
+                                {getNameByPlayerIndex(playerId - 1)} ({players[playerId].position})
+                              </>
+                            ) : (
+                              playerId
+                            )}
+                            <br />
+                          </>
+                        ))}
+                    </Card.Body>
+                  </Card>
+                ))}
+              </div>
+            </Col>
+          </Row>
+        </Container>
+      )}
     </Layout>
   );
 };
