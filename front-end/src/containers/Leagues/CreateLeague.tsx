@@ -101,7 +101,7 @@ export function CreateLeague() {
             }}
           >
             {!spinner
-              ? `Create Leage and Join${
+              ? `Create League and Join${
                   leagueEntryCostInput ? ` by paying ${leagueEntryCostInput} SOL` : ''
                 }`
               : 'Creating...'}
