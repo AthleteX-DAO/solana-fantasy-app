@@ -55,6 +55,8 @@ export const Wallet: FunctionComponent<{}> = (props) => {
     setPrivateKeyDisplay(null);
   };
 
+  let [airdropSpinner, setAirdropSpinner] = useState<boolean>(false);
+
   return (
     <Layout heading="Wallet">
       <Card style={{ maxWidth: '800px', margin: '0 auto' }}>
@@ -84,19 +86,22 @@ export const Wallet: FunctionComponent<{}> = (props) => {
                 {balance !== null ? (
                   <>
                     <span className="monospace">{balance / 10 ** 9}</span> SOL{' '}
-                    <span
-                      className="cursor-pointer"
+                    <button
+                      className="btn my-2"
+                      disabled={airdropSpinner}
                       onClick={async () => {
+                        setAirdropSpinner(true);
                         if (window.wallet) {
                           const pub = new PublicKey(window.wallet.publicKey);
                           await window.connection.requestAirdrop(pub, 1 * 10 ** 9);
                           await new Promise((res) => setTimeout(res, 1000));
                           await updateBalance();
                         }
+                        setAirdropSpinner(false);
                       }}
                     >
-                      (request airdrop)
-                    </span>
+                      {airdropSpinner ? 'Requesting...' : 'Request AirDrop'}
+                    </button>
                   </>
                 ) : (
                   'Loading...'
