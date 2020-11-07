@@ -326,8 +326,12 @@ export const DraftSelection: FunctionComponent<RouteComponentProps<MatchParams>>
                       }}
                     >
                       <td>
-                        <span
-                          className="cursor-pointer"
+                        <button
+                          className="btn"
+                          disabled={
+                            player.choosenByTeamIndex !== -1 ||
+                            (players && !doesRosterLimitHold(players, player.position))
+                          }
                           onClick={() => {
                             if (
                               league !== null &&
@@ -375,7 +379,7 @@ export const DraftSelection: FunctionComponent<RouteComponentProps<MatchParams>>
                         >
                           {player.choosenByTeamIndex !== -1 ? (
                             <>
-                              [Taken by{' '}
+                              Taken by{' '}
                               {player.choosenByTeamIndex === selfTeamIndex ? (
                                 'You'
                               ) : (
@@ -387,14 +391,13 @@ export const DraftSelection: FunctionComponent<RouteComponentProps<MatchParams>>
                                     : `#${player.choosenByTeamIndex + 1}`}
                                 </>
                               )}
-                              ]
                             </>
                           ) : players && doesRosterLimitHold(players, player.position) ? (
-                            <>[Select]</>
+                            <>Select</>
                           ) : (
-                            <>[Roster Full]</>
+                            <>Roster Full</>
                           )}
-                        </span>
+                        </button>
                       </td>
                       <td>{player.externalId}</td>
                       {(() => {
