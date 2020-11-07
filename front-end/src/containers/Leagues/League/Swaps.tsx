@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
-import { Container, Row, Col, Card, Dropdown, Alert } from 'react-bootstrap';
+import { Container, Row, Col, Card, Dropdown, Alert, Table } from 'react-bootstrap';
 import { RouteComponentProps } from 'react-router-dom';
 import { League, Player, Position, Root, UserState } from '../../../sdk/state';
 import { Layout } from '../../Layout';
@@ -13,14 +13,12 @@ interface Player_ {
 
 type Position_ = 'QB' | 'RB' | 'WR' | 'TE' | 'K' | 'D/ST';
 
-const MAX_SELECT_COUNT = {
-  QB: 4,
-  RB: 8,
-  WR: 8,
-  TE: 3,
-  K: 3,
-  'D/ST': 3,
-};
+interface SwapProposal_ {
+  acceptingUserId: number;
+  proposingUserId: number;
+  wantPlayerId: number;
+  givePlayerId: number;
+}
 
 export const Swaps: FunctionComponent<RouteComponentProps<MatchParams>> = (props) => {
   const leagueIndex = +props.match.params.index;
@@ -136,7 +134,18 @@ export const Swaps: FunctionComponent<RouteComponentProps<MatchParams>> = (props
   }, [league]);
 
   // const [selfTeamIndex, setSelfTeamIndex] = useState<number | null>(null);
-  const [otherTeamIndex, setOtherTeamIndex] = useState<number>(0);
+  const [otherTeamIndex, setOtherTeamIndex] = useState<number | null>(null);
+  useEffect(() => {
+    if (teams === null) return;
+
+    if (otherTeamIndex === null) {
+      setOtherTeamIndex(
+        teams
+          .map((t, i): [UserState, number] => [t, i])
+          .filter((tEntry) => tEntry[1] !== selfTeamIndex)[0][1]
+      );
+    }
+  }, [teams]);
 
   const [givePlayer, setGivePlayer] = useState<number | null>(null);
   const [wantPlayer, setWantPlayer] = useState<number | null>(null);
@@ -212,6 +221,40 @@ export const Swaps: FunctionComponent<RouteComponentProps<MatchParams>> = (props
     console.log({ resp });
   };
 
+  const [swapProposals, setSwapProposals] = useState<SwapProposal_[] | null>(null);
+  useEffect(() => {
+    (async () => {
+      if (league === null) return;
+      if (selfTeamIndex === null) return;
+      const myPlayers = getPlayersOfTeamIndex(selfTeamIndex);
+      const swapProposalsForMe: SwapProposal_[] = [];
+      league.userStates
+        .filter((u) => u.isInitialized)
+        .forEach((user, userIndex) => {
+          user.swapProposals
+            .filter((sp) => sp.isInitialized)
+            .forEach((sp, spIndex) => {
+              const acceptingUserIndex = league.userStates
+                .filter((u) => u.isInitialized)
+                .findIndex((_, userIndex_) => {
+                  return !!getPlayersOfTeamIndex(userIndex_).find(
+                    (playerEntry) => playerEntry[1] + 1 === sp.wantPlayerId
+                  );
+                });
+
+              const { wantPlayerId, givePlayerId } = sp;
+              swapProposalsForMe.push({
+                acceptingUserId: acceptingUserIndex + 1,
+                proposingUserId: userIndex + 1,
+                wantPlayerId,
+                givePlayerId,
+              });
+            });
+        });
+      setSwapProposals(swapProposalsForMe);
+    })().catch(console.error);
+  }, [league, selfTeamIndex]);
+
   return (
     <Layout removeTopMargin heading="Swaps">
       {!window.wallet ? (
@@ -262,7 +305,8 @@ export const Swaps: FunctionComponent<RouteComponentProps<MatchParams>> = (props
                     <Dropdown.Toggle variant="success" id="dropdown-basic">
                       {teams ? (
                         <>
-                          Team#{otherTeamIndex} {teams[otherTeamIndex].teamName}
+                          Team#{otherTeamIndex !== null ? otherTeamIndex + 1 : 'loading...'}{' '}
+                          {otherTeamIndex !== null ? teams[otherTeamIndex].teamName : 'Loading...'}
                         </>
                       ) : (
                         'Loading...'
@@ -280,29 +324,30 @@ export const Swaps: FunctionComponent<RouteComponentProps<MatchParams>> = (props
                               setWantPlayer(null);
                             }}
                           >
-                            Team#{tEntry[1]} {tEntry[0].teamName}
+                            Team#{tEntry[1] + 1} {tEntry[0].teamName}
                           </Dropdown.Item>
                         ))}
                     </Dropdown.Menu>
                   </Dropdown>
 
-                  {getPlayersOfTeamIndex(otherTeamIndex).map((playerEntry) => {
-                    const [player, index] = playerEntry;
-                    return (
-                      <>
-                        <span
-                          className="cursor-pointer"
-                          style={{
-                            backgroundColor: wantPlayer === index + 1 ? '#3333' : undefined,
-                          }}
-                          onClick={setWantPlayer.bind(null, index + 1)}
-                        >
-                          {getNameByPlayerExternalId(player.externalId)} ({player.position})
-                        </span>
-                        <br />
-                      </>
-                    );
-                  })}
+                  {otherTeamIndex !== null &&
+                    getPlayersOfTeamIndex(otherTeamIndex).map((playerEntry) => {
+                      const [player, index] = playerEntry;
+                      return (
+                        <>
+                          <span
+                            className="cursor-pointer"
+                            style={{
+                              backgroundColor: wantPlayer === index + 1 ? '#3333' : undefined,
+                            }}
+                            onClick={setWantPlayer.bind(null, index + 1)}
+                          >
+                            {getNameByPlayerExternalId(player.externalId)} ({player.position})
+                          </span>
+                          <br />
+                        </>
+                      );
+                    })}
                 </Card.Body>
               </Card>
             </Col>
@@ -312,8 +357,8 @@ export const Swaps: FunctionComponent<RouteComponentProps<MatchParams>> = (props
             <Col>
               {givePlayer !== null && players !== null ? (
                 <p>
-                  Requesting Swap of {getNameByPlayerIndex(givePlayer)} for{' '}
-                  {wantPlayer !== null ? getNameByPlayerIndex(wantPlayer) : '...'}
+                  Requesting Swap of {getNameByPlayerIndex(givePlayer - 1)} for{' '}
+                  {wantPlayer !== null ? getNameByPlayerIndex(wantPlayer - 1) : '...'}
                 </p>
               ) : null}
 
@@ -339,9 +384,48 @@ export const Swaps: FunctionComponent<RouteComponentProps<MatchParams>> = (props
               >
                 Request
               </button>
-              <button className="btn m-4" disabled={givePlayer === null || wantPlayer === null}>
-                Accept
-              </button>
+            </Col>
+          </Row>
+          <Row>
+            <Col>
+              <Card>
+                <Card.Body>
+                  <h5>Proposals for you</h5>
+                  {swapProposals !== null && selfTeamIndex !== null ? (
+                    swapProposals.length !== 0 ? (
+                      <Table responsive>
+                        <thead>
+                          <tr>
+                            <th>Proposer Team</th>
+                            <th>Give Player</th>
+                            <th>Want Player</th>
+                            <th>Action</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {swapProposals
+                            .filter((sp) => sp.acceptingUserId === selfTeamIndex + 1)
+                            .map((sp) => (
+                              <tr>
+                                <td>
+                                  Team #{sp.proposingUserId}{' '}
+                                  {league?.userStates[sp.proposingUserId - 1].teamName}
+                                </td>
+                                <td>{getNameByPlayerIndex(sp.givePlayerId - 1)}</td>
+                                <td>{getNameByPlayerIndex(sp.wantPlayerId - 1)}</td>
+                                <td>Accept</td>
+                              </tr>
+                            ))}
+                        </tbody>
+                      </Table>
+                    ) : (
+                      'No swap proposals'
+                    )
+                  ) : (
+                    'Loading...'
+                  )}
+                </Card.Body>
+              </Card>
             </Col>
           </Row>
         </Container>
