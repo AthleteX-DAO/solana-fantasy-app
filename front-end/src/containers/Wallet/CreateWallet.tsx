@@ -2,7 +2,7 @@ import React, { FunctionComponent, useState } from 'react';
 import { Alert, Card, Form } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { Layout } from '../Layout';
-
+import { hexlify } from '@ethersproject/bytes';
 import { CreateClojuredWallet } from '../../clojured-wallet';
 
 export const CreateWallet: FunctionComponent<{}> = (props) => {
@@ -16,6 +16,16 @@ export const CreateWallet: FunctionComponent<{}> = (props) => {
       });
       const wallet = CreateClojuredWallet();
       window.wallet = wallet;
+      try {
+        window.wallet.callback(
+          'Wallet Created! Do you want to locally cache your wallet?',
+          (acc) => {
+            try {
+              localStorage.setItem('sfs-secret', hexlify(acc.secretKey));
+            } catch {}
+          }
+        );
+      } catch {}
       setDisplay({
         message: 'Wallet create successfully!',
         variant: 'success',

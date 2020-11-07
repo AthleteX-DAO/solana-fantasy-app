@@ -3,7 +3,7 @@ import { Alert, Card, Form } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { Layout } from '../Layout';
 
-import { isHexString } from '@ethersproject/bytes';
+import { hexlify, isHexString } from '@ethersproject/bytes';
 import { CreateClojuredWallet } from '../../clojured-wallet';
 
 export const ImportWallet: FunctionComponent<{}> = (props) => {
@@ -18,6 +18,16 @@ export const ImportWallet: FunctionComponent<{}> = (props) => {
       });
       const wallet = CreateClojuredWallet(privateKeyInput);
       window.wallet = wallet;
+      try {
+        window.wallet.callback(
+          'Wallet Imported! Do you want to locally cache your wallet?',
+          (acc) => {
+            try {
+              localStorage.setItem('sfs-secret', hexlify(acc.secretKey));
+            } catch {}
+          }
+        );
+      } catch {}
       setDisplay({
         message: 'Wallet imported successfully!',
         variant: 'success',
