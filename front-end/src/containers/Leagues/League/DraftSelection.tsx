@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
-import { Container, Row, Col, Card, Form, Table, CardDeck } from 'react-bootstrap';
+import { Container, Row, Col, Card, Table, FormControl, InputGroup } from 'react-bootstrap';
 import { RouteComponentProps } from 'react-router-dom';
 import { League, Player, Position, Root, TEAM_PLAYERS_COUNT, UserState } from '../../../sdk/state';
 import { Layout } from '../../Layout';
@@ -203,6 +203,7 @@ export const DraftSelection: FunctionComponent<RouteComponentProps<MatchParams>>
     console.log({ resp });
   };
 
+  const [searchStr, setSearchStr] = useState<string>('');
   return (
     <Layout removeTopMargin heading="Draft Selection">
       <Container>
@@ -306,124 +307,159 @@ export const DraftSelection: FunctionComponent<RouteComponentProps<MatchParams>>
             </Row>
           </Col>
           <Col xs={9}>
-            <Table responsive>
-              <thead>
-                <tr>
-                  <th></th>
-                  <th>External ID</th>
-                  <th>Name</th>
-                  <th>Average Draft Position</th>
-                  <th>Position</th>
-                </tr>
-              </thead>
-              <tbody>
-                {players?.map((player, index) => {
-                  return (
-                    <tr
-                      key={index}
-                      style={{
-                        backgroundColor: player.choosenByTeamIndex !== -1 ? '#0002' : undefined,
-                      }}
-                    >
-                      <td>
-                        <button
-                          className="btn"
-                          disabled={
-                            player.choosenByTeamIndex !== -1 ||
-                            (players && !doesRosterLimitHold(players, player.position))
-                          }
-                          onClick={() => {
-                            if (
-                              league !== null &&
-                              teams !== null &&
-                              league.currentPick / teams.length >= TEAM_PLAYERS_COUNT
-                            ) {
-                              alert('Draft Selection is over. You may proceed to lineups.');
-                              return;
-                            }
-
-                            if (players && !doesRosterLimitHold(players, player.position)) {
-                              alert(
-                                `You are breaking the roster limit criteria! You already own ${
-                                  getSelectCount(players)[player.position]
-                                } ${player.position}s, and it is the max limit.`
-                              );
-                              return;
-                            }
-
-                            if (pickOrder !== null && league !== null && selfTeamIndex !== null) {
-                              const currentPickerTeamId = pickOrder[league.currentPick];
-                              if (selfTeamIndex + 1 !== currentPickerTeamId) {
-                                alert(
-                                  `Currently it's turn of Team #${currentPickerTeamId} while you are Team #${
-                                    selfTeamIndex + 1
-                                  }. So your transaction would fail.`
-                                );
-                              }
-                            }
-                            setSpinner(true);
-                            pickPlayerTx(index + 1)
-                              .then(() => {
-                                setSpinner(false);
-                                setTimeout(() => {
-                                  refreshRoot(true).catch(console.error);
-                                  alert('Tx sent!');
-                                }, 1000);
-                              })
-                              .catch((err) => {
-                                alert('Error:' + err?.message ?? err);
-                                console.log(err);
-                                setSpinner(false);
-                              });
+            <InputGroup className="mb-3">
+              <InputGroup.Prepend>
+                <InputGroup.Text id="basic-addon1">🔍</InputGroup.Text>
+              </InputGroup.Prepend>
+              <FormControl
+                placeholder="Search for players..."
+                aria-label="Search for players..."
+                aria-describedby="basic-addon1"
+                value={searchStr}
+                onChange={(e) => setSearchStr(e.target.value)}
+              />
+            </InputGroup>
+            {players !== null ? (
+              <Table responsive>
+                <thead>
+                  <tr>
+                    <th></th>
+                    <th>External ID</th>
+                    <th>Name</th>
+                    <th>Average Draft Position</th>
+                    <th>Position</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {players
+                    .filter((player) => {
+                      const p = playersResp?.find((p) => p.PlayerID === player.externalId);
+                      const lcInclude = (a: string | number, b: string) =>
+                        String(a).toLowerCase().includes(b.toLowerCase());
+                      return (
+                        !searchStr ||
+                        lcInclude(player.position, searchStr) ||
+                        lcInclude(player.externalId, searchStr) ||
+                        (p
+                          ? lcInclude(p.Name, searchStr) ||
+                            lcInclude(p.AverageDraftPosition, searchStr)
+                          : false)
+                      );
+                    })
+                    .map((player, index) => {
+                      return (
+                        <tr
+                          key={index}
+                          style={{
+                            backgroundColor: player.choosenByTeamIndex !== -1 ? '#0002' : undefined,
                           }}
                         >
-                          {player.choosenByTeamIndex !== -1 ? (
-                            <>
-                              Taken by{' '}
-                              {player.choosenByTeamIndex === selfTeamIndex ? (
-                                'You'
-                              ) : (
+                          <td>
+                            <button
+                              className="btn"
+                              disabled={
+                                player.choosenByTeamIndex !== -1 ||
+                                (players && !doesRosterLimitHold(players, player.position))
+                              }
+                              onClick={() => {
+                                if (
+                                  league !== null &&
+                                  teams !== null &&
+                                  league.currentPick / teams.length >= TEAM_PLAYERS_COUNT
+                                ) {
+                                  alert('Draft Selection is over. You may proceed to lineups.');
+                                  return;
+                                }
+
+                                if (players && !doesRosterLimitHold(players, player.position)) {
+                                  alert(
+                                    `You are breaking the roster limit criteria! You already own ${
+                                      getSelectCount(players)[player.position]
+                                    } ${player.position}s, and it is the max limit.`
+                                  );
+                                  return;
+                                }
+
+                                if (
+                                  pickOrder !== null &&
+                                  league !== null &&
+                                  selfTeamIndex !== null
+                                ) {
+                                  const currentPickerTeamId = pickOrder[league.currentPick];
+                                  if (selfTeamIndex + 1 !== currentPickerTeamId) {
+                                    alert(
+                                      `Currently it's turn of Team #${currentPickerTeamId} while you are Team #${
+                                        selfTeamIndex + 1
+                                      }. So your transaction would fail.`
+                                    );
+                                  }
+                                }
+                                setSpinner(true);
+                                pickPlayerTx(index + 1)
+                                  .then(() => {
+                                    setSpinner(false);
+                                    setTimeout(() => {
+                                      refreshRoot(true).catch(console.error);
+                                      alert('Tx sent!');
+                                    }, 1000);
+                                  })
+                                  .catch((err) => {
+                                    alert('Error:' + err?.message ?? err);
+                                    console.log(err);
+                                    setSpinner(false);
+                                  });
+                              }}
+                            >
+                              {player.choosenByTeamIndex !== -1 ? (
                                 <>
-                                  {teams !== null
-                                    ? `${teams[player.choosenByTeamIndex].teamName} (#${
-                                        player.choosenByTeamIndex + 1
-                                      })`
-                                    : `#${player.choosenByTeamIndex + 1}`}
+                                  Taken by{' '}
+                                  {player.choosenByTeamIndex === selfTeamIndex ? (
+                                    'You'
+                                  ) : (
+                                    <>
+                                      {teams !== null
+                                        ? `${teams[player.choosenByTeamIndex].teamName} (#${
+                                            player.choosenByTeamIndex + 1
+                                          })`
+                                        : `#${player.choosenByTeamIndex + 1}`}
+                                    </>
+                                  )}
                                 </>
+                              ) : players && doesRosterLimitHold(players, player.position) ? (
+                                <>Select</>
+                              ) : (
+                                <>Roster Full</>
                               )}
-                            </>
-                          ) : players && doesRosterLimitHold(players, player.position) ? (
-                            <>Select</>
-                          ) : (
-                            <>Roster Full</>
-                          )}
-                        </button>
-                      </td>
-                      <td>{player.externalId}</td>
-                      {(() => {
-                        const p = playersResp?.find((p) => p.PlayerID === player.externalId);
-                        if (p) {
-                          return (
-                            <>
-                              <td>{p.Name}</td>
-                              <td>{p.AverageDraftPosition}</td>
-                            </>
-                          );
-                        } else {
-                          return (
-                            <>
-                              <td>-</td>
-                              <td>-</td>
-                            </>
-                          );
-                        }
-                      })()}
-                      <td>{player.position}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </Table>
+                            </button>
+                          </td>
+                          <td>{player.externalId}</td>
+                          {(() => {
+                            const p = playersResp?.find((p) => p.PlayerID === player.externalId);
+                            if (p) {
+                              return (
+                                <>
+                                  <td>{p.Name}</td>
+                                  <td>{p.AverageDraftPosition}</td>
+                                </>
+                              );
+                            } else {
+                              return (
+                                <>
+                                  <td>-</td>
+                                  <td>-</td>
+                                </>
+                              );
+                            }
+                          })()}
+                          <td>{player.position}</td>
+                        </tr>
+                      );
+                    })}
+                </tbody>
+              </Table>
+            ) : (
+              'Loading players....'
+            )}
           </Col>
         </Row>
       </Container>
