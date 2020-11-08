@@ -373,7 +373,9 @@ export const DraftSelection: FunctionComponent<RouteComponentProps<MatchParams>>
                   </thead>
                   <tbody>
                     {players
-                      .filter((player) => {
+                      .map((p, i): [Player_, number] => [p, i])
+                      .filter((playerEntry) => {
+                        const player = playerEntry[0];
                         const p = playersResp?.find((p) => p.PlayerID === player.externalId);
                         const lcInclude = (a: string | number, b: string) =>
                           String(a).toLowerCase().includes(b.toLowerCase());
@@ -393,7 +395,9 @@ export const DraftSelection: FunctionComponent<RouteComponentProps<MatchParams>>
                           (searchFilter === '' ? inADP : searchFilter === 'ADP' && inADP)
                         );
                       })
-                      .map((player, index) => {
+                      .map((playerEntry) => {
+                        const player = playerEntry[0];
+                        const index = playerEntry[1];
                         return (
                           <tr
                             key={index}
