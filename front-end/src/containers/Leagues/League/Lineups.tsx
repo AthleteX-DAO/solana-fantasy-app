@@ -44,41 +44,43 @@ export const Lineups: FunctionComponent<RouteComponentProps<MatchParams>> = (pro
   useEffect(() => {
     if (root === null) return;
 
-    const _players = root.players.map((p, i) => {
-      let position: Position_;
-      switch (p.position) {
-        case Position.RB:
-          position = 'RB';
-          break;
-        case Position.WR:
-          position = 'WR';
-          break;
-        case Position.QB:
-          position = 'QB';
-          break;
-        case Position.TE:
-          position = 'TE';
-          break;
-        case Position.K:
-          position = 'K';
-          break;
-        case Position.DEF:
-          position = 'D/ST';
-          break;
-        default:
-          throw new Error(`Position from API not recognized: ${p.position}`);
-      }
+    const _players = root.players
+      .filter((p) => p.isInitialized)
+      .map((p, i) => {
+        let position: Position_;
+        switch (p.position) {
+          case Position.RB:
+            position = 'RB';
+            break;
+          case Position.WR:
+            position = 'WR';
+            break;
+          case Position.QB:
+            position = 'QB';
+            break;
+          case Position.TE:
+            position = 'TE';
+            break;
+          case Position.K:
+            position = 'K';
+            break;
+          case Position.DEF:
+            position = 'D/ST';
+            break;
+          default:
+            throw new Error(`Position from API not recognized: ${p.position}`);
+        }
 
-      const choosenByTeamIndex = root.leagues[leagueIndex].userStates.findIndex((usr) => {
-        return usr.userPlayers.includes(i + 1); // id and index (+ 1) thing
+        const choosenByTeamIndex = root.leagues[leagueIndex].userStates.findIndex((usr) => {
+          return usr.userPlayers.includes(i + 1); // id and index (+ 1) thing
+        });
+
+        return {
+          externalId: p.externalId,
+          position,
+          choosenByTeamIndex,
+        };
       });
-
-      return {
-        externalId: p.externalId,
-        position,
-        choosenByTeamIndex,
-      };
-    });
     setPlayers(_players);
   }, [root]);
 

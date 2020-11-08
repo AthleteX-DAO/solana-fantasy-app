@@ -13,8 +13,8 @@ import { Root } from './sdk/state';
 import axios, { AxiosResponse } from 'axios';
 
 window.Buffer = Buffer;
-window.sfsProgramId = new PublicKey('FGW83vLemzkrtYvWgq5m1jcfHZEEa33UkRzAGkavmydg');
-window.sfsRoot = new PublicKey('FkMYzn154qxDBgCsGAgxh2iA58tZtef57FMHXg1S8RB5');
+window.sfsProgramId = new PublicKey('72BADLV6Q13BCcVjWswedX6uBYykZGvqWbCDpVfcGqVN');
+window.sfsRoot = new PublicKey('64SthGW3gwc8TX1xuoemhs9BZSFb5eTY5CoZTZ3Kmo9o');
 window.connection = new Connection('https://devnet.solana.com', 'recent');
 const bankPromise = PublicKey.findProgramAddress([Buffer.from([0])], window.sfsProgramId);
 window.sfsSDK = async () =>

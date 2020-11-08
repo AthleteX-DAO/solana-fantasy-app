@@ -52,7 +52,7 @@ export const JoinLeague: FunctionComponent<RouteComponentProps<MatchParams>> = (
       const root = await window.getCachedRootInfo();
       const league = root.leagues[leagueIndex];
       setJoinedTeams(league.userStates.filter((u) => u.isInitialized));
-      setPendingJoins(league.usersLimit - league.userStateLength);
+      setPendingJoins(league.usersLimit - league.userStateCount);
     })().catch(console.error);
   }, []);
 

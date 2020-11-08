@@ -66,6 +66,7 @@ connection;
     console.log('Initializing root account');
 
     const allPlayers = await getPlayerList();
+    console.log('allPlayers.length', allPlayers.length);
 
     //   Uninitialized,
     // RB,

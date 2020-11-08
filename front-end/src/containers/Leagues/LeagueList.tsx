@@ -70,7 +70,7 @@ export const LeagueRow: FunctionComponent<{ league: League; leagueIndex: number 
       <td>{props.league.name || 'No Name'}</td>
       <td>{props.league.bid.toNumber() / 10 ** 9} SOL</td>
       <td>
-        {props.league.userStateLength}/{props.league.usersLimit}
+        {props.league.userStateCount}/{props.league.usersLimit}
       </td>
       <td>
         {isAlreadyJoined ? (
@@ -79,7 +79,7 @@ export const LeagueRow: FunctionComponent<{ league: League; leagueIndex: number 
           </button>
         ) : (
           <button
-            disabled={props.league.userStateLength >= props.league.usersLimit}
+            disabled={props.league.userStateCount >= props.league.usersLimit}
             onClick={() => {
               if (!!window.wallet) {
                 history.push(`/leagues/${props.leagueIndex}`);
@@ -89,7 +89,7 @@ export const LeagueRow: FunctionComponent<{ league: League; leagueIndex: number 
             }}
             className="btn"
           >
-            {props.league.userStateLength >= props.league.usersLimit ? 'Already Full' : 'Join'}
+            {props.league.userStateCount >= props.league.usersLimit ? 'Already Full' : 'Join'}
           </button>
         )}
       </td>
