@@ -328,8 +328,8 @@ export const Lineups: FunctionComponent<RouteComponentProps<MatchParams>> = (pro
                             <>
                               {players ? (
                                 <>
-                                  {getNameByPlayerIndex(playerId - 1)} ({players[playerId].position}
-                                  )
+                                  {getNameByPlayerIndex(playerId - 1)} (
+                                  {players[playerId - 1].position})
                                 </>
                               ) : (
                                 playerId
