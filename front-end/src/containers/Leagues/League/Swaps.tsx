@@ -146,7 +146,7 @@ export const Swaps: FunctionComponent<RouteComponentProps<MatchParams>> = (props
         ?.map((t, i): [UserState, number] => [t, i])
         .filter((tEntry) => tEntry[1] !== selfTeamIndex);
       if (otherTeams.length) {
-        setOtherTeamIndex([0][1]);
+        setOtherTeamIndex(otherTeams[0][1]);
       }
     }
   }, [teams]);
