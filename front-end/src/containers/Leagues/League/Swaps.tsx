@@ -32,6 +32,7 @@ export const Swaps: FunctionComponent<RouteComponentProps<MatchParams>> = (props
     const intervalId = setInterval(() => {
       refreshRoot(false).catch(console.error);
     }, 3000);
+    refreshRoot(false).catch(console.error);
     return () => {
       clearInterval(intervalId);
     };

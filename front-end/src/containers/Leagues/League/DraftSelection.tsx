@@ -43,6 +43,7 @@ export const DraftSelection: FunctionComponent<RouteComponentProps<MatchParams>>
     const intervalId = setInterval(() => {
       refreshRoot(false).catch(console.error);
     }, 3000);
+    refreshRoot(false).catch(console.error);
     return () => {
       clearInterval(intervalId);
     };

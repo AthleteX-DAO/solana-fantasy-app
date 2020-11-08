@@ -26,6 +26,7 @@ export const Lineups: FunctionComponent<RouteComponentProps<MatchParams>> = (pro
     const intervalId = setInterval(() => {
       refreshRoot(false).catch(console.error);
     }, 3000);
+    refreshRoot(false).catch(console.error);
     return () => {
       clearInterval(intervalId);
     };
