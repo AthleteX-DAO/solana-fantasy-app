@@ -294,8 +294,10 @@ export const Swaps: FunctionComponent<RouteComponentProps<MatchParams>> = (props
             <Col>
               <Card>
                 <Card.Body>
-                  <strong>My Team (Players on the Bench)</strong>
+                  <h4>My Team (Players on the Bench)</h4>
+                  <p className="small mb-0">Click on player to select</p>
                   <br />
+
                   {selfTeamIndex !== null
                     ? getPlayersOfTeamIndex(selfTeamIndex).map((playerEntry) => {
                         const [player, index] = playerEntry;

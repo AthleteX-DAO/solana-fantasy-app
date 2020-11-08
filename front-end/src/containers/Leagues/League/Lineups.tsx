@@ -132,7 +132,11 @@ export const Lineups: FunctionComponent<RouteComponentProps<MatchParams>> = (pro
       const lineupsNextWeek = league.userStates[selfTeamIndex].lineups[root.currentWeek];
 
       console.log({ lineupsNextWeek });
-      setNewLineup(lineupsNextWeek.filter((l) => l !== 0));
+      if (league.userStates[selfTeamIndex].isLineupSet) {
+        setNewLineup(lineupsNextWeek.filter((l) => l !== 0));
+      } else {
+        setNewLineup([]);
+      }
     }
   }, [root, league, selfTeamIndex]);
 
@@ -194,10 +198,9 @@ export const Lineups: FunctionComponent<RouteComponentProps<MatchParams>> = (pro
               <Col>
                 <Card>
                   <Card.Body>
-                    <strong>Bench List</strong>
-                    {newLineup.length !== 0 ? (
-                      <p className="small mb-0">Click on player to include</p>
-                    ) : null}
+                    <h4>Bench List</h4>
+                    <p className="small mb-0">Click on player to include</p>
+
                     <br />
                     {players
                       ?.map((p, i): [Player_, number] => [p, i])
@@ -240,10 +243,9 @@ export const Lineups: FunctionComponent<RouteComponentProps<MatchParams>> = (pro
               <Col>
                 <Card>
                   <Card.Body>
-                    <strong>Weekly Lineup (8 Players)</strong>
-                    {newLineup.length !== 0 ? (
-                      <p className="small mb-0">Click on player to remove</p>
-                    ) : null}
+                    <h4>Weekly Lineup (8 Players)</h4>
+                    <p className="small mb-0">Click on player to remove</p>
+
                     <br />
                     {newLineup.map((playerId, index) => (
                       <span
@@ -304,50 +306,57 @@ export const Lineups: FunctionComponent<RouteComponentProps<MatchParams>> = (pro
             </Row>
           )}
 
-          <h4 className="align-left my-4">Current Lineup (Week {root?.currentWeek})</h4>
-
           {root !== null && league !== null && root.currentWeek === league.startWeek ? (
             <p>
-              This league started this week so you have these default lineups. You can choose for
-              next week using above.
+              {root.currentWeek !== 0 ? (
+                <>This league was created while week {root.currentWeek} was going on. </>
+              ) : null}
+              You can choose your lineup for next week using above.
             </p>
           ) : null}
-          {root !== null && root.currentWeek > 0 ? (
-            <Row className="pb-3">
-              <Col>
-                <div className="team-card-scroll-deck">
-                  {teams?.map((team, index) => (
-                    <Card key={index}>
-                      <Card.Body>
-                        <strong>Team #{index}</strong>
-                        <br />
-                        {team.teamName}
-                        <br />
-                        <br />
-                        <u>Lineups</u>
-                        <br />
-                        {root &&
-                          team.lineups[root.currentWeek - 1]
-                            .filter((l) => l !== 0)
-                            .map((playerId) => (
-                              <>
-                                {players ? (
+
+          {root !== null && root.currentWeek ? (
+            <>
+              <h4 className="align-left my-4">Current Lineups (Week {root.currentWeek})</h4>
+
+              {root.currentWeek > 0 ? (
+                <Row className="pb-3">
+                  <Col>
+                    <div className="team-card-scroll-deck">
+                      {teams?.map((team, index) => (
+                        <Card key={index}>
+                          <Card.Body>
+                            <strong>Team #{index}</strong>
+                            <br />
+                            {team.teamName}
+                            <br />
+                            <br />
+                            <u>Lineups</u>
+                            <br />
+                            {root &&
+                              team.lineups[root.currentWeek - 1]
+                                .filter((l) => l !== 0)
+                                .map((playerId) => (
                                   <>
-                                    {getNameByPlayerIndex(playerId - 1)} (
-                                    {players[playerId - 1].position})
+                                    {players ? (
+                                      <>
+                                        {getNameByPlayerIndex(playerId - 1)} (
+                                        {players[playerId - 1].position})
+                                      </>
+                                    ) : (
+                                      playerId
+                                    )}
+                                    <br />
                                   </>
-                                ) : (
-                                  playerId
-                                )}
-                                <br />
-                              </>
-                            ))}
-                      </Card.Body>
-                    </Card>
-                  ))}
-                </div>
-              </Col>
-            </Row>
+                                ))}
+                          </Card.Body>
+                        </Card>
+                      ))}
+                    </div>
+                  </Col>
+                </Row>
+              ) : null}
+            </>
           ) : null}
         </Container>
       )}
