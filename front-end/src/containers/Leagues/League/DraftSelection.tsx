@@ -1,5 +1,16 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
-import { Container, Row, Col, Card, Table, FormControl, InputGroup, Alert } from 'react-bootstrap';
+import {
+  Container,
+  Row,
+  Col,
+  Card,
+  Table,
+  FormControl,
+  InputGroup,
+  Alert,
+  Dropdown,
+  DropdownButton,
+} from 'react-bootstrap';
 import { RouteComponentProps } from 'react-router-dom';
 import { League, Player, Position, Root, TEAM_PLAYERS_COUNT, UserState } from '../../../sdk/state';
 import { Layout } from '../../Layout';
@@ -207,6 +218,7 @@ export const DraftSelection: FunctionComponent<RouteComponentProps<MatchParams>>
   };
 
   const [searchStr, setSearchStr] = useState<string>('');
+  const [searchFilter, setSearchFilter] = useState<string>('');
 
   return (
     <Layout removeTopMargin heading="Draft Selection">
@@ -319,9 +331,27 @@ export const DraftSelection: FunctionComponent<RouteComponentProps<MatchParams>>
             </Col>
             <Col xs={9}>
               <InputGroup className="mb-3">
-                <InputGroup.Prepend>
-                  <InputGroup.Text id="basic-addon1">🔍</InputGroup.Text>
-                </InputGroup.Prepend>
+                <DropdownButton
+                  as={InputGroup.Prepend}
+                  variant="outline-secondary"
+                  title={`🔍${searchFilter ? ' ' + searchFilter : ''}`}
+                  id="input-group-dropdown-1"
+                >
+                  <Dropdown.Header>Set filter</Dropdown.Header>
+                  <Dropdown.Item onClick={setSearchFilter.bind(null, 'External ID')}>
+                    External ID
+                  </Dropdown.Item>
+                  <Dropdown.Item onClick={setSearchFilter.bind(null, 'Name')}>Name</Dropdown.Item>
+                  <Dropdown.Item onClick={setSearchFilter.bind(null, 'ADP')}>
+                    Average Draft Position
+                  </Dropdown.Item>
+                  <Dropdown.Item onClick={setSearchFilter.bind(null, 'Position')}>
+                    Position
+                  </Dropdown.Item>
+                  <Dropdown.Item onClick={setSearchFilter.bind(null, '')}>
+                    Remove filter
+                  </Dropdown.Item>
+                </DropdownButton>
                 <FormControl
                   placeholder="Search for players..."
                   aria-label="Search for players..."
@@ -347,14 +377,20 @@ export const DraftSelection: FunctionComponent<RouteComponentProps<MatchParams>>
                         const p = playersResp?.find((p) => p.PlayerID === player.externalId);
                         const lcInclude = (a: string | number, b: string) =>
                           String(a).toLowerCase().includes(b.toLowerCase());
+                        const inPosition = lcInclude(player.position, searchStr);
+                        const inExternalId = lcInclude(player.externalId, searchStr);
+                        const inName = p ? lcInclude(p.Name, searchStr) : false;
+                        const inADP = p ? lcInclude(p.AverageDraftPosition, searchStr) : false;
                         return (
                           !searchStr ||
-                          lcInclude(player.position, searchStr) ||
-                          lcInclude(player.externalId, searchStr) ||
-                          (p
-                            ? lcInclude(p.Name, searchStr) ||
-                              lcInclude(p.AverageDraftPosition, searchStr)
-                            : false)
+                          (searchFilter === ''
+                            ? inPosition
+                            : searchFilter === 'Position' && inPosition) ||
+                          (searchFilter === ''
+                            ? inExternalId
+                            : searchFilter === 'External ID' && inExternalId) ||
+                          (searchFilter === '' ? inName : searchFilter === 'Name' && inName) ||
+                          (searchFilter === '' ? inADP : searchFilter === 'ADP' && inADP)
                         );
                       })
                       .map((player, index) => {
