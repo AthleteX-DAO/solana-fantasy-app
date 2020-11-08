@@ -3,6 +3,7 @@ import { PublicKey } from '@solana/web3.js';
 
 import * as Layout from './util/layout';
 
+export const MAX_PLAYERS_SCORES_PER_TRANSACTION = 50;
 export const MAX_PLAYERS_PER_INSTRUCTION = 255;
 export const PLAYERS_CAPACITY = 100;
 export const GAMES_COUNT = 17;
@@ -61,6 +62,7 @@ export type UserState = {
   swapProposals: SwapProposal[];
   teamName: string;
   pubKey: PublicKey;
+  isLineupSet: boolean;
   isInitialized: boolean;
 };
 
@@ -75,28 +77,31 @@ export const UserStateLayout: typeof BufferLayout.Structure = BufferLayout.struc
   BufferLayout.seq(SwapProposalLayout, SWAP_PROPOSALS_CAPACITY, 'swapProposals'),
   Layout.utf16FixedString(TEAM_NAME_MAX_SYMBOLS, 'teamName'),
   Layout.publicKey('pubKey'),
+  Layout.boolean('isLineupSet'),
   Layout.boolean('isInitialized'),
 ]);
 
 export type League = {
-  userStateLength: number;
+  userStateCount: number;
   userStates: UserState[];
   name: string;
   bid: u64;
   usersLimit: number;
   currentPick: number;
   startWeek: number;
+  isRewardClaimed: boolean;
   isInitialized: boolean;
 };
 
 export const LeagueLayout: typeof BufferLayout.Structure = BufferLayout.struct([
-  BufferLayout.u8('userStateLength'),
+  BufferLayout.u8('userStateCount'),
   BufferLayout.seq(UserStateLayout, LEAGUE_USERS_CAPACITY, 'userStates'),
   Layout.utf16FixedString(LEAGUE_NAME_MAX_SYMBOLS, 'name'),
   Layout.uint64('bid'),
   BufferLayout.u8('usersLimit'),
   BufferLayout.u16('currentPick'),
   BufferLayout.u8('startWeek'),
+  Layout.boolean('isRewardClaimed'),
   Layout.boolean('isInitialized'),
 ]);
 
