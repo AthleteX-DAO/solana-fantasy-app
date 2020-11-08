@@ -139,11 +139,12 @@ export const Swaps: FunctionComponent<RouteComponentProps<MatchParams>> = (props
     if (teams === null) return;
 
     if (otherTeamIndex === null) {
-      setOtherTeamIndex(
-        teams
-          .map((t, i): [UserState, number] => [t, i])
-          .filter((tEntry) => tEntry[1] !== selfTeamIndex)[0][1]
-      );
+      const otherTeams = teams
+        ?.map((t, i): [UserState, number] => [t, i])
+        .filter((tEntry) => tEntry[1] !== selfTeamIndex);
+      if (otherTeams.length) {
+        setOtherTeamIndex([0][1]);
+      }
     }
   }, [teams]);
 
@@ -320,55 +321,61 @@ export const Swaps: FunctionComponent<RouteComponentProps<MatchParams>> = (props
             </Col>
             <Col>
               <Card>
-                <Card.Body>
-                  <Dropdown className="mb-2">
-                    <Dropdown.Toggle variant="success" id="dropdown-basic">
-                      {teams ? (
-                        <>
-                          Team#{otherTeamIndex !== null ? otherTeamIndex + 1 : 'loading...'}{' '}
-                          {otherTeamIndex !== null ? teams[otherTeamIndex].teamName : 'Loading...'}
-                        </>
-                      ) : (
-                        'Loading...'
-                      )}
-                    </Dropdown.Toggle>
+                {otherTeamIndex !== null ? (
+                  <Card.Body>
+                    <Dropdown className="mb-2">
+                      <Dropdown.Toggle variant="success" id="dropdown-basic">
+                        {teams ? (
+                          <>
+                            Team#{otherTeamIndex !== null ? otherTeamIndex + 1 : 'loading...'}{' '}
+                            {otherTeamIndex !== null
+                              ? teams[otherTeamIndex].teamName
+                              : 'Loading...'}
+                          </>
+                        ) : (
+                          'Loading...'
+                        )}
+                      </Dropdown.Toggle>
 
-                    <Dropdown.Menu>
-                      {teams
-                        ?.map((t, i): [UserState, number] => [t, i])
-                        .filter((tEntry) => tEntry[1] !== selfTeamIndex)
-                        .map((tEntry) => (
-                          <Dropdown.Item
-                            onClick={() => {
-                              setOtherTeamIndex(tEntry[1]);
-                              setWantPlayer(null);
-                            }}
-                          >
-                            Team#{tEntry[1] + 1} {tEntry[0].teamName}
-                          </Dropdown.Item>
-                        ))}
-                    </Dropdown.Menu>
-                  </Dropdown>
+                      <Dropdown.Menu>
+                        {teams
+                          ?.map((t, i): [UserState, number] => [t, i])
+                          .filter((tEntry) => tEntry[1] !== selfTeamIndex)
+                          .map((tEntry) => (
+                            <Dropdown.Item
+                              onClick={() => {
+                                setOtherTeamIndex(tEntry[1]);
+                                setWantPlayer(null);
+                              }}
+                            >
+                              Team#{tEntry[1] + 1} {tEntry[0].teamName}
+                            </Dropdown.Item>
+                          ))}
+                      </Dropdown.Menu>
+                    </Dropdown>
 
-                  {otherTeamIndex !== null &&
-                    getPlayersOfTeamIndex(otherTeamIndex).map((playerEntry) => {
-                      const [player, index] = playerEntry;
-                      return (
-                        <>
-                          <span
-                            className="cursor-pointer"
-                            style={{
-                              backgroundColor: wantPlayer === index + 1 ? '#3333' : undefined,
-                            }}
-                            onClick={setWantPlayer.bind(null, index + 1)}
-                          >
-                            {getNameByPlayerExternalId(player.externalId)} ({player.position})
-                          </span>
-                          <br />
-                        </>
-                      );
-                    })}
-                </Card.Body>
+                    {otherTeamIndex !== null &&
+                      getPlayersOfTeamIndex(otherTeamIndex).map((playerEntry) => {
+                        const [player, index] = playerEntry;
+                        return (
+                          <>
+                            <span
+                              className="cursor-pointer"
+                              style={{
+                                backgroundColor: wantPlayer === index + 1 ? '#3333' : undefined,
+                              }}
+                              onClick={setWantPlayer.bind(null, index + 1)}
+                            >
+                              {getNameByPlayerExternalId(player.externalId)} ({player.position})
+                            </span>
+                            <br />
+                          </>
+                        );
+                      })}
+                  </Card.Body>
+                ) : (
+                  <Alert variant="danger">No other teams</Alert>
+                )}
               </Card>
             </Col>
           </Row>

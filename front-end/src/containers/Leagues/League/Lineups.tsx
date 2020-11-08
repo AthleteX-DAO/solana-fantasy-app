@@ -129,7 +129,7 @@ export const Lineups: FunctionComponent<RouteComponentProps<MatchParams>> = (pro
       const lineupsNextWeek = league.userStates[selfTeamIndex].lineups[root.currentWeek];
 
       console.log({ lineupsNextWeek });
-      setNewLineup(lineupsNextWeek);
+      setNewLineup(lineupsNextWeek.filter((l) => l !== 0));
     }
   }, [root, league, selfTeamIndex]);
 
@@ -324,19 +324,21 @@ export const Lineups: FunctionComponent<RouteComponentProps<MatchParams>> = (pro
                         <u>Lineups</u>
                         <br />
                         {root &&
-                          team.lineups[root.currentWeek - 1].map((playerId) => (
-                            <>
-                              {players ? (
-                                <>
-                                  {getNameByPlayerIndex(playerId - 1)} (
-                                  {players[playerId - 1].position})
-                                </>
-                              ) : (
-                                playerId
-                              )}
-                              <br />
-                            </>
-                          ))}
+                          team.lineups[root.currentWeek - 1]
+                            .filter((l) => l !== 0)
+                            .map((playerId) => (
+                              <>
+                                {players ? (
+                                  <>
+                                    {getNameByPlayerIndex(playerId - 1)} (
+                                    {players[playerId - 1].position})
+                                  </>
+                                ) : (
+                                  playerId
+                                )}
+                                <br />
+                              </>
+                            ))}
                       </Card.Body>
                     </Card>
                   ))}
