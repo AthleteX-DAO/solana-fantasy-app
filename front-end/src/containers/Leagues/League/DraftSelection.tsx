@@ -288,25 +288,31 @@ export const DraftSelection: FunctionComponent<RouteComponentProps<MatchParams>>
             <Col>
               <Row>
                 <Col xs={12} className="pb-3">
-                  <Card className="mb-3">
-                    <Card.Body>
-                      {pickOrder !== null && league !== null && selfTeamIndex !== null
-                        ? selfTeamIndex + 1 === pickOrder[league.currentPick]
-                          ? "It's your turn!!"
-                          : `It's turn of ${
-                              pickOrder[league.currentPick] !== undefined &&
-                              teams !== null &&
-                              teams[pickOrder[league.currentPick]] !== undefined
-                                ? `Team ${teams[pickOrder[league.currentPick] - 1].teamName} (#${
-                                    pickOrder[league.currentPick]
-                                  })`
-                                : pickOrder[league.currentPick] !== undefined
-                                ? `Team #${pickOrder[league.currentPick]}`
-                                : 'nobody.'
-                            }`
-                        : 'Finding whose turn it is...'}
-                    </Card.Body>
-                  </Card>
+                  {/* <Card className="mb-3">
+                    <Card.Body> */}
+                  {pickOrder !== null && league !== null && selfTeamIndex !== null ? (
+                    selfTeamIndex + 1 === pickOrder[league.currentPick] ? (
+                      <Alert variant="success" className="mb-0">
+                        It's your turn!!
+                      </Alert>
+                    ) : (
+                      <Alert variant="warning" className="mb-0">{`It's ${
+                        pickOrder[league.currentPick] !== undefined &&
+                        teams !== null &&
+                        teams[pickOrder[league.currentPick]] !== undefined
+                          ? `Team ${teams[pickOrder[league.currentPick] - 1].teamName} (#${
+                              pickOrder[league.currentPick]
+                            })`
+                          : pickOrder[league.currentPick] !== undefined
+                          ? `Team #${pickOrder[league.currentPick]}`
+                          : `nobody`
+                      }'s turn.`}</Alert>
+                    )
+                  ) : (
+                    'Finding whose turn it is...'
+                  )}
+                  {/* </Card.Body>
+                  </Card> */}
                 </Col>
 
                 <Col xs={12}>
