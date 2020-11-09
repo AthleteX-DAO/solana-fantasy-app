@@ -68,6 +68,12 @@ export const DraftSelection: FunctionComponent<RouteComponentProps<MatchParams>>
     // const _currentRound = Math.floor(league.currentPick / league.usersLimit) + 1;
 
     setLeague(_league);
+    if (turnAlert === null || (turnAlert !== null && turnAlert.pick < _league.currentPick)) {
+      setTurnAlert({
+        pick: _league.currentPick,
+        alerted: false,
+      });
+    }
   }, [root]);
 
   // let players: Player_[] | null = null;
@@ -239,6 +245,25 @@ export const DraftSelection: FunctionComponent<RouteComponentProps<MatchParams>>
         | undefined
       )
     ] => [p, i, playersResp?.find((_p) => _p.PlayerID === p.externalId)]);
+
+  const [turnAlert, setTurnAlert] = useState<{ pick: number; alerted: boolean } | null>(null);
+  useEffect(() => {
+    if (
+      league !== null &&
+      turnAlert !== null &&
+      selfTeamIndex !== null &&
+      pickOrder !== null &&
+      !turnAlert.alerted &&
+      selfTeamIndex + 1 === pickOrder[league.currentPick]
+    ) {
+      alert(`It's your turn!!`);
+      // turnAlert.alerted = true;
+      setTurnAlert({
+        pick: turnAlert.pick,
+        alerted: true,
+      });
+    }
+  }, [league, selfTeamIndex, pickOrder, turnAlert]);
 
   return (
     <Layout removeTopMargin heading="Draft Selection">
