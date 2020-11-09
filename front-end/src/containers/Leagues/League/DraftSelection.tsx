@@ -587,8 +587,9 @@ export const DraftSelection: FunctionComponent<RouteComponentProps<MatchParams>>
                                       alert(
                                         `Currently it's turn of Team #${currentPickerTeamId} while you are Team #${
                                           selfTeamIndex + 1
-                                        }. So your transaction would fail.`
+                                        }. If other team has already played their turn, please allow few secs to update the state.`
                                       );
+                                      return;
                                     }
                                   }
                                   setSpinner(true);
