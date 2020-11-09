@@ -5,6 +5,7 @@ import { Layout } from '../../Layout';
 import { DraftSelection } from './DraftSelection';
 import { JoinLeague } from './Join';
 import { isUserAlreadyJoined } from '../../../utils';
+import { TEAM_PLAYERS_COUNT } from '../../../sdk/state';
 
 export interface MatchParams {
   index: string;
@@ -21,7 +22,14 @@ export const Forwarder: FunctionComponent<RouteComponentProps<MatchParams>> = (p
           history.replace(`/leagues/${leagueIndex}/join`);
           window.leagueTabHook();
         } else {
-          history.replace(`/leagues/${leagueIndex}/draft-selection`);
+          const root = await window.getCachedRootInfo();
+          const { currentPick, usersLimit } = root.leagues[leagueIndex];
+          const isDraftSelectionOver = currentPick >= usersLimit * TEAM_PLAYERS_COUNT;
+          if (!isDraftSelectionOver) {
+            history.replace(`/leagues/${leagueIndex}/draft-selection`);
+          } else {
+            history.replace(`/leagues/${leagueIndex}/lineups`);
+          }
           window.leagueTabHook();
         }
       }
