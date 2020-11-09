@@ -348,9 +348,10 @@ export const DraftSelection: FunctionComponent<RouteComponentProps<MatchParams>>
                             playersEntries.filter(
                               (entry) =>
                                 entry[0].choosenByTeamIndex === selfTeamIndex &&
-                                entry[2]?.Position === _key
+                                entry[2]?.Position === (_key !== 'D/ST' ? _key : 'DEF')
                             )) ||
                           null;
+
                         return (
                           <>
                             <Card className="mt-3" style={{ border: 0, backgroundColor: '#ddd5' }}>
