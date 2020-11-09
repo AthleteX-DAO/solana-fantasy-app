@@ -219,6 +219,10 @@ export const DraftSelection: FunctionComponent<RouteComponentProps<MatchParams>>
 
   const [searchStr, setSearchStr] = useState<string>('');
   const [searchFilter, setSearchFilter] = useState<string>('');
+  const [sorter, setSorter] = useState<{
+    filter: 'External ID' | 'Name' | 'Average Draft Position' | 'Position';
+    ascending: boolean;
+  } | null>(null);
 
   return (
     <Layout removeTopMargin heading="Draft Selection">
@@ -366,23 +370,121 @@ export const DraftSelection: FunctionComponent<RouteComponentProps<MatchParams>>
                   onChange={(e) => setSearchStr(e.target.value)}
                 />
               </InputGroup>
+
               {players !== null ? (
                 <Table responsive>
                   <thead>
                     <tr>
-                      <th></th>
-                      <th>External ID</th>
-                      <th>Name</th>
-                      <th>Average Draft Position</th>
-                      <th>Position</th>
+                      <th>
+                        {sorter !== null ? (
+                          <span className={'cursor-pointer'} onClick={setSorter.bind(null, null)}>
+                            [Unsort]
+                          </span>
+                        ) : null}
+                      </th>
+                      <th
+                        className="cursor-pointer"
+                        onClick={setSorter.bind(null, {
+                          filter: 'External ID',
+                          ascending:
+                            sorter === null || (sorter !== null && sorter.filter !== 'External ID')
+                              ? true
+                              : !sorter.ascending,
+                        })}
+                      >
+                        External ID
+                      </th>
+                      <th
+                        className="cursor-pointer"
+                        onClick={setSorter.bind(null, {
+                          filter: 'Name',
+                          ascending:
+                            sorter === null || (sorter !== null && sorter.filter !== 'Name')
+                              ? true
+                              : !sorter.ascending,
+                        })}
+                      >
+                        Name
+                      </th>
+                      <th
+                        className="cursor-pointer"
+                        onClick={setSorter.bind(null, {
+                          filter: 'Average Draft Position',
+                          ascending:
+                            sorter === null ||
+                            (sorter !== null && sorter.filter !== 'Average Draft Position')
+                              ? true
+                              : !sorter.ascending,
+                        })}
+                      >
+                        Average Draft Position
+                      </th>
+                      <th
+                        className="cursor-pointer"
+                        onClick={setSorter.bind(null, {
+                          filter: 'Position',
+                          ascending:
+                            sorter === null || (sorter !== null && sorter.filter !== 'Position')
+                              ? true
+                              : !sorter.ascending,
+                        })}
+                      >
+                        Position
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
                     {players
-                      .map((p, i): [Player_, number] => [p, i])
+                      .map((p, i): [
+                        Player_,
+                        number,
+                        (
+                          | {
+                              PlayerID: number;
+                              Name: string;
+                              Position: string;
+                              AverageDraftPosition: number;
+                            }
+                          | undefined
+                        )
+                      ] => [p, i, playersResp?.find((_p) => _p.PlayerID === p.externalId)])
+                      .sort((a, b) => {
+                        if (sorter === null) return 1;
+                        let res: boolean;
+                        switch (sorter.filter) {
+                          case 'External ID':
+                            res = a[0].externalId > b[0].externalId;
+                            break;
+                          case 'Position':
+                            res = a[0].position > b[0].position;
+                            break;
+                          case 'Name':
+                            {
+                              res = (a[2] && b[2] && a[2].Name > b[2].Name) ?? false;
+                            }
+                            break;
+                          case 'Average Draft Position':
+                            {
+                              res =
+                                (a[2] &&
+                                  b[2] &&
+                                  a[2].AverageDraftPosition > b[2].AverageDraftPosition) ??
+                                false;
+                            }
+                            break;
+                          default:
+                            res = false;
+                            break;
+                        }
+                        if (!sorter.ascending) {
+                          res = !res;
+                        }
+                        return res ? 1 : -1;
+                      })
                       .filter((playerEntry) => {
                         const player = playerEntry[0];
-                        const p = playersResp?.find((p) => p.PlayerID === player.externalId);
+                        // const p = playersResp?.find((p) => p.PlayerID === player.externalId);
+                        const p = playerEntry[2];
                         const lcInclude = (a: string | number, b: string) =>
                           String(a).toLowerCase().includes(b.toLowerCase());
                         const inPosition = lcInclude(player.position, searchStr);
@@ -404,6 +506,7 @@ export const DraftSelection: FunctionComponent<RouteComponentProps<MatchParams>>
                       .map((playerEntry) => {
                         const player = playerEntry[0];
                         const index = playerEntry[1];
+                        const p = playerEntry[2];
                         return (
                           <tr
                             key={index}
@@ -492,7 +595,7 @@ export const DraftSelection: FunctionComponent<RouteComponentProps<MatchParams>>
                             </td>
                             <td>{player.externalId}</td>
                             {(() => {
-                              const p = playersResp?.find((p) => p.PlayerID === player.externalId);
+                              // const p = playersResp?.find((p) => p.PlayerID === player.externalId);
                               if (p) {
                                 return (
                                   <>
