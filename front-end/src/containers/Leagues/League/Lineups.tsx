@@ -172,7 +172,7 @@ export const Lineups: FunctionComponent<RouteComponentProps<MatchParams>> = (pro
     const resp = await window.wallet.callback('Sign on Update Lineup transaction?', async (acc) => {
       console.log({ newLineup }, root.currentWeek + 1);
 
-      await sdk.updateLineup(acc, leagueIndex, selfTeamIndex + 1, root.currentWeek + 2, newLineup);
+      await sdk.updateLineup(acc, leagueIndex, selfTeamIndex + 1, root.currentWeek + 1, newLineup);
     });
     console.log({ resp });
   };
