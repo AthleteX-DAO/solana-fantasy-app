@@ -338,6 +338,14 @@ export class SFS {
     return rootInfo;
   }
 
+  static getWeekScores(root: Root, leagueIndex: number, userId: number, week: number) {
+    let league = root.leagues[leagueIndex];
+    let score = league.userStates[userId - 1].lineups[week - 1].reduce((sum, playerId) => {
+      return sum + root.players[playerId - 1].scores[week - 1].score1;
+    }, 0);
+    return score;
+  }
+
   static getUserScores(root: Root, leagueIndex: number) {
     let league = root.leagues[leagueIndex];
     return league.userStates.slice(0, league.userStateCount).map((userState, i) => {

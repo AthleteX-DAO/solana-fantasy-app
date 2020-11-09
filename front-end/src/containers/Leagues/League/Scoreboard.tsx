@@ -1,20 +1,17 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
 import { Container, Row, Col, Card, Form, Table, CardDeck } from 'react-bootstrap';
 import { RouteComponentProps } from 'react-router-dom';
+import { SFS } from '../../../sdk/sfs';
+import { League, Position, Root } from '../../../sdk/state';
 import { Layout } from '../../Layout';
 import { MatchParams } from './Forwarder';
 
-interface Team {
-  name: string;
-  selectionStatus: 'Current' | 'Waiting' | 'Done';
-  lineups: number[];
-}
+type Position_ = 'QB' | 'RB' | 'WR' | 'TE' | 'K' | 'D/ST';
 
-interface Player {
-  name: string;
-  avgDraftPosition: string;
-  position: 'QB' | 'RB' | 'WR' | 'TE' | 'K' | 'D/ST';
-  choosenByTeam: number;
+interface Player_ {
+  externalId: number;
+  position: Position_;
+  choosenByTeamIndex: number;
 }
 
 const MAX_SELECT_COUNT = {
@@ -29,127 +26,175 @@ const MAX_SELECT_COUNT = {
 export const Scoreboard: FunctionComponent<RouteComponentProps<MatchParams>> = (props) => {
   const leagueIndex = +props.match.params.index;
 
-  const [selfTeamIndex, setSelfTeamIndex] = useState<number | null>(null);
-  const [week, setWeek] = useState<number | null>(null);
-  const [newLineup, setNewLineup] = useState<number[]>([]);
-
-  const [teams, setTeams] = useState<Team[] | null>(null);
-  const [players, setPlayers] = useState<Player[] | null>(null);
-
+  const [root, setRoot] = useState<Root | null>(null);
+  const refreshRoot = async (forceUpdate?: boolean) => {
+    const _root = await window.getCachedRootInfo(forceUpdate);
+    setRoot(_root);
+  };
   useEffect(() => {
-    setSelfTeamIndex(1);
-
-    setWeek(6);
-
-    setTeams([
-      { name: 'HellYeah', selectionStatus: 'Done', lineups: [1, 2, 3, 4] },
-      { name: 'BlueBull', selectionStatus: 'Current', lineups: [5, 6, 7, 8] },
-      { name: 'Mango', selectionStatus: 'Waiting', lineups: [9, 10, 11, 12] },
-      { name: 'MegaHard', selectionStatus: 'Waiting', lineups: [13, 14, 15, 16] },
-    ]);
-
-    setPlayers([
-      { name: 'Ron Weisly1a', avgDraftPosition: 'abc', position: 'QB', choosenByTeam: -1 },
-      { name: 'Ron Weisly1b', avgDraftPosition: 'abc', position: 'QB', choosenByTeam: 1 },
-      { name: 'Ron Weisly1c', avgDraftPosition: 'abc', position: 'QB', choosenByTeam: 1 },
-      { name: 'Ron Weisly1d', avgDraftPosition: 'abc', position: 'QB', choosenByTeam: -1 },
-      { name: 'Ron Weisly1e', avgDraftPosition: 'abc', position: 'QB', choosenByTeam: 1 },
-      { name: 'Emiway1a', avgDraftPosition: 'abc', position: 'RB', choosenByTeam: -1 },
-      { name: 'Emiway1b', avgDraftPosition: 'abc', position: 'RB', choosenByTeam: -1 },
-      { name: 'Emiway1c', avgDraftPosition: 'abc', position: 'RB', choosenByTeam: 1 },
-      { name: 'Emiway1d', avgDraftPosition: 'abc', position: 'RB', choosenByTeam: -1 },
-      { name: 'Emiway1e', avgDraftPosition: 'abc', position: 'RB', choosenByTeam: 1 },
-      { name: 'SomePlayer1a', avgDraftPosition: 'abc', position: 'WR', choosenByTeam: -1 },
-      { name: 'SomePlayer1b', avgDraftPosition: 'abc', position: 'WR', choosenByTeam: 1 },
-      { name: 'SomePlayer1c', avgDraftPosition: 'abc', position: 'WR', choosenByTeam: -1 },
-      { name: 'SomePlayer1d', avgDraftPosition: 'abc', position: 'WR', choosenByTeam: 1 },
-      { name: 'SomePlayer1e', avgDraftPosition: 'abc', position: 'WR', choosenByTeam: -1 },
-      { name: 'SomePlayer2a', avgDraftPosition: 'abc', position: 'TE', choosenByTeam: 1 },
-      { name: 'SomePlayer2b', avgDraftPosition: 'abc', position: 'TE', choosenByTeam: -1 },
-      { name: 'SomePlayer2c', avgDraftPosition: 'abc', position: 'TE', choosenByTeam: -1 },
-      { name: 'SomePlayer2d', avgDraftPosition: 'abc', position: 'TE', choosenByTeam: -1 },
-      { name: 'SomePlayer2e', avgDraftPosition: 'abc', position: 'TE', choosenByTeam: 1 },
-      { name: 'SomePlayer3a', avgDraftPosition: 'abc', position: 'K', choosenByTeam: -1 },
-      { name: 'SomePlayer3b', avgDraftPosition: 'abc', position: 'K', choosenByTeam: -1 },
-      { name: 'SomePlayer3c', avgDraftPosition: 'abc', position: 'K', choosenByTeam: -1 },
-      { name: 'SomePlayer3d', avgDraftPosition: 'abc', position: 'K', choosenByTeam: 1 },
-      { name: 'SomePlayer3e', avgDraftPosition: 'abc', position: 'K', choosenByTeam: -1 },
-      { name: 'SomePlayer4a', avgDraftPosition: 'abc', position: 'D/ST', choosenByTeam: -1 },
-      { name: 'SomePlayer4b', avgDraftPosition: 'abc', position: 'D/ST', choosenByTeam: -1 },
-      { name: 'SomePlayer4c', avgDraftPosition: 'abc', position: 'D/ST', choosenByTeam: 1 },
-      { name: 'SomePlayer4d', avgDraftPosition: 'abc', position: 'D/ST', choosenByTeam: -1 },
-      { name: 'SomePlayer4e', avgDraftPosition: 'abc', position: 'D/ST', choosenByTeam: 1 },
-    ]);
+    const intervalId = setInterval(() => {
+      refreshRoot(false).catch(console.error);
+    }, 3000);
+    refreshRoot(false).catch(console.error);
+    return () => {
+      clearInterval(intervalId);
+    };
   }, []);
+
+  const [league, setLeague] = useState<League | null>(null);
+  useEffect(() => {
+    if (root === null) return;
+
+    const _league = root.leagues[leagueIndex];
+
+    setLeague(_league);
+  }, [root]);
+
+  const [players, setPlayers] = useState<Player_[] | null>(null);
+  useEffect(() => {
+    if (root === null) return;
+
+    const _players = root.players
+      .filter((p) => p.isInitialized)
+      .map((p, i) => {
+        let position: Position_;
+        switch (p.position) {
+          case Position.RB:
+            position = 'RB';
+            break;
+          case Position.WR:
+            position = 'WR';
+            break;
+          case Position.QB:
+            position = 'QB';
+            break;
+          case Position.TE:
+            position = 'TE';
+            break;
+          case Position.K:
+            position = 'K';
+            break;
+          case Position.DEF:
+            position = 'D/ST';
+            break;
+          default:
+            throw new Error(`Position from API not recognized: ${p.position}`);
+        }
+
+        const choosenByTeamIndex = root.leagues[leagueIndex].userStates.findIndex((usr) => {
+          return usr.userPlayers.includes(i + 1); // id and index (+ 1) thing
+        });
+
+        return {
+          externalId: p.externalId,
+          position,
+          choosenByTeamIndex,
+        };
+      });
+    setPlayers(_players);
+  }, [root]);
+
+  const [playersResp, setPlayersResp] = useState<
+    {
+      PlayerID: number;
+      Name: string;
+      Position: string;
+      AverageDraftPosition: number;
+    }[]
+  >();
+  useEffect(() => {
+    (async () => {
+      const _playersResp = await window.getCachedPlayers();
+      setPlayersResp(_playersResp);
+    })().catch(console.error);
+  }, []);
+
+  const getNameByPlayerIndex = (playerIndex: number | undefined) => {
+    return players !== null && playerIndex !== undefined && playersResp !== undefined
+      ? playersResp.find((p) => p.PlayerID === players[playerIndex].externalId)?.Name ?? 'No Name'
+      : 'Loading...';
+  };
 
   return (
     <Layout removeTopMargin heading="Scoreboard">
-      <Container>
-        <h4 className="align-left mb-4">Total Scores</h4>
-        <Row className="pb-3">
-          <Col>
-            <div className="team-card-scroll-deck">
-              {teams?.map((team, index) => (
-                <Card key={index}>
-                  <Card.Body>
-                    <strong>Team #{index}</strong>
-                    <br />
-                    {team.name}
-                    <br />
-                    <br />
-                    <u>Total Score</u>
-                    <br />
-                    {300}
-                  </Card.Body>
-                </Card>
-              ))}
-            </div>
-          </Col>
-        </Row>
-        {week !== null
-          ? Array.from(Array(week), (x, i) => i).map((w) => (
-              <>
-                <h4 className="align-left my-4">Week {week - w} Scoreboard</h4>
-                <Row className="pb-3">
-                  <Col>
-                    <div className="team-card-scroll-deck">
-                      {teams?.map((team, index) => (
-                        <Card key={index}>
-                          <Card.Body>
-                            <strong>Team #{index}</strong>
-                            <br />
-                            {team.name}
-                            <br />
-                            <br />
-                            <u>Score</u>
-                            <br />
-                            {300}
-                            <br />
-                            <br />
-                            <u>Lineups</u>
-                            <br />
-                            {team.lineups.map((playerId) => (
-                              <>
-                                {players ? (
-                                  <>
-                                    {players[playerId].name} ({players[playerId].position})
-                                  </>
-                                ) : (
-                                  playerId
-                                )}
-                                <br />
-                              </>
+      {!root ? (
+        <Container>
+          <h4 className="mb-4">Loading...</h4>
+        </Container>
+      ) : (
+        <Container>
+          <h4 className="align-left mb-4">Total Scores</h4>
+          <Row className="pb-3">
+            <Col>
+              <div className="team-card-scroll-deck">
+                {league?.userStates?.slice(0, league.userStateCount).map((userState, index) => (
+                  <Card key={index}>
+                    <Card.Body>
+                      <strong>Team #{index}</strong>
+                      <br />
+                      {userState.teamName}
+                      <br />
+                      <br />
+                      <u>Total Score</u>
+                      <br />
+                      {SFS.getUserScores(root, leagueIndex)[index].score}
+                    </Card.Body>
+                  </Card>
+                ))}
+              </div>
+            </Col>
+          </Row>
+          {league?.startWeek
+            ? Array.from({ length: root.currentWeek - league?.startWeek })
+                .map((_, i) => league.startWeek + i)
+                .reverse()
+                .map((week) => (
+                  <>
+                    <h4 className="align-left my-4">Week {week} Scoreboard</h4>
+                    <Row className="pb-3">
+                      <Col>
+                        <div className="team-card-scroll-deck">
+                          {league?.userStates
+                            ?.slice(0, league.userStateCount)
+                            .map((userState, userIndex) => (
+                              <Card key={userIndex}>
+                                <Card.Body>
+                                  <strong>Team #{userIndex}</strong>
+                                  <br />
+                                  {userState.teamName}
+                                  <br />
+                                  <br />
+                                  <u>Score</u>
+                                  <br />
+                                  {SFS.getWeekScores(root, leagueIndex, userIndex + 1, week)}
+                                  <br />
+                                  <br />
+                                  <u>Lineups</u>
+                                  <br />
+                                  {userState.lineups[week - 1].map((playerId) => (
+                                    <>
+                                      {players ? (
+                                        <>
+                                          {getNameByPlayerIndex(playerId - 1)} (
+                                          {players[playerId - 1].position})
+                                        </>
+                                      ) : (
+                                        playerId
+                                      )}
+                                      <br />
+                                    </>
+                                  ))}
+                                </Card.Body>
+                              </Card>
                             ))}
-                          </Card.Body>
-                        </Card>
-                      ))}
-                    </div>
-                  </Col>
-                </Row>
-              </>
-            ))
-          : null}
-      </Container>
+                        </div>
+                      </Col>
+                    </Row>
+                  </>
+                ))
+            : null}
+        </Container>
+      )}
     </Layout>
   );
 };
