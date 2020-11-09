@@ -298,9 +298,21 @@ export const Swaps: FunctionComponent<RouteComponentProps<MatchParams>> = (props
                   <p className="small mb-0">Click on player to select</p>
                   <br />
 
-                  {selfTeamIndex !== null
-                    ? getPlayersOfTeamIndex(selfTeamIndex).map((playerEntry) => {
+                  {(() => {
+                    const arr =
+                      selfTeamIndex !== null &&
+                      getPlayersOfTeamIndex(selfTeamIndex).map((playerEntry) => {
                         const [player, index] = playerEntry;
+                        if (
+                          root !== null &&
+                          league !== null &&
+                          selfTeamIndex !== null &&
+                          !league.userStates[selfTeamIndex].lineups[root.currentWeek].includes(
+                            index + 1
+                          )
+                        ) {
+                          return null;
+                        }
                         return (
                           <>
                             <span
@@ -316,8 +328,13 @@ export const Swaps: FunctionComponent<RouteComponentProps<MatchParams>> = (props
                             <br />
                           </>
                         );
-                      })
-                    : 'Loading...'}
+                      });
+                    return arr
+                      ? arr.filter((a) => a !== null).length > 0
+                        ? arr
+                        : 'No Lineups selected'
+                      : 'Loading...';
+                  })()}
                 </Card.Body>
               </Card>
             </Col>
@@ -359,24 +376,43 @@ export const Swaps: FunctionComponent<RouteComponentProps<MatchParams>> = (props
                       </Dropdown.Menu>
                     </Dropdown>
 
-                    {otherTeamIndex !== null &&
-                      getPlayersOfTeamIndex(otherTeamIndex).map((playerEntry) => {
-                        const [player, index] = playerEntry;
-                        return (
-                          <>
-                            <span
-                              className="cursor-pointer"
-                              style={{
-                                backgroundColor: wantPlayer === index + 1 ? '#3333' : undefined,
-                              }}
-                              onClick={setWantPlayer.bind(null, index + 1)}
-                            >
-                              {getNameByPlayerExternalId(player.externalId)} ({player.position})
-                            </span>
-                            <br />
-                          </>
-                        );
-                      })}
+                    {(() => {
+                      const arr =
+                        otherTeamIndex !== null &&
+                        getPlayersOfTeamIndex(otherTeamIndex).map((playerEntry) => {
+                          const [player, index] = playerEntry;
+                          if (
+                            root !== null &&
+                            league !== null &&
+                            otherTeamIndex !== null &&
+                            !league.userStates[otherTeamIndex].lineups[root.currentWeek].includes(
+                              index + 1
+                            )
+                          ) {
+                            return null;
+                          }
+                          return (
+                            <>
+                              <span
+                                className="cursor-pointer"
+                                style={{
+                                  backgroundColor: wantPlayer === index + 1 ? '#3333' : undefined,
+                                }}
+                                onClick={setWantPlayer.bind(null, index + 1)}
+                              >
+                                {getNameByPlayerExternalId(player.externalId)} ({player.position})
+                              </span>
+                              <br />
+                            </>
+                          );
+                        });
+
+                      return arr
+                        ? arr.filter((a) => a !== null).length > 0
+                          ? arr
+                          : 'This team has not pushed their lineup selection.'
+                        : 'Loading...';
+                    })()}
                   </Card.Body>
                 ) : (
                   <Alert variant="danger">No other teams</Alert>
