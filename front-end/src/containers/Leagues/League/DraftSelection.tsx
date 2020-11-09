@@ -224,6 +224,22 @@ export const DraftSelection: FunctionComponent<RouteComponentProps<MatchParams>>
     ascending: boolean;
   } | null>(null);
 
+  const playersEntries =
+    players &&
+    players.map((p, i): [
+      Player_,
+      number,
+      (
+        | {
+            PlayerID: number;
+            Name: string;
+            Position: string;
+            AverageDraftPosition: number;
+          }
+        | undefined
+      )
+    ] => [p, i, playersResp?.find((_p) => _p.PlayerID === p.externalId)]);
+
   return (
     <Layout removeTopMargin heading="Draft Selection">
       {!window.wallet ? (
@@ -326,11 +342,43 @@ export const DraftSelection: FunctionComponent<RouteComponentProps<MatchParams>>
                       <br />
                       {Object.keys(MAX_SELECT_COUNT).map((key) => {
                         const _key = (key as unknown) as 'QB' | 'RB' | 'WR' | 'TE' | 'K' | 'D/ST';
+                        const positionPlayers =
+                          (selfTeamIndex !== null &&
+                            playersEntries !== null &&
+                            playersEntries.filter(
+                              (entry) =>
+                                entry[0].choosenByTeamIndex === selfTeamIndex &&
+                                entry[2]?.Position === _key
+                            )) ||
+                          null;
                         return (
                           <>
-                            {_key}: {players ? getSelectCount(players)[_key] : 'Loading..'}/
-                            {MAX_SELECT_COUNT[_key]}
-                            <br />
+                            <Card className="mt-3" style={{ border: 0, backgroundColor: '#ddd5' }}>
+                              <Card.Body>
+                                {players !== null ? (
+                                  <Card.Title className="mb-0">
+                                    {_key}: {getSelectCount(players)[_key]}/{MAX_SELECT_COUNT[_key]}
+                                  </Card.Title>
+                                ) : (
+                                  'Loading...'
+                                )}
+                                {/* <Card.Subtitle className="mb-2 text-muted">
+                                  Card Subtitle
+                                </Card.Subtitle> */}
+                                {positionPlayers !== null && positionPlayers.length > 0 ? (
+                                  <Card.Text className="mt-2">
+                                    {selfTeamIndex !== null && playersEntries !== null
+                                      ? positionPlayers.map((entry) => (
+                                          <>
+                                            {entry[2]?.Name}
+                                            <br />
+                                          </>
+                                        ))
+                                      : null}
+                                  </Card.Text>
+                                ) : null}
+                              </Card.Body>
+                            </Card>
                           </>
                         );
                       })}
@@ -371,7 +419,7 @@ export const DraftSelection: FunctionComponent<RouteComponentProps<MatchParams>>
                 />
               </InputGroup>
 
-              {players !== null ? (
+              {playersEntries !== null ? (
                 <Table responsive>
                   <thead>
                     <tr>
@@ -434,20 +482,7 @@ export const DraftSelection: FunctionComponent<RouteComponentProps<MatchParams>>
                     </tr>
                   </thead>
                   <tbody>
-                    {players
-                      .map((p, i): [
-                        Player_,
-                        number,
-                        (
-                          | {
-                              PlayerID: number;
-                              Name: string;
-                              Position: string;
-                              AverageDraftPosition: number;
-                            }
-                          | undefined
-                        )
-                      ] => [p, i, playersResp?.find((_p) => _p.PlayerID === p.externalId)])
+                    {playersEntries
                       .sort((a, b) => {
                         if (sorter === null) return 1;
                         let res: boolean;
@@ -520,7 +555,8 @@ export const DraftSelection: FunctionComponent<RouteComponentProps<MatchParams>>
                                 className="btn"
                                 disabled={
                                   player.choosenByTeamIndex !== -1 ||
-                                  (players && !doesRosterLimitHold(players, player.position))
+                                  (players !== null &&
+                                    !doesRosterLimitHold(players, player.position))
                                 }
                                 onClick={() => {
                                   if (
