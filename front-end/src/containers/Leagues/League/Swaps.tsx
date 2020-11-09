@@ -322,8 +322,7 @@ export const Swaps: FunctionComponent<RouteComponentProps<MatchParams>> = (props
                               }}
                               onClick={setGivePlayer.bind(null, index + 1)}
                             >
-                              {index + 1} {getNameByPlayerExternalId(player.externalId)} (
-                              {player.position})
+                              {getNameByPlayerExternalId(player.externalId)} ({player.position})
                             </span>
                             <br />
                           </>
