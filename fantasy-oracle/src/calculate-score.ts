@@ -181,21 +181,34 @@ interface ScoreRaw {
   }>; // []
 }
 
-export async function calculateScore(playerIds: number[], week: number) {
+export async function calculateScore(playerExternalIds: number[], week: number) {
+  console.log('number of players for calculating score', playerExternalIds.length);
+
   const response: AxiosResponse<ScoreRaw[]> = await axios.get(
     `https://api.sportsdata.io/v3/nfl/stats/json/PlayerGameStatsByWeek/2020/${week}?key=014d8886bd8f40dfabc9f75bc0451a0d`
   );
-  const playerGameStatsArr = response.data.filter((o) => playerIds.includes(o.PlayerID));
 
-  // console.log(
-  //   response.data.map((p) => p.PlayerID),
-  //   playerIds
-  // );
+  const playerGameStatsArr = response.data.filter((o) => playerExternalIds.includes(o.PlayerID));
+  console.log('received scores from API only for', playerGameStatsArr.length);
+
+  const notMatched: number[] = [];
+  playerExternalIds.forEach((externalId) => {
+    const res = playerGameStatsArr.map((p) => p.PlayerID).includes(externalId);
+    if (!res) {
+      // console.log(externalId, 'not matched');
+      notMatched.push(externalId);
+    }
+  });
+
+  console.log(
+    'not matched to these external ids',
+    notMatched.sort((a, b) => {
+      return a > b ? 1 : -1;
+    })
+  );
 
   let totalScore = 0;
-  let scoresArr: Array<number> = Array(playerIds.length).fill(0);
-
-  console.log('calculate loop length', playerGameStatsArr.length);
+  let scoresArr: Array<number> = Array(playerExternalIds.length).fill(0);
 
   for (const playerGameStats of playerGameStatsArr) {
     const playerId = playerGameStats.PlayerID;
@@ -742,10 +755,10 @@ export async function calculateScore(playerIds: number[], week: number) {
      */
     totalScore += playerScore;
 
-    const index = playerIds.indexOf(playerId);
+    const index = playerExternalIds.indexOf(playerId);
     if (index === -1) {
       // this error should not be happen, but if does then it is singnal for a bug
-      console.log(playerIds, playerId);
+      console.log(playerExternalIds, playerId);
 
       throw new Error(`Player of index ${index} with id ${playerId} not available`);
     }
