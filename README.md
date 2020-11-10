@@ -34,3 +34,33 @@ Builds if not yet, starts a local solana node and runs tests
 ### `yarn style:fix`
 
 Runs prettier and fixes any style issues
+
+## Fantasy Oracle
+
+These contain scripts that used to setup and manage the Solana Fantasy Sports smart contract on the Solana blockchain.
+
+The module at `fantasy-oracle/scripts/commons.ts` contains the owner private key to be used, url of devnet and addresses involved for the smart contract. This module is imported in following scripts:
+
+### 1. Deploy script
+
+```sh
+ts-node fantasy-oracle/scripts/deploy-contract.ts
+```
+
+This script simply deploys compiled solana smart contract to the devnet. After that it also initializes the state of the contract by adding the players. The addresses of deployed contract and root account in base58 would be printed to the console and this needs to be updated in the `commons.ts` file for other scripts to point at the right contract.
+
+### 2. Increment week
+
+```sh
+ts-node fantasy-oracle/scripts/increment-week.ts
+```
+
+This script is used to increment the week in the smart contract.
+
+### 3. Update player scores
+
+```sh
+ts-node fantasy-oracle/scripts/update-player-scores.ts
+```
+
+Whenever a week ends, after using the previous increment week script, this script is used to update the scores of the players to the smart contract for the previous week.
