@@ -11,7 +11,7 @@ import {
   Dropdown,
   DropdownButton,
 } from 'react-bootstrap';
-import { RouteComponentProps } from 'react-router-dom';
+import { Link, RouteComponentProps } from 'react-router-dom';
 import { League, Player, Position, Root, TEAM_PLAYERS_COUNT, UserState } from '../../../sdk/state';
 import { Layout } from '../../Layout';
 import { MatchParams } from './Forwarder';
@@ -288,7 +288,10 @@ export const DraftSelection: FunctionComponent<RouteComponentProps<MatchParams>>
                         {Math.floor(league.currentPick / teams.length) + 1}/{TEAM_PLAYERS_COUNT}{' '}
                       </>
                     ) : (
-                      <>All {TEAM_PLAYERS_COUNT} rounds finished! You may proceed to lineups.</>
+                      <>
+                        All {TEAM_PLAYERS_COUNT} rounds finished! You may proceed to{' '}
+                        <Link to={`/leagues/${leagueIndex}/lineups`}>lineups</Link>.
+                      </>
                     )
                   ) : (
                     <>Loading...</>
