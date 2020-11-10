@@ -295,8 +295,7 @@ export const Lineups: FunctionComponent<RouteComponentProps<MatchParams>> = (pro
                         </button>
                       ) : (
                         <Alert variant="success" className="mb-0 mt-3">
-                          This lineup is set in the contract for the upcoming week. To change,
-                          remove a player and add another.
+                          Add or remove players from lineup by clicking on the list.
                         </Alert>
                       )
                     ) : null}
