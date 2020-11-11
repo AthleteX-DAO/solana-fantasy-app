@@ -145,7 +145,7 @@ export const Scoreboard: FunctionComponent<RouteComponentProps<MatchParams>> = (
             </Col>
           </Row>
           {league?.startWeek
-            ? Array.from({ length: root.currentWeek - league?.startWeek })
+            ? Array.from({ length: root.currentWeek - league?.startWeek + 1 })
                 .map((_, i) => league.startWeek + i)
                 .reverse()
                 .map((week) => (
