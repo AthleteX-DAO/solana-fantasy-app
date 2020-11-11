@@ -142,6 +142,17 @@ export const Scoreboard: FunctionComponent<RouteComponentProps<MatchParams>> = (
 
   return (
     <Layout removeTopMargin heading="Scoreboard">
+      <p>
+        The scores for each players are calculated based on ESPN's{' '}
+        <a
+          href="https://www.espn.in/fantasy/football/ffl/story?page=fflrulesstandardscoring"
+          rel="noopenner noreferrer"
+          target="_blank"
+        >
+          Standard Scoring System
+        </a>
+        .
+      </p>
       {!root ? (
         <Container>
           <h4 className="mb-4">Loading...</h4>
