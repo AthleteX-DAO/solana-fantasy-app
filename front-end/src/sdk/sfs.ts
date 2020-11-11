@@ -316,6 +316,33 @@ export class SFS {
 
     await sendAndConfirmTransaction('Accept swap', this.connection, transaction, owner);
   }
+  /**
+   * Reject swap.
+   */
+  async rejectSwap(
+    owner: Account,
+    leagueIndex: number,
+    acceptingUserId: number,
+    proposingUserId: number,
+    wantPlayerId: number,
+    givePlayerId: number
+  ): Promise<void> {
+    const transaction = new Transaction();
+    transaction.add(
+      SfsInstruction.createRejectSwapInstruction(
+        this.programId,
+        this.publicKey,
+        leagueIndex,
+        acceptingUserId,
+        proposingUserId,
+        wantPlayerId,
+        givePlayerId,
+        owner.publicKey
+      )
+    );
+
+    await sendAndConfirmTransaction('Reject swap', this.connection, transaction, owner);
+  }
 
   /**
    * Retrieve root information
