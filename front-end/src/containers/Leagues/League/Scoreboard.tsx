@@ -2,7 +2,7 @@ import React, { FunctionComponent, useEffect, useState } from 'react';
 import { Container, Row, Col, Card, Form, Table, CardDeck } from 'react-bootstrap';
 import { RouteComponentProps } from 'react-router-dom';
 import { SFS } from '../../../sdk/sfs';
-import { League, Position, Root } from '../../../sdk/state';
+import { GAMES_COUNT, League, Position, Root, UserState } from '../../../sdk/state';
 import { Layout } from '../../Layout';
 import { MatchParams } from './Forwarder';
 
@@ -13,15 +13,6 @@ interface Player_ {
   position: Position_;
   choosenByTeamIndex: number;
 }
-
-const MAX_SELECT_COUNT = {
-  QB: 4,
-  RB: 8,
-  WR: 8,
-  TE: 3,
-  K: 3,
-  'D/ST': 3,
-};
 
 export const Scoreboard: FunctionComponent<RouteComponentProps<MatchParams>> = (props) => {
   const leagueIndex = +props.match.params.index;
@@ -48,6 +39,20 @@ export const Scoreboard: FunctionComponent<RouteComponentProps<MatchParams>> = (
     const _league = root.leagues[leagueIndex];
 
     setLeague(_league);
+  }, [root]);
+
+  const [winners, setWinners] = useState<
+    | {
+        userId: number;
+        userState: UserState;
+        score: number;
+      }[]
+    | null
+  >(null);
+  useEffect(() => {
+    if (root === null) return;
+    const winners = root.currentWeek == GAMES_COUNT + 1 ? SFS.getWinners(root!, leagueIndex) : null;
+    setWinners(winners);
   }, [root]);
 
   const [players, setPlayers] = useState<Player_[] | null>(null);
@@ -115,6 +120,26 @@ export const Scoreboard: FunctionComponent<RouteComponentProps<MatchParams>> = (
       : 'Loading...';
   };
 
+  const [spinner, setSpinner] = useState<boolean>(false);
+
+  const claimReward = async () => {
+    if (!window.wallet) {
+      throw new Error('Wallet not loaded');
+    }
+    if (!winners) {
+      throw new Error('Winners is null');
+    }
+    const sdk = await window.sfsSDK();
+    const resp = await window.wallet.callback('Sign on Claim Reward transaction?', async (acc) => {
+      await sdk.claimReward(
+        leagueIndex,
+        winners.map((x) => x.userState.pubKey),
+        acc
+      );
+    });
+    console.log({ resp });
+  };
+
   return (
     <Layout removeTopMargin heading="Scoreboard">
       {!root ? (
@@ -123,6 +148,45 @@ export const Scoreboard: FunctionComponent<RouteComponentProps<MatchParams>> = (
         </Container>
       ) : (
         <Container>
+          {winners ? (
+            <>
+              <h4 className="align-left mb-4">Winners</h4>
+              <Card style={{ maxWidth: '400px', margin: '0 auto' }}>
+                <Card.Body>
+                  {winners.map((x) => (
+                    <>
+                      <strong>Team #{x.userId - 1}</strong>
+                      <br />
+                      {x.userState.teamName}
+                      <br />
+                      {x.score}
+                      <br />
+                    </>
+                  ))}
+                  {!league?.isRewardClaimed && (
+                    <button
+                      disabled={spinner}
+                      onClick={() => {
+                        setSpinner(true);
+                        claimReward()
+                          .then(() => {
+                            setSpinner(false);
+                          })
+                          .catch((err) => {
+                            alert('Error:' + err?.message ?? err);
+                            console.log(err);
+                            setSpinner(false);
+                          });
+                      }}
+                      className="btn mt-4"
+                    >
+                      {spinner ? 'Claiming rewards...' : <>Claim rewards</>}
+                    </button>
+                  )}
+                </Card.Body>
+              </Card>
+            </>
+          ) : null}
           <h4 className="align-left mb-4">Total Scores</h4>
           <Row className="pb-3">
             <Col>
