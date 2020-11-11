@@ -279,6 +279,29 @@ export const Swaps: FunctionComponent<RouteComponentProps<MatchParams>> = (props
     console.log({ resp });
   };
 
+  const rejectSwapTx = async (
+    acceptingUserId: number,
+    proposingUserId: number,
+    wantPlayerId: number,
+    givePlayerId: number
+  ) => {
+    if (!window.wallet) {
+      throw new Error('Wallet not loaded');
+    }
+    const sdk = await window.sfsSDK();
+    const resp = await window.wallet.callback('Sign on Reject Swap transaction?', async (acc) => {
+      return await sdk.rejectSwap(
+        acc,
+        leagueIndex,
+        acceptingUserId,
+        proposingUserId,
+        wantPlayerId,
+        givePlayerId
+      );
+    });
+    console.log({ resp });
+  };
+
   return (
     <Layout removeTopMargin heading="Swaps">
       {!window.wallet ? (
@@ -504,6 +527,30 @@ export const Swaps: FunctionComponent<RouteComponentProps<MatchParams>> = (props
                                   }}
                                 >
                                   Accept
+                                </button>
+                                <button
+                                  className="btn"
+                                  disabled={spinner}
+                                  onClick={() => {
+                                    setSpinner(true);
+                                    rejectSwapTx(
+                                      sp.acceptingUserId,
+                                      sp.proposingUserId,
+                                      sp.wantPlayerId,
+                                      sp.givePlayerId
+                                    )
+                                      .then(() => {
+                                        setSpinner(false);
+                                        alert('Tx sent!');
+                                      })
+                                      .catch((err) => {
+                                        alert('Error:' + err?.message ?? err);
+                                        console.log(err);
+                                        setSpinner(false);
+                                      });
+                                  }}
+                                >
+                                  Reject
                                 </button>
                               </td>
                             </tr>
