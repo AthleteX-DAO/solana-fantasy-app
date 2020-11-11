@@ -238,7 +238,9 @@ export const Lineups: FunctionComponent<RouteComponentProps<MatchParams>> = (pro
                 </Card>
               </Col>
               <Col xs={2}>
-                <Card.Body>{'==>'}</Card.Body>
+                <Card.Body>
+                  <img src="https://img.icons8.com/carbon-copy/100/000000/arrow.png" />
+                </Card.Body>
               </Col>
               <Col>
                 <Card>

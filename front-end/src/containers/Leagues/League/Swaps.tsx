@@ -338,7 +338,9 @@ export const Swaps: FunctionComponent<RouteComponentProps<MatchParams>> = (props
               </Card>
             </Col>
             <Col xs={2}>
-              <Card.Body>{'<==>'}</Card.Body>
+              <Card.Body>
+                <img src="https://img.icons8.com/pastel-glyph/64/000000/sorting-arrows-horizontal.png" />
+              </Card.Body>
             </Col>
             <Col>
               <Card>
