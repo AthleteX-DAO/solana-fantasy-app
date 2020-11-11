@@ -298,6 +298,13 @@ export const Lineups: FunctionComponent<RouteComponentProps<MatchParams>> = (pro
                           Add or remove players from lineup by clicking on the list.
                         </Alert>
                       )
+                    ) : newLineup.length === 0 ? (
+                      <Alert variant="success" className="mb-0 mt-3">
+                        Week {root !== null ? root.currentWeek : 'Loading...'} is ongoing, set your
+                        Lineup for the upcoming Week{' '}
+                        {root !== null ? root.currentWeek + 1 : 'Loading...'} by selecting players
+                        from the left pane.
+                      </Alert>
                     ) : null}
                   </Card.Body>
                 </Card>
