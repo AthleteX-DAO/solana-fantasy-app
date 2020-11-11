@@ -32,7 +32,7 @@ export const AcceptSwap = () =>
 
       strictEqual(
         league.userStates[0].swapProposalsCount,
-        0,
+        1,
         'should decrease swap proposal count'
       );
 

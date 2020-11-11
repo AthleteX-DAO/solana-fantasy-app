@@ -78,4 +78,34 @@ export const ProposeSwap = () =>
         'should not allow make same proposal twice'
       );
     });
+    it('Propose second swap', async () => {
+      let root = await global.sfs.getRootInfo();
+      let league = root.leagues[0];
+
+      const givePlayerId =
+        league.userStates[0].userPlayers
+          .reverse()
+          .find((x) => !league.userStates[0].lineups[root.currentWeek - 1].includes(x)) || 0;
+      const wantPlayerId =
+        league.userStates[1].userPlayers
+          .reverse()
+          .find((x) => !league.userStates[1].lineups[root.currentWeek - 1].includes(x)) || 0;
+
+      await global.sfs.proposeSwap(global.firstAccount, 0, 1, 2, givePlayerId, wantPlayerId);
+
+      root = await global.sfs.getRootInfo();
+      league = root.leagues[0];
+
+      strictEqual(league.userStates[0].swapProposalsCount, 2, 'should add swap proposal count');
+      deepStrictEqual(
+        league.userStates[0].swapProposals[1],
+        { givePlayerId, wantPlayerId, isInitialized: true },
+        'should correctly propose swap'
+      );
+
+      await throwsAsync(
+        () => global.sfs.proposeSwap(global.firstAccount, 0, 1, 2, givePlayerId, wantPlayerId),
+        'should not allow make same proposal twice'
+      );
+    });
   });

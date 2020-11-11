@@ -88,7 +88,7 @@ impl<'a> SwapProposalsList<'a> {
         for i in proposal_index..self.get_count() - 1 {
             let proposal = self.get(i)?;
             let next = self.get(i + 1)?;
-            next.copy_to(&proposal);
+            next.copy_to(&proposal)?;
         }
         let last = self.get(self.get_count() - 1)?;
         last.set_give_player_id(0);

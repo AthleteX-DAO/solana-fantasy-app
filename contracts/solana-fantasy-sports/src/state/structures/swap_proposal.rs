@@ -46,14 +46,11 @@ impl<'a> SwapProposal<'a> {
         self.slice(&mut self.data.borrow_mut()).2[0] = value as u8;
     }
 
-    pub fn copy_to(&self, to: &Self) {
-        let mut dst = to.data.borrow_mut();
-        let mut src = self.data.borrow_mut();
-        array_mut_ref![dst, to.offset, SwapProposal::LEN].copy_from_slice(array_mut_ref![
-            src,
-            self.offset,
-            SwapProposal::LEN
-        ]);
+    pub fn copy_to(&self, to: &Self) -> Result<(), ProgramError> {
+        to.set_give_player_id(self.get_give_player_id());
+        to.set_want_player_id(self.get_want_player_id());
+        to.set_is_initialized(self.get_is_initialized()?);
+        Ok(())
     }
 
     pub fn new(
@@ -69,7 +66,6 @@ impl<'a> SwapProposal<'a> {
 
 // Pull in syscall stubs when building for non-BPF targets
 #[cfg(not(target_arch = "bpf"))]
-
 #[cfg(test)]
 mod tests {
     use super::*;

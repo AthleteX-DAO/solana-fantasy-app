@@ -20,3 +20,5 @@ pub mod update_player_score_args;
 pub use update_player_score_args::*;
 pub mod claim_reward_args;
 pub use claim_reward_args::*;
+pub mod reject_swap_args;
+pub use reject_swap_args::*;

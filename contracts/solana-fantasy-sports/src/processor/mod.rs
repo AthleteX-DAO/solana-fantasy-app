@@ -24,6 +24,8 @@ pub mod process_increment_week;
 pub use process_increment_week::*;
 pub mod process_claim_reward;
 pub use process_claim_reward::*;
+pub mod process_reject_swap;
+pub use process_reject_swap::*;
 pub mod process;
 pub use process::*;
 pub mod helpers;

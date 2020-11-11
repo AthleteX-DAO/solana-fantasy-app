@@ -82,6 +82,9 @@ pub enum SfsInstruction<'a> {
     AcceptSwap {
         args: AcceptSwapArgs<'a>,
     },
+    RejectSwap {
+        args: RejectSwapArgs<'a>,
+    },
     UpdatePlayerScore {
         args: UpdatePlayerScoreArgs<'a>,
     },
@@ -128,11 +131,14 @@ impl<'a> SfsInstruction<'a> {
             10 => Self::AcceptSwap {
                 args: AcceptSwapArgs::new(input, 1)?,
             },
-            11 => Self::UpdatePlayerScore {
+            11 => Self::RejectSwap {
+                args: RejectSwapArgs::new(input, 1)?,
+            },
+            12 => Self::UpdatePlayerScore {
                 args: UpdatePlayerScoreArgs::new(input, 1)?,
             },
-            12 => Self::IncrementWeek,
-            13 => Self::ClaimReward {
+            13 => Self::IncrementWeek,
+            14 => Self::ClaimReward {
                 args: ClaimRewardArgs::new(input, 1)?,
             },
 
@@ -195,16 +201,21 @@ impl<'a> SfsInstruction<'a> {
                 buf.extend_from_slice(&[0u8; AcceptSwapArgs::LEN]);
                 args.copy_to(array_mut_ref![buf, 1, AcceptSwapArgs::LEN]);
             }
-            Self::UpdatePlayerScore { args } => {
+            Self::RejectSwap { args } => {
                 buf.push(11);
+                buf.extend_from_slice(&[0u8; RejectSwapArgs::LEN]);
+                args.copy_to(array_mut_ref![buf, 1, RejectSwapArgs::LEN]);
+            }
+            Self::UpdatePlayerScore { args } => {
+                buf.push(12);
                 buf.extend_from_slice(&[0u8; UpdatePlayerScoreArgs::LEN]);
                 args.copy_to(array_mut_ref![buf, 1, UpdatePlayerScoreArgs::LEN]);
             }
             Self::IncrementWeek => {
-                buf.push(12);
+                buf.push(13);
             }
             Self::ClaimReward { args } => {
-                buf.push(13);
+                buf.push(14);
                 buf.extend_from_slice(&[0u8; ClaimRewardArgs::LEN]);
                 args.copy_to(array_mut_ref![buf, 1, ClaimRewardArgs::LEN]);
             }

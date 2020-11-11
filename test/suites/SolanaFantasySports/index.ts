@@ -9,6 +9,7 @@ import { UpdatePlayerScore } from './UpdatePlayerScore.test';
 import { ProposeSwap } from './ProposeSwap.test';
 import { AcceptSwap } from './AcceptSwap.test';
 import { ClaimReward } from './ClaimReward.test';
+import { RejectSwap } from './RejectSwap.test';
 
 export const SolanaFantasySports = () =>
   describe('Solana Fantasy Sports', () => {
@@ -22,5 +23,6 @@ export const SolanaFantasySports = () =>
     UpdateLineup();
     ProposeSwap();
     AcceptSwap();
+    RejectSwap();
     ClaimReward();
   });
