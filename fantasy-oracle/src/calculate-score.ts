@@ -224,20 +224,8 @@ export async function calculateScore(playerExternalIds: number[], week: number) 
        * 6 pts per rushing or receiving TD
        */
       {
-        const rushings =
-          // playerGameStats.RushingAttempts +
-          // playerGameStats.RushingLong +
-          playerGameStats.RushingTouchdowns; // +
-        // playerGameStats.RushingYards +
-        // playerGameStats.RushingYardsPerAttempt;
-
-        const receivings =
-          // playerGameStats.ReceivingLong +
-          // playerGameStats.ReceivingTargets +
-          playerGameStats.ReceivingTouchdowns; // +
-        // playerGameStats.ReceivingYards +
-        // playerGameStats.ReceivingYardsPerReception +
-        // playerGameStats.ReceivingYardsPerTarget;
+        const rushings = playerGameStats.RushingTouchdowns;
+        const receivings = playerGameStats.ReceivingTouchdowns;
 
         playerScore += (rushings + receivings) * 6;
       }
@@ -247,18 +235,7 @@ export async function calculateScore(playerExternalIds: number[], week: number) 
        */
       {
         const returningKicksPlunts =
-          // playerGameStats.PuntReturns +
-          // playerGameStats.PuntReturnYards +
-          // playerGameStats.PuntReturnYardsPerAttempt +
-          playerGameStats.PuntReturnTouchdowns +
-          // playerGameStats.PuntReturnLong +
-          // playerGameStats.KickReturns +
-          // playerGameStats.KickReturnYards +
-          // playerGameStats.KickReturnYardsPerAttempt +
-          playerGameStats.KickReturnTouchdowns; // +
-        // playerGameStats.KickReturnLong +
-        // playerGameStats.KickReturnFairCatches +
-        // playerGameStats.PuntReturnFairCatches;
+          playerGameStats.PuntReturnTouchdowns + playerGameStats.KickReturnTouchdowns;
 
         playerScore += returningKicksPlunts * 6;
       }
@@ -269,18 +246,7 @@ export async function calculateScore(playerExternalIds: number[], week: number) 
       {
         const fumbles =
           playerGameStats.FumbleReturnTouchdowns +
-          playerGameStats.FumbleReturnYards +
-          playerGameStats.Fumbles +
-          playerGameStats.FumblesForced +
-          playerGameStats.FumblesLost +
-          playerGameStats.FumblesOutOfBounds +
-          playerGameStats.FumblesOwnRecoveries +
-          playerGameStats.FumblesRecovered +
-          playerGameStats.MiscFumblesForced +
-          playerGameStats.MiscFumblesRecovered +
-          // playerGameStats.OffensiveFumbleRecoveryTouchdowns +
-          playerGameStats.SpecialTeamsFumblesForced +
-          playerGameStats.SpecialTeamsFumblesRecovered;
+          (playerGameStats.OffensiveFumbleRecoveryTouchdowns ?? 0); //+
 
         playerScore += fumbles * 6;
       }
@@ -289,19 +255,7 @@ export async function calculateScore(playerExternalIds: number[], week: number) 
        * 4 pts per passing TD
        */
       {
-        const passingTd =
-          // playerGameStats.PassingAttempts +
-          // playerGameStats.PassingCompletionPercentage +
-          // playerGameStats.PassingCompletions +
-          // playerGameStats.PassingInterceptions +
-          // playerGameStats.PassingLong +
-          // playerGameStats.PassingRating +
-          // playerGameStats.PassingSackYards +
-          // playerGameStats.PassingSacks +
-          playerGameStats.PassingTouchdowns; // +
-        // playerGameStats.PassingYards +
-        // playerGameStats.PassingYardsPerAttempt +
-        // playerGameStats.PassingYardsPerCompletion;
+        const passingTd = playerGameStats.PassingTouchdowns;
 
         playerScore += passingTd * 4;
       }
@@ -334,17 +288,13 @@ export async function calculateScore(playerExternalIds: number[], week: number) 
       {
         const passing =
           playerGameStats.PassingAttempts +
-          playerGameStats.PassingCompletionPercentage +
           playerGameStats.PassingCompletions +
           playerGameStats.PassingInterceptions +
           playerGameStats.PassingLong +
-          playerGameStats.PassingRating +
           playerGameStats.PassingSackYards +
           playerGameStats.PassingSacks +
           playerGameStats.PassingTouchdowns +
-          playerGameStats.PassingYards +
-          playerGameStats.PassingYardsPerAttempt +
-          playerGameStats.PassingYardsPerCompletion;
+          playerGameStats.PassingYards;
 
         playerScore += passing * 2;
       }
@@ -353,43 +303,20 @@ export async function calculateScore(playerExternalIds: number[], week: number) 
        * 1 pt per 10 yards rushing or receiving
        */
       {
-        const rushings =
-          playerGameStats.RushingAttempts +
-          playerGameStats.RushingLong +
-          playerGameStats.RushingTouchdowns +
-          playerGameStats.RushingYards +
-          playerGameStats.RushingYardsPerAttempt;
+        const rushings = playerGameStats.RushingYards;
 
-        const receivings =
-          playerGameStats.ReceivingLong +
-          playerGameStats.ReceivingTargets +
-          playerGameStats.ReceivingTouchdowns +
-          playerGameStats.ReceivingYards +
-          playerGameStats.ReceivingYardsPerReception +
-          playerGameStats.ReceivingYardsPerTarget;
+        const receivings = playerGameStats.ReceivingYards;
 
-        playerScore += (rushings + receivings) * 1;
+        playerScore += Math.floor((rushings + receivings) / 10) * 1;
       }
 
       /**
        * 1 pt per 25 yards passing
        */
       {
-        const passing =
-          playerGameStats.PassingAttempts +
-          playerGameStats.PassingCompletionPercentage +
-          playerGameStats.PassingCompletions +
-          playerGameStats.PassingInterceptions +
-          playerGameStats.PassingLong +
-          playerGameStats.PassingRating +
-          playerGameStats.PassingSackYards +
-          playerGameStats.PassingSacks +
-          playerGameStats.PassingTouchdowns +
-          playerGameStats.PassingYards +
-          playerGameStats.PassingYardsPerAttempt +
-          playerGameStats.PassingYardsPerCompletion;
+        const passing = playerGameStats.PassingYards;
 
-        playerScore += passing * 1;
+        playerScore += Math.floor(passing / 25) * 1;
       }
 
       /**
@@ -400,43 +327,19 @@ export async function calculateScore(playerExternalIds: number[], week: number) 
          * 2 pts per rushing or receiving TD of 40 yards or more
          */
         {
-          const rushings =
-            playerGameStats.RushingAttempts +
-            playerGameStats.RushingLong +
-            playerGameStats.RushingTouchdowns +
-            playerGameStats.RushingYards +
-            playerGameStats.RushingYardsPerAttempt;
+          const rushings = playerGameStats.RushingYards;
+          const receivings = playerGameStats.ReceivingYards;
 
-          const receivings =
-            playerGameStats.ReceivingLong +
-            playerGameStats.ReceivingTargets +
-            playerGameStats.ReceivingTouchdowns +
-            playerGameStats.ReceivingYards +
-            playerGameStats.ReceivingYardsPerReception +
-            playerGameStats.ReceivingYardsPerTarget;
-
-          playerScore += (rushings + receivings) * 2;
+          playerScore += Math.floor((rushings + receivings) / 40) * 2;
         }
 
         /**
          * 2 pts per passing TD of 40 yards or more (note: the player must score a touchdown to score the points)
          */
         {
-          const passing =
-            playerGameStats.PassingAttempts +
-            playerGameStats.PassingCompletionPercentage +
-            playerGameStats.PassingCompletions +
-            playerGameStats.PassingInterceptions +
-            playerGameStats.PassingLong +
-            playerGameStats.PassingRating +
-            playerGameStats.PassingSackYards +
-            playerGameStats.PassingSacks +
-            playerGameStats.PassingTouchdowns +
-            playerGameStats.PassingYards +
-            playerGameStats.PassingYardsPerAttempt +
-            playerGameStats.PassingYardsPerCompletion;
+          const passing = playerGameStats.PassingYards;
 
-          playerScore += passing * 1;
+          playerScore += Math.floor(passing / 40) * 1;
         }
       }
 
@@ -448,19 +351,7 @@ export async function calculateScore(playerExternalIds: number[], week: number) 
          * -2 pts per intercepted pass
          */
         {
-          const passing =
-            // playerGameStats.PassingAttempts +
-            // playerGameStats.PassingCompletionPercentage +
-            // playerGameStats.PassingCompletions +
-            playerGameStats.PassingInterceptions; // +
-          // playerGameStats.PassingLong +
-          // playerGameStats.PassingRating +
-          // playerGameStats.PassingSackYards +
-          // playerGameStats.PassingSacks +
-          // playerGameStats.PassingTouchdowns +
-          // playerGameStats.PassingYards +
-          // playerGameStats.PassingYardsPerAttempt +
-          // playerGameStats.PassingYardsPerCompletion;
+          const passing = playerGameStats.PassingInterceptions;
 
           playerScore += passing * -2;
         }
@@ -469,20 +360,7 @@ export async function calculateScore(playerExternalIds: number[], week: number) 
          * -2 pts per fumble lost
          */
         {
-          const fumbles =
-            playerGameStats.FumbleReturnTouchdowns +
-            playerGameStats.FumbleReturnYards +
-            playerGameStats.Fumbles +
-            playerGameStats.FumblesForced +
-            playerGameStats.FumblesLost +
-            playerGameStats.FumblesOutOfBounds +
-            playerGameStats.FumblesOwnRecoveries +
-            playerGameStats.FumblesRecovered +
-            playerGameStats.MiscFumblesForced +
-            playerGameStats.MiscFumblesRecovered +
-            // playerGameStats.OffensiveFumbleRecoveryTouchdowns +
-            playerGameStats.SpecialTeamsFumblesForced +
-            playerGameStats.SpecialTeamsFumblesRecovered;
+          const fumbles = playerGameStats.FumblesLost;
 
           playerScore += fumbles * 6;
         }
@@ -501,20 +379,7 @@ export async function calculateScore(playerExternalIds: number[], week: number) 
        * 5 pts per 50+ yard FG made
        */
       {
-        const fg =
-          playerGameStats.FieldGoalPercentage +
-          playerGameStats.FieldGoalReturnTouchdowns +
-          playerGameStats.FieldGoalReturnYards +
-          playerGameStats.FieldGoalsAttempted +
-          playerGameStats.FieldGoalsHadBlocked +
-          playerGameStats.FieldGoalsLongestMade +
-          playerGameStats.FieldGoalsMade +
-          playerGameStats.FieldGoalsMade0to19 +
-          playerGameStats.FieldGoalsMade20to29 +
-          playerGameStats.FieldGoalsMade30to39 +
-          playerGameStats.FieldGoalsMade40to49 +
-          playerGameStats.FieldGoalsMade50Plus +
-          playerGameStats.FantasyPointsDraftKings;
+        const fg = playerGameStats.FieldGoalsMade50Plus;
         playerScore += fg * 5;
       }
 
@@ -522,20 +387,7 @@ export async function calculateScore(playerExternalIds: number[], week: number) 
        * 4 pts per 40-49 yard FG made
        */
       {
-        const fg =
-          playerGameStats.FieldGoalPercentage +
-          playerGameStats.FieldGoalReturnTouchdowns +
-          playerGameStats.FieldGoalReturnYards +
-          playerGameStats.FieldGoalsAttempted +
-          playerGameStats.FieldGoalsHadBlocked +
-          playerGameStats.FieldGoalsLongestMade +
-          playerGameStats.FieldGoalsMade +
-          playerGameStats.FieldGoalsMade0to19 +
-          playerGameStats.FieldGoalsMade20to29 +
-          playerGameStats.FieldGoalsMade30to39 +
-          playerGameStats.FieldGoalsMade40to49 +
-          playerGameStats.FieldGoalsMade50Plus +
-          playerGameStats.FantasyPointsDraftKings;
+        const fg = playerGameStats.FieldGoalsMade40to49;
         playerScore += fg * 4;
       }
 
@@ -544,19 +396,9 @@ export async function calculateScore(playerExternalIds: number[], week: number) 
        */
       {
         const fg =
-          playerGameStats.FieldGoalPercentage +
-          playerGameStats.FieldGoalReturnTouchdowns +
-          playerGameStats.FieldGoalReturnYards +
-          playerGameStats.FieldGoalsAttempted +
-          playerGameStats.FieldGoalsHadBlocked +
-          playerGameStats.FieldGoalsLongestMade +
-          playerGameStats.FieldGoalsMade +
           playerGameStats.FieldGoalsMade0to19 +
           playerGameStats.FieldGoalsMade20to29 +
-          playerGameStats.FieldGoalsMade30to39 +
-          playerGameStats.FieldGoalsMade40to49 +
-          playerGameStats.FieldGoalsMade50Plus +
-          playerGameStats.FantasyPointsDraftKings;
+          playerGameStats.FieldGoalsMade30to39;
 
         playerScore += fg * 3;
       }
@@ -565,34 +407,13 @@ export async function calculateScore(playerExternalIds: number[], week: number) 
        * 2 pts per rushing, passing, or receiving 2 pt conversion
        */
       {
-        const rushings =
-          playerGameStats.RushingAttempts +
-          playerGameStats.RushingLong +
-          playerGameStats.RushingTouchdowns +
-          playerGameStats.RushingYards +
-          playerGameStats.RushingYardsPerAttempt;
-
+        const rushings = playerGameStats.RushingAttempts;
         const receivings =
           playerGameStats.ReceivingLong +
           playerGameStats.ReceivingTargets +
-          playerGameStats.ReceivingTouchdowns +
-          playerGameStats.ReceivingYards +
-          playerGameStats.ReceivingYardsPerReception +
-          playerGameStats.ReceivingYardsPerTarget;
+          playerGameStats.ReceivingTouchdowns;
 
-        const passing =
-          playerGameStats.PassingAttempts +
-          playerGameStats.PassingCompletionPercentage +
-          playerGameStats.PassingCompletions +
-          playerGameStats.PassingInterceptions +
-          playerGameStats.PassingLong +
-          playerGameStats.PassingRating +
-          playerGameStats.PassingSackYards +
-          playerGameStats.PassingSacks +
-          playerGameStats.PassingTouchdowns +
-          playerGameStats.PassingYards +
-          playerGameStats.PassingYardsPerAttempt +
-          playerGameStats.PassingYardsPerCompletion;
+        const passing = playerGameStats.PassingAttempts;
 
         playerScore += (rushings + passing + receivings) * 2;
       }
@@ -601,10 +422,7 @@ export async function calculateScore(playerExternalIds: number[], week: number) 
        * 1 pt per Extra Point made
        */
       {
-        const extraPoint =
-          playerGameStats.ExtraPointsAttempted +
-          playerGameStats.ExtraPointsHadBlocked +
-          playerGameStats.ExtraPointsMade;
+        const extraPoint = playerGameStats.ExtraPointsMade;
 
         playerScore += extraPoint * 1;
       }
@@ -618,20 +436,21 @@ export async function calculateScore(playerExternalIds: number[], week: number) 
        */
       {
         // i think there can be different/specific props here outside of interface
-        const missedFG =
-          playerGameStats.FieldGoalPercentage +
-          playerGameStats.FieldGoalReturnTouchdowns +
-          playerGameStats.FieldGoalReturnYards +
-          playerGameStats.FieldGoalsAttempted +
-          playerGameStats.FieldGoalsHadBlocked +
-          playerGameStats.FieldGoalsLongestMade +
-          playerGameStats.FieldGoalsMade +
-          playerGameStats.FieldGoalsMade0to19 +
-          playerGameStats.FieldGoalsMade20to29 +
-          playerGameStats.FieldGoalsMade30to39 +
-          playerGameStats.FieldGoalsMade40to49 +
-          playerGameStats.FieldGoalsMade50Plus +
-          playerGameStats.FantasyPointsDraftKings;
+        const missedFG = 0;
+        // playerGameStats.FieldGoalPercentage +
+        // playerGameStats.FieldGoalReturnTouchdowns +
+        // playerGameStats.FieldGoalReturnYards +
+        // playerGameStats.FieldGoalsAttempted +
+        // playerGameStats.FieldGoalsHadBlocked +
+        // playerGameStats.FieldGoalsLongestMade +
+        // playerGameStats.FieldGoalsMade +
+        // playerGameStats.FieldGoalsMade0to19 +
+        // playerGameStats.FieldGoalsMade20to29 +
+        // playerGameStats.FieldGoalsMade30to39; //+
+        // playerGameStats.FieldGoalsMade40to49 +
+        // playerGameStats.FieldGoalsMade50Plus +
+        // playerGameStats.FantasyPointsDraftKings;
+        // playerGameStats.fg
 
         playerScore += missedFG * -2;
       }
@@ -642,20 +461,20 @@ export async function calculateScore(playerExternalIds: number[], week: number) 
        */
       {
         // i think there can be different/specific props here outside of interface
-        const missedFG =
-          playerGameStats.FieldGoalPercentage +
-          playerGameStats.FieldGoalReturnTouchdowns +
-          playerGameStats.FieldGoalReturnYards +
-          playerGameStats.FieldGoalsAttempted +
-          playerGameStats.FieldGoalsHadBlocked +
-          playerGameStats.FieldGoalsLongestMade +
-          playerGameStats.FieldGoalsMade +
-          playerGameStats.FieldGoalsMade0to19 +
-          playerGameStats.FieldGoalsMade20to29 +
-          playerGameStats.FieldGoalsMade30to39 +
-          playerGameStats.FieldGoalsMade40to49 +
-          playerGameStats.FieldGoalsMade50Plus +
-          playerGameStats.FantasyPointsDraftKings;
+        const missedFG = 0;
+        // playerGameStats.FieldGoalPercentage +
+        // playerGameStats.FieldGoalReturnTouchdowns +
+        // playerGameStats.FieldGoalReturnYards +
+        // playerGameStats.FieldGoalsAttempted +
+        // playerGameStats.FieldGoalsHadBlocked +
+        // playerGameStats.FieldGoalsLongestMade +
+        // playerGameStats.FieldGoalsMade +
+        // playerGameStats.FieldGoalsMade0to19 +
+        // playerGameStats.FieldGoalsMade20to29 +
+        // playerGameStats.FieldGoalsMade30to39 +
+        // playerGameStats.FieldGoalsMade40to49 +
+        // playerGameStats.FieldGoalsMade50Plus +
+        // playerGameStats.FantasyPointsDraftKings;
 
         playerScore += missedFG * -1;
       }
@@ -682,11 +501,7 @@ export async function calculateScore(playerExternalIds: number[], week: number) 
        * 2 pts per interception
        */
       {
-        const interceptions =
-          playerGameStats.InterceptionReturnTouchdowns +
-          playerGameStats.InterceptionReturnYards +
-          playerGameStats.Interceptions +
-          playerGameStats.PassingInterceptions;
+        const interceptions = playerGameStats.Interceptions;
 
         playerScore += interceptions * 2;
       }
@@ -696,19 +511,7 @@ export async function calculateScore(playerExternalIds: number[], week: number) 
        */
       {
         const fumbleRecovery =
-          // playerGameStats.FumbleReturnTouchdowns +
-          // playerGameStats.FumbleReturnYards +
-          // playerGameStats.Fumbles +
-          // playerGameStats.FumblesForced +
-          // playerGameStats.FumblesLost +
-          // playerGameStats.FumblesOutOfBounds +
-          playerGameStats.FumblesOwnRecoveries +
-          playerGameStats.FumblesRecovered +
-          // playerGameStats.MiscFumblesForced +
-          // playerGameStats.MiscFumblesRecovered +
-          // playerGameStats.OffensiveFumbleRecoveryTouchdowns +
-          // playerGameStats.SpecialTeamsFumblesForced +
-          playerGameStats.SpecialTeamsFumblesRecovered;
+          playerGameStats.FumblesOwnRecoveries + playerGameStats.FumblesRecovered;
 
         playerScore += fumbleRecovery * 2;
       }
@@ -718,10 +521,7 @@ export async function calculateScore(playerExternalIds: number[], week: number) 
        */
       {
         const blocked =
-          playerGameStats.BlockedKickReturnTouchdowns +
-          playerGameStats.BlockedKickReturnYards +
           playerGameStats.BlockedKicks +
-          playerGameStats.ExtraPointsHadBlocked +
           playerGameStats.FieldGoalsHadBlocked +
           playerGameStats.PuntsHadBlocked;
 
@@ -732,7 +532,7 @@ export async function calculateScore(playerExternalIds: number[], week: number) 
        * 2 pts per safety
        */
       {
-        const safety = playerGameStats.Safeties + playerGameStats.SafetiesAllowed;
+        const safety = playerGameStats.Safeties; //+ playerGameStats.SafetiesAllowed;
 
         playerScore += safety * 2;
       }
@@ -741,13 +541,8 @@ export async function calculateScore(playerExternalIds: number[], week: number) 
        * 1 pt per sack
        */
       {
-        const sack =
-          playerGameStats.SackYards +
-          playerGameStats.Sacks +
-          playerGameStats.PassingSackYards +
-          playerGameStats.PassingSacks;
-
-        playerScore += sack * 2;
+        const sack = playerGameStats.Sacks;
+        playerScore += sack * 1;
       }
     }
     /**
