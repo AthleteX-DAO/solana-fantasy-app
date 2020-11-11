@@ -307,7 +307,7 @@ export const Swaps: FunctionComponent<RouteComponentProps<MatchParams>> = (props
                           root !== null &&
                           league !== null &&
                           selfTeamIndex !== null &&
-                          !league.userStates[selfTeamIndex].lineups[root.currentWeek].includes(
+                          league.userStates[selfTeamIndex].lineups[root.currentWeek].includes(
                             index + 1
                           )
                         ) {
