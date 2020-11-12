@@ -57,12 +57,14 @@ export class SFS {
   }
 
   /**
-   * Create and initialize a token.
+   * Create and initialize a root state account.
    *
    * @param connection The connection to use
    * @param payer Fee payer for transaction
-   * @param oracleAuthority Account or multisig that will control scores
-   * @param programId Optional sfs programId, uses the system programId by default
+   * @param oracleAuthority Account that will control scores
+   * @param players An array of player external ids and their positions
+   * @param currentWeek A current week of season. 0 - week before season starts
+   * @param programId Id of deployed SFS program
    * @return SFS object for the newly created root
    */
   static async initializeRoot(
@@ -148,12 +150,14 @@ export class SFS {
   }
 
   /**
-   * Create a league.
+   * Create a new league.
    *
-   * This account may then be used as a `transfer()` or `approve()` destination
-   *
-   * @param owner User account that will own the new account
-   * @return Public key of the new empty account
+   * @param owner User account to pay the fee, will be the first user joined
+   * @param name A name for the new league
+   * @param bid A bid amount in lamports
+   * @param usersLimit Number of users in league
+   * @param teamName A name of current user's team
+   * @return Index of the created league
    */
   async createLeague(
     owner: Account,
@@ -191,11 +195,11 @@ export class SFS {
   }
 
   /**
-   * Join a league.
+   * Join an existing league.
    *
-   * This account may then be used as a `transfer()` or `approve()` destination
-   *
-   * @param owner User account that will own the new account
+   * @param owner User account that will join the league and pay the bid
+   * @param leagueIndex Index of league to join
+   * @param teamName A name of current user's team
    * @return Public key of the new empty account
    */
   async joinLeague(owner: Account, leagueIndex: number, teamName: string): Promise<void> {
@@ -215,7 +219,12 @@ export class SFS {
   }
 
   /**
-   * Pick player.
+   * Pick a player to the user's team on user's turn of draft selection.
+   *
+   * @param owner Current user account
+   * @param leagueIndex Index of joined league
+   * @param userId A 1-based id of current user in the league
+   * @param playerId A 1-based id of player to pick
    */
   async pickPlayer(
     owner: Account,
@@ -238,7 +247,13 @@ export class SFS {
     await sendAndConfirmTransaction('Pick player', this.connection, transaction, owner);
   }
   /**
-   * Update lineup.
+   * Update lineup for the next and further weeks.
+   *
+   * @param owner Current user account
+   * @param leagueIndex Index of joined league
+   * @param userId A 1-based id of current user in the league
+   * @param week A next week number
+   * @param activePlayers List of players to be active in next week
    */
   async updateLineup(
     owner: Account,
@@ -263,7 +278,15 @@ export class SFS {
     await sendAndConfirmTransaction('Update lineup', this.connection, transaction, owner);
   }
   /**
-   * Propose swap.
+   * Propose a player swap.
+   * Only players not active in the current week can be swapped
+   *
+   * @param owner Proposing user account
+   * @param leagueIndex Index of joined league
+   * @param proposingUserId A 1-based id of proposing user in the league
+   * @param acceptingUserId A 1-based id of accepting user in the league
+   * @param givePlayerId A 1-based id of player proposing user gives
+   * @param wantPlayerId A 1-based id of player accepting user gives
    */
   async proposeSwap(
     owner: Account,
@@ -290,7 +313,14 @@ export class SFS {
     await sendAndConfirmTransaction('Propose swap', this.connection, transaction, owner);
   }
   /**
-   * Accept swap.
+   * Accept a player swap proposal.
+   *
+   * @param owner Accepting user account
+   * @param leagueIndex Index of joined league
+   * @param acceptingUserId A 1-based id of accepting user in the league
+   * @param proposingUserId A 1-based id of user that own a wanted player
+   * @param wantPlayerId A 1-based id of player proposing user gives
+   * @param givePlayerId A 1-based id of player accepting user gives
    */
   async acceptSwap(
     owner: Account,
@@ -317,7 +347,14 @@ export class SFS {
     await sendAndConfirmTransaction('Accept swap', this.connection, transaction, owner);
   }
   /**
-   * Reject swap.
+   * Reject a player swap proposal.
+   *
+   * @param owner Proposing or accepting user account
+   * @param leagueIndex Index of joined league
+   * @param acceptingUserId A 1-based id of accepting user in the league
+   * @param proposingUserId A 1-based id of user that own a wanted player
+   * @param wantPlayerId A 1-based id of player proposing user gives
+   * @param givePlayerId A 1-based id of player accepting user gives
    */
   async rejectSwap(
     owner: Account,
@@ -345,7 +382,9 @@ export class SFS {
   }
 
   /**
-   * Retrieve root information
+   * Retrieve latest root state information
+   *
+   * @returns Root state
    */
   async getRootInfo(): Promise<Root> {
     const info = await this.connection.getAccountInfo(this.publicKey);
@@ -365,14 +404,30 @@ export class SFS {
     return rootInfo;
   }
 
+  /**
+   * Calculates scores for the certain user for the certain week
+   *
+   * @param root Root state
+   * @param leagueIndex Index of league
+   * @param userId A 1-based id of user in league
+   * @param week Week to calculate the scores
+   * @returns score
+   */
   static getWeekScores(root: Root, leagueIndex: number, userId: number, week: number) {
     let league = root.leagues[leagueIndex];
     let score = league.userStates[userId - 1].lineups[week - 1].reduce((sum, playerId) => {
       return sum + root.players[playerId - 1].scores[week - 1].score1;
     }, 0);
-    return score;
+    return Math.round(score);
   }
 
+  /**
+   * Calculates scores for each league user for all weeks
+   *
+   * @param root Root state
+   * @param leagueIndex Index of league
+   * @returns array of users and their scores and states
+   */
   static getUserScores(root: Root, leagueIndex: number) {
     let league = root.leagues[leagueIndex];
     return league.userStates.slice(0, league.userStateCount).map((userState, i) => {
@@ -390,11 +445,17 @@ export class SFS {
       return {
         userId: i + 1,
         userState,
-        score,
+        score: Math.round(score),
       };
     });
   }
 
+  /**
+   * Returns list of winners for the league
+   *
+   * @param root
+   * @param leagueIndex
+   */
   static getWinners(root: Root, leagueIndex: number) {
     const scores = SFS.getUserScores(root, leagueIndex);
     const maxScore = scores.reduce((max, x) => (x.score > max ? x.score : max), 0);
@@ -402,7 +463,10 @@ export class SFS {
   }
 
   /**
-   * Update player scores
+   * Update player scores for current week
+   *
+   * @param owner An oracle's account
+   * @param scores Array of players and their scores
    */
   async updatePlayerScores(
     owner: Account,
@@ -443,7 +507,9 @@ export class SFS {
   }
 
   /**
-   * Increment week
+   * Increment current week number
+   *
+   * @param owner An oracle's account
    */
   async incrementWeek(owner: Account): Promise<void> {
     const transaction = new Transaction();
@@ -460,7 +526,11 @@ export class SFS {
   }
 
   /**
-   * Claim reward.
+   * Withdraw the reward to the winners.
+   *
+   * @param leagueIndex Index of league
+   * @param winners Array of the winners
+   * @param sender Account to pay the transaction fee
    */
   async claimReward(leagueIndex: number, winners: PublicKey[], sender: Account): Promise<void> {
     const transaction = new Transaction();
