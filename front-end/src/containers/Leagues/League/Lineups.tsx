@@ -1,7 +1,7 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
 import { Container, Row, Col, Card, Form, Table, CardDeck, Alert } from 'react-bootstrap';
-import { RouteComponentProps } from 'react-router-dom';
-import { League, Player, Position, Root, UserState } from '../../../sdk/state';
+import { Link, RouteComponentProps } from 'react-router-dom';
+import { GAMES_COUNT, League, Player, Position, Root, UserState } from '../../../sdk/state';
 import { publicKey } from '../../../sdk/util/layout';
 import { Layout } from '../../Layout';
 import { MatchParams } from './Forwarder';
@@ -131,7 +131,8 @@ export const Lineups: FunctionComponent<RouteComponentProps<MatchParams>> = (pro
     if (newLineup === null) {
       const lineupsNextWeek = league.userStates[selfTeamIndex].lineups[root.currentWeek];
 
-      console.log({ lineupsNextWeek });
+      // console.log({ lineupsNextWeek });
+      if (!lineupsNextWeek) return;
       if (league.userStates[selfTeamIndex].isLineupSet) {
         setNewLineup(lineupsNextWeek.filter((l) => l !== 0));
       } else {
@@ -142,9 +143,9 @@ export const Lineups: FunctionComponent<RouteComponentProps<MatchParams>> = (pro
 
   const isLineupChanged = (() => {
     if (root === null || league === null || selfTeamIndex === null) return null;
-    const lineupInContract = [
-      ...league.userStates[selfTeamIndex].lineups[root.currentWeek + 1],
-    ].sort();
+    const _nextWeekLineups = league.userStates[selfTeamIndex].lineups[root.currentWeek + 1];
+    if (!_nextWeekLineups) return false;
+    const lineupInContract = [..._nextWeekLineups].sort();
     const lineupUI = [...(newLineup ?? [])].sort();
     if (lineupUI.length !== lineupInContract.length) return false;
     for (let i = 0; i < lineupUI.length; i++) {
@@ -184,6 +185,11 @@ export const Lineups: FunctionComponent<RouteComponentProps<MatchParams>> = (pro
           Wallet is not loaded. If you just refreshed the page, then your wallet was flushed from
           memory when you refreshed the page. When you import your wallet, you can choose to cache
           it locally to prevent this behaviour.
+        </Alert>
+      ) : root !== null && root.currentWeek >= GAMES_COUNT ? (
+        <Alert variant="warning">
+          The season is finished. Please proceed to the{' '}
+          <Link to={`/leagues/${leagueIndex}/scoreboard`}>scoreboard</Link> to check result.
         </Alert>
       ) : (
         <Container>
@@ -343,7 +349,7 @@ export const Lineups: FunctionComponent<RouteComponentProps<MatchParams>> = (pro
                             <br />
                             {root &&
                               team.lineups[root.currentWeek - 1]
-                                .filter((l) => l !== 0)
+                                ?.filter((l) => l !== 0)
                                 .map((playerId) => (
                                   <>
                                     {players ? (

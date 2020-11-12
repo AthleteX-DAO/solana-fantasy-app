@@ -1,7 +1,7 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
 import { Container, Row, Col, Card, Dropdown, Alert, Table } from 'react-bootstrap';
-import { RouteComponentProps } from 'react-router-dom';
-import { League, Player, Position, Root, UserState } from '../../../sdk/state';
+import { Link, RouteComponentProps } from 'react-router-dom';
+import { GAMES_COUNT, League, Player, Position, Root, UserState } from '../../../sdk/state';
 import { Layout } from '../../Layout';
 import { MatchParams } from './Forwarder';
 
@@ -310,6 +310,11 @@ export const Swaps: FunctionComponent<RouteComponentProps<MatchParams>> = (props
           memory when you refreshed the page. When you import your wallet, you can choose to cache
           it locally to prevent this behaviour.
         </Alert>
+      ) : root !== null && root.currentWeek >= GAMES_COUNT ? (
+        <Alert variant="warning">
+          The season is finished. Please proceed to the{' '}
+          <Link to={`/leagues/${leagueIndex}/scoreboard`}>scoreboard</Link> to check result.
+        </Alert>
       ) : (
         <Container>
           <h4 className="align-left mb-4">Swap a player</h4>
@@ -330,7 +335,7 @@ export const Swaps: FunctionComponent<RouteComponentProps<MatchParams>> = (props
                           root !== null &&
                           league !== null &&
                           selfTeamIndex !== null &&
-                          league.userStates[selfTeamIndex].lineups[root.currentWeek].includes(
+                          league.userStates[selfTeamIndex].lineups[root.currentWeek]?.includes(
                             index + 1
                           )
                         ) {
@@ -409,7 +414,7 @@ export const Swaps: FunctionComponent<RouteComponentProps<MatchParams>> = (props
                             root !== null &&
                             league !== null &&
                             otherTeamIndex !== null &&
-                            league.userStates[otherTeamIndex].lineups[root.currentWeek].includes(
+                            league.userStates[otherTeamIndex].lineups[root.currentWeek]?.includes(
                               index + 1
                             )
                           ) {

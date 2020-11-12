@@ -220,7 +220,12 @@ export const Scoreboard: FunctionComponent<RouteComponentProps<MatchParams>> = (
             </Col>
           </Row>
           {league?.startWeek
-            ? Array.from({ length: root.currentWeek - league?.startWeek + 1 })
+            ? Array.from({
+                length:
+                  (root.currentWeek > GAMES_COUNT ? GAMES_COUNT : root.currentWeek) -
+                  league?.startWeek +
+                  1,
+              })
                 .map((_, i) => league.startWeek + i)
                 .reverse()
                 .map((week) => (
@@ -246,7 +251,7 @@ export const Scoreboard: FunctionComponent<RouteComponentProps<MatchParams>> = (
                                   <br />
                                   <u>Lineups</u>
                                   <br />
-                                  {userState.lineups[week - 1].map((playerId) => (
+                                  {userState.lineups[week - 1]?.map((playerId) => (
                                     <>
                                       {players ? (
                                         <>
