@@ -166,12 +166,16 @@ export const Scoreboard: FunctionComponent<RouteComponentProps<MatchParams>> = (
                 <Card.Body>
                   {winners.map((x) => (
                     <>
-                      <strong>Team #{x.userId - 1}</strong>
-                      <br />
-                      {x.userState.teamName}
+                      <strong>Team {x.userState.teamName}</strong>
                       <br />
                       {x.score}
                       <br />
+                      <br />
+                      Prize:{' '}
+                      {(root.leagues[leagueIndex].usersLimit *
+                        root.leagues[leagueIndex].bid.toNumber()) /
+                        10 ** 9}{' '}
+                      SOL
                     </>
                   ))}
                   {!league?.isRewardClaimed && (
