@@ -27,6 +27,7 @@
     "deploy": "ts-node fantasy-oracle/scripts/deploy-contract.ts",
     "week": "ts-node fantasy-oracle/scripts/increment-week.ts",
     "score": "ts-node fantasy-oracle/scripts/update-player-scores.ts",
+    "week-score": "yarn week && yarn score",
     "create-league": "ts-node fantasy-oracle/scripts/create-league.ts"
   },
   "devDependencies": {
