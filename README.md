@@ -9,33 +9,44 @@
 
 ### Step 1: Create (or Import) a Wallet
 
-![](https://i.imgur.com/LHC35Ta.png)
+![](https://i.imgur.com/B8An1LP.png)
 
-### Step 2: Request \$SOL From Testnet
+### Step 2: Request $SOL Airdrop From Faucet
 
-![](https://i.imgur.com/0jQ5JCe.png)
+
+![](https://i.imgur.com/K6ZtN5z.png)
 
 ### Step 3: Create a League and set \$SOL entry cost
 
-![](https://i.imgur.com/Pjl4kuP.png)
+
+![](https://i.imgur.com/GqKZv1d.png)
 
 ### Step 4: Invite your friends to join the League
 
-![](https://i.imgur.com/R3MODRK.png)
+
+![](https://i.imgur.com/zclYIlF.png)
 
 ### Step 5: Draft your players (in a snake-style draft)
 
-![](https://i.imgur.com/ISTOv27.png)
+
+![](https://i.imgur.com/nSssqoD.png)
 
 ### Step 6: Select your weekly lineup of players
 
+
+![](https://i.imgur.com/3LqhGGg.png)
+
 ### Step 7: Swap Players on the bench with other teams in the League
+
+
+![](https://i.imgur.com/9pxVzI6.png)
 
 ### Step 8: As each week is completed, use the oracle to pass in the scores
 
 ### Step 9: Use the scoreboard to tabulate scores, and withdraw winnings once the season is over.
 
-![](https://i.imgur.com/tL6dKuh.png)
+
+![](https://i.imgur.com/G6JCE25.png)
 
 ## Pre-requisites
 
