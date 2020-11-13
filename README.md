@@ -13,38 +13,33 @@
 
 ### `Step 2: Request $SOL Airdrop From Faucet`
 
-
 ![](https://i.imgur.com/K6ZtN5z.png)
 
 ### `Step 3: Create a League and set \$SOL entry cost`
-
 
 ![](https://i.imgur.com/GqKZv1d.png)
 
 ### `Step 4: Invite your friends to join the League`
 
-
 ![](https://i.imgur.com/zclYIlF.png)
 
 ### `Step 5: Draft your players (in a snake-style draft)`
-
 
 ![](https://i.imgur.com/nSssqoD.png)
 
 ### `Step 6: Select your weekly lineup of players`
 
-
 ![](https://i.imgur.com/3LqhGGg.png)
 
 ### `Step 7: Swap Players on the bench with other teams in the League`
-
 
 ![](https://i.imgur.com/9pxVzI6.png)
 
 ### `Step 8: As each week is completed, use the oracle to pass in the scores`
 
-### `Step 9: Use the scoreboard to tabulate scores, and withdraw winnings once the season is over.`
+When a week is completed you need to run the [Increment Week](#2-increment-week) script and [Update scores](#3-update-player-scores) script. For this you will need to locally setup the project on your machine. Have a look at [pre-requisites](#pre-requisites).
 
+### `Step 9: Use the scoreboard to tabulate scores, and withdraw winnings once the season is over.`
 
 ![](https://i.imgur.com/G6JCE25.png)
 
@@ -62,11 +57,15 @@ $ cargo --version
 
 You can [view](https://github.com/solana-labs/example-helloworld/blob/master/README-installation-notes.md) installation notes.
 
-## Available Scripts
+## Available PackageJson Scripts
 
 ### `yarn build`
 
 Builds all programs in contracts directory and copies their `.so` file to the build dir.
+
+### `yarn localnet:up`
+
+Starts the Solana's localnet on your system. Depending on your system, you might need administer privileges (use `sudo` in macOS and linux).
 
 ### `yarn test`
 
@@ -76,7 +75,7 @@ Builds if not yet, starts a local solana node and runs tests
 
 Runs prettier and fixes any style issues
 
-## Fantasy Oracle
+## Fantasy Oracle Scripts
 
 These contain scripts that used to setup and manage the Solana Fantasy Sports smart contract on the Solana blockchain.
 
