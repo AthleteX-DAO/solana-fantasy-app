@@ -3,9 +3,38 @@
 <a href="https://www.typescriptlang.org/"><img alt="typescript strict" src="https://badgen.net/badge/typescript/strict/blue?icon=typescript"></a>
 <a href="https://github.com/prettier/prettier"><img alt="styled with prettier" src="https://img.shields.io/badge/styled_with-prettier-ff69b4.svg"></a>
 
-# Solana Fantasy Contracts
+# Solana Fantasy Sports
 
-> TODO: add info
+## How to Play?
+
+### Step 1: Create (or Import) a Wallet
+
+![](https://i.imgur.com/LHC35Ta.png)
+
+### Step 2: Request $SOL From Testnet
+
+![](https://i.imgur.com/0jQ5JCe.png)
+
+
+### Step 3: Create a League and set $SOL entry cost
+
+![](https://i.imgur.com/Pjl4kuP.png)
+
+### Step 4: Invite your friends to join the League
+
+![](https://i.imgur.com/R3MODRK.png)
+
+### Step 5: Draft your players (in a snake-style draft)
+
+![](https://i.imgur.com/ISTOv27.png)
+
+### Step 6: Select your weekly lineup of players
+### Step 7: Swap Players on the bench with other teams in the League
+### Step 8: As each week is completed, use the oracle to pass in the scores
+### Step 9: Use the scoreboard to tabulate scores, and withdraw winnings once the season is over.
+
+![](https://i.imgur.com/tL6dKuh.png)
+
 
 ## Pre-requisites
 
