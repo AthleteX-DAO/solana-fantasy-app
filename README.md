@@ -17,7 +17,7 @@ Or Read Below:
 
 `Step 1:` Create (or Import) a Wallet
 
-`Step 2:` Request $SOL Airdrop From Faucet
+`Step 2:` Request \$SOL Airdrop From Faucet
 
 `Step 3:` Create a League and set \$SOL entry cost
 
@@ -34,7 +34,6 @@ Or Read Below:
 When a week is completed you need to run the [Increment Week](#2-increment-week) script and [Update scores](#3-update-player-scores) script. For this you will need to locally setup the project on your machine. Have a look at [pre-requisites](#pre-requisites).
 
 `Step 9:` Use the scoreboard to tabulate scores, and withdraw winnings once the season is over.
-
 
 ## Pre-requisites
 
