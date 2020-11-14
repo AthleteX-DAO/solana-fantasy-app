@@ -5,6 +5,10 @@
 
 # Solana Fantasy Sports
 
+## Demo App
+
+https://youthful-bartik-9350ff.netlify.app/
+
 ## How to Play?
 
 [Watch the walkthrough on Youtube!](https://youtu.be/7sEjUrIFFzc)
