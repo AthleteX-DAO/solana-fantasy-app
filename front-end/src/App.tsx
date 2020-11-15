@@ -8,6 +8,7 @@ import { Footer } from './containers/Footer/Footer';
 import { Home } from './containers/Home/Home';
 import { WalletRouter } from './containers/Wallet/Router';
 import { LeaguesRouter } from './containers/Leagues/Router';
+import { Admin } from './containers/Admin/Admin';
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
           <Route path="/" exact component={Home} />
           <Route path="/wallet" component={WalletRouter} />
           <Route path="/leagues" component={LeaguesRouter} />
+          <Route path="/admin" component={Admin} />
         </Switch>
         <Footer />
       </BrowserRouter>

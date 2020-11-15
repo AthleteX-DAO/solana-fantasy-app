@@ -25,6 +25,10 @@ export function Navbar() {
             <NavElement to="/" label="Home" />
             <NavElement to="/leagues/create" label="Create a League" />
             <NavElement to="/leagues" label="Join a League" />
+            {window.wallet &&
+            window.wallet.publicKey === '9AmX84PQg4PoyLwPCHbBy2mSRsjKo1CSJXVXXXfSWZTH' ? (
+              <NavElement to="/admin" label="Admin Panel" />
+            ) : null}
             {window.wallet === undefined ? (
               <NavElement to="/wallet/import" label="Connect Wallet" />
             ) : (

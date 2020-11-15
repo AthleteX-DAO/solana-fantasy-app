@@ -11,3 +11,7 @@ export async function isUserAlreadyJoined(
   }
   return false;
 }
+
+export function wait(milliseconds: number): Promise<void> {
+  return new Promise((res) => setTimeout(res, milliseconds));
+}
