@@ -56,7 +56,8 @@ export function Footer() {
                 <h4>Useful Links</h4>
                 <ul>
                   <li>
-                    <i className="bx bx-chevron-right"></i> <a href="#">GitHub Repository</a>
+                    <i className="bx bx-chevron-right"></i>{' '}
+                    <a href="https://github.com/ProtoDao/solana-fantasy-app">GitHub Repository</a>
                   </li>
                 </ul>
               </div>
