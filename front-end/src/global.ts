@@ -13,6 +13,9 @@ declare global {
     sfsProgramId: PublicKey;
     sfsRoot: PublicKey;
     connection: Connection;
+    firstName: string;
+    lastName: string;
+    
     sfsSDK: () => Promise<SFS>;
     getCachedRootInfo: (forceUpdate?: boolean) => Promise<Root>;
     getCachedPlayers: () => Promise<

@@ -6,13 +6,13 @@ export function Home() {
     <>
       <section id="hero" className="d-flex align-items-center">
         <div className="container position-relative">
-          <h1>Welcome to Solana Fantasy Sports</h1>
-          <h2>Create a league or join a league to start playing</h2>
+          <h1>Athlete.Equity</h1>
+          <h2>Invest in the player performance of athletes</h2>
           <Link
             to={!!window.wallet ? '/leagues/create' : '/wallet/import'}
             className="btn-get-started scrollto"
           >
-            Get Started
+            Let's get Started
           </Link>
         </div>
       </section>

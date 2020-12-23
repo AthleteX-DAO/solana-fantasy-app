@@ -18,7 +18,7 @@ export function Navbar() {
     <header id="header" className="fixed-top" style={{ backgroundColor: '#000' }}>
       <div className="container d-flex align-items-center">
         <h1 className="logo mr-auto">
-          <Link to="/">SFS</Link>
+          <Link to="/">AE</Link>
         </h1>
         <nav className="nav-menu d-none d-lg-block">
           <ul>
