@@ -11,7 +11,4 @@ import { calculateScore } from './calculate-score';
   });
 
   console.log({ positions });
-
-  // const score = await calculateScore(players.slice(0, 2).map((p) => p.PlayerID));
-  // console.log(score);
 })();

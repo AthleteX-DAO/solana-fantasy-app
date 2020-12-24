@@ -10,12 +10,18 @@ export function Footer() {
             <div className="row">
               <div className="col-lg-6 col-md-6">
                 <div className="footer-info">
-                  <h3>Address</h3>
+                  <h3>About Athlete.Equity</h3>
                   <p>
-                    Since SFS is a dApp on Solana, it doesn't have a physical address, but a crypto
-                    address on the Solana Blockchain.
+                    We're a collective of entrepreneurs, tech nerds, and hardcore sports fans that want to build the next big thing in fantasy sports.  <br />
+                    Rock, Flag and Eagle, amirite?
+
+                    <br /> |
+                   <br /> | <br />
+                    Follow us on social media
+                   <br /> | <br />
+                    | <br />
                   </p>
-                  <p className="mt-2">
+                  {/* <p className="mt-2">
                     Program:{' '}
                     <span style={{ fontFamily: 'monospace' }}>
                       {window.sfsProgramId.toBase58()}
@@ -27,12 +33,12 @@ export function Footer() {
                     Devnet, Solana Blockchain
                     <br />
                     <br />
-                    {/* <strong>Phone:</strong> +1 5589 55488 55
+                    <strong>Phone:</strong> +1 5589 55488 55
                     <br />
                     <strong>Email:</strong> info@example.com
-                    <br /> */}
-                  </p>
-                  {/* <div className="social-links mt-3">
+                    <br />
+                  </p> */}
+                  <div className="social-links mt-3">
                     <a href="#" className="twitter">
                       <i className="bx bxl-twitter"></i>
                     </a>
@@ -42,24 +48,19 @@ export function Footer() {
                     <a href="#" className="instagram">
                       <i className="bx bxl-instagram"></i>
                     </a>
-                    <a href="#" className="google-plus">
+                    {/* <a href="#" className="google-plus">
                       <i className="bx bxl-skype"></i>
-                    </a>
-                    <a href="#" className="linkedin">
+                    </a> */}
+                    {/* <a href="#" className="linkedin">
                       <i className="bx bxl-linkedin"></i>
-                    </a>
-                  </div> */}
+                    </a> */}
+                  </div>
                 </div>
               </div>
 
-              <div className="col-lg-2 col-md-6 footer-links">
-                <h4>Useful Links</h4>
-                <ul>
-                  <li>
-                    <i className="bx bx-chevron-right"></i>{' '}
-                    <a href="https://github.com/ProtoDao/solana-fantasy-app">GitHub Repository</a>
-                  </li>
-                </ul>
+              <div className="col-lg-6 col-md-6 footer-info">
+                <h4></h4>
+
               </div>
 
               {/* <div className="col-lg-2 col-md-6 footer-links">
