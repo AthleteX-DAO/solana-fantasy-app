@@ -1,7 +1,7 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
-import { Container, Row, Col, Card, Form, Table, CardDeck, Alert } from 'react-bootstrap';
+import { Container, Row, Col, Card, Alert } from 'react-bootstrap';
 import { Link, RouteComponentProps } from 'react-router-dom';
-import { GAMES_COUNT, League, Player, Position, Root, UserState } from '../../../sdk/state';
+import { GAMES_COUNT, League, Position, Root, UserState } from '../../../sdk/state';
 import { publicKey } from '../../../sdk/util/layout';
 import { Layout } from '../../Layout';
 import { MatchParams } from './Forwarder';
