@@ -61,9 +61,9 @@ impl <'a> PositionOptions<'a>{
     pub fn set_number_by_position(&self,pos: Position, value: u8){
         self.slice(&mut self.data.borrow_mut())[pos] = value;
     }*/
-    pub fn set(&self, values: [u8;11]){
+    pub fn set(&self, values: &[u8;11]){
         let data = &mut self.data.borrow_mut();
-        array_mut_ref![data, self.offset, PositionOptions::LEN].copy_from_slice(&values);
+        array_mut_ref![data, self.offset, PositionOptions::LEN].copy_from_slice(values);
     }
 
     pub fn new(data: &'a RefCell<&'a mut [u8]>, offset: usize) -> Result<PositionOptions,ProgramError>{

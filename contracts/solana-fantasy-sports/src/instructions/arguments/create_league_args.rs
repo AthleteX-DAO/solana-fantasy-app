@@ -17,7 +17,7 @@ pub struct CreateLeagueArgs<'a> {
     offset: usize,
 }
 impl<'a> CreateLeagueArgs<'a> {
-    pub const LEN: usize = LEAGUE_NAME_LEN + 8 + 1 + TEAM_NAME_LEN;
+    pub const LEN: usize = LEAGUE_NAME_LEN + 8 + 1 + TEAM_NAME_LEN + NUM_POSITIONS as usize -1;
     fn slice<'b>(
         &self,
         data: &'b [u8],
@@ -26,13 +26,15 @@ impl<'a> CreateLeagueArgs<'a> {
         &'b [u8; 8],
         &'b [u8; 1],
         &'b [u8; TEAM_NAME_LEN],
+        &'b [u8;NUM_POSITIONS as usize -1],
     ) {
         array_refs![
             array_ref![data, self.offset, CreateLeagueArgs::LEN],
             LEAGUE_NAME_LEN,
             8,
             1,
-            TEAM_NAME_LEN
+            TEAM_NAME_LEN,
+            NUM_POSITIONS as usize - 1
         ]
     }
 
@@ -59,6 +61,10 @@ impl<'a> CreateLeagueArgs<'a> {
             self.offset,
             CreateLeagueArgs::LEN
         ]);
+    }
+
+    pub fn get_positions(&self)-> &[u8;NUM_POSITIONS as usize-1] {
+        self.slice(&self.data.borrow()).4
     }
 
     pub fn new(

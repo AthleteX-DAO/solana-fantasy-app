@@ -64,6 +64,7 @@ pub fn process_create_league<'a>(
     league.set_bid(args.get_bid());
     league.set_users_limit(args.get_users_limit());
     league.set_is_initialized(true);
+    league.get_position_options()?.set(args.get_positions());
 
     let user_state = league.get_user_states()?.add(*user_account_info.key)?;
     user_state.set_team_name(args.get_team_name());
