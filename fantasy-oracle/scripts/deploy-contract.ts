@@ -12,6 +12,7 @@ import {
 } from '../../front-end/src/sdk/state';
 import { Player } from '../../front-end/src/sdk/instruction';
 import { getPlayerList } from '../src/players-list';
+import { getNBAPlayerList } from '../src/nba-players-list';
 
 connection;
 

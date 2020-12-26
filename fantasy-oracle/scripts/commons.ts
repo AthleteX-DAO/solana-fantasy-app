@@ -2,18 +2,18 @@ import { Connection, Account, PublicKey } from '@solana/web3.js';
 import { arrayify } from '@ethersproject/bytes';
 import { SFS } from '../../front-end/src/sdk/sfs';
 
-
 let key = 'devnet';
 let options = {
   privateKey: '',
   connection: '',
   programId: '',
-  publicKey: ''
-}
+  publicKey: '',
+};
 
 switch (key) {
   case 'devnet':
-    options.privateKey = '0x0e9cd4917a7a6d0d9d8851f42df54c73f608e49c0a473552ea1b34da329908e4795e0f95315992fc7ecc17a7d63f7ee455b4dafa0a70eb5cb76f607944f5d9cc';
+    options.privateKey =
+      '0x0e9cd4917a7a6d0d9d8851f42df54c73f608e49c0a473552ea1b34da329908e4795e0f95315992fc7ecc17a7d63f7ee455b4dafa0a70eb5cb76f607944f5d9cc';
     options.connection = 'https://devnet.solana.com';
     options.programId = 'Dp4skonbWvN4vcGn8brhTZjCq7dPwTSThdufpkiFtdYC';
     options.publicKey = '3RWZuNZ5vrHDiN8n6K3ZsHdJyseswcyqxXAg166cbibD';
@@ -25,13 +25,13 @@ switch (key) {
     options.programId = '';
     options.publicKey = '';
     break;
-    
+
   case 'mainnet':
-  options.privateKey = '';
-  options.connection = '';
-  options.programId = '';
-  options.publicKey = '';
-  break;
+    options.privateKey = '';
+    options.connection = '';
+    options.programId = '';
+    options.publicKey = '';
+    break;
 }
 
 export const connection = new Connection(options.connection);
@@ -48,9 +48,6 @@ console.log('Wallet loaded', wallet.publicKey.toBase58());
 // devnet program
 // export const programId = new PublicKey('Dp4skonbWvN4vcGn8brhTZjCq7dPwTSThdufpkiFtdYC');
 // export const rootPublicKey = new PublicKey('3RWZuNZ5vrHDiN8n6K3ZsHdJyseswcyqxXAg166cbibD');
-
-
-
 
 export const programId = new PublicKey(options.programId);
 export const rootPublicKey = new PublicKey(options.publicKey);

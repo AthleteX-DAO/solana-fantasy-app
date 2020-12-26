@@ -12,13 +12,13 @@ export function Footer() {
                 <div className="footer-info">
                   <h3>About Athlete.Equity</h3>
                   <p>
-                    We're a collective of entrepreneurs, tech nerds, and hardcore sports fans that want to build the next big thing in fantasy sports.  <br />
+                    We're a collective of entrepreneurs, tech nerds, and hardcore sports fans that
+                    want to build the next big thing in fantasy sports. <br />
                     Rock, Flag and Eagle, amirite?
-
                     <br /> |
-                   <br /> | <br />
+                    <br /> | <br />
                     Follow us on social media
-                   <br /> | <br />
+                    <br /> | <br />
                     | <br />
                   </p>
                   {/* <p className="mt-2">
@@ -60,7 +60,6 @@ export function Footer() {
 
               <div className="col-lg-6 col-md-6 footer-info">
                 <h4></h4>
-
               </div>
 
               {/* <div className="col-lg-2 col-md-6 footer-links">

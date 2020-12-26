@@ -40,7 +40,7 @@ export enum Position {
   K,
   //  DEF
   DEF,
-  
+
   // Point Guard
   PG,
   // Shooting Guard

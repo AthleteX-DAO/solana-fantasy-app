@@ -64,7 +64,7 @@ export const Wallet: FunctionComponent<{}> = (props) => {
           {window.wallet ? (
             <>
               <p>
-                Public Key: <span className="monospace">{window.wallet?.publicKey}</span>
+                Account Details: <br /><span className="monospace">Name: {window.lastName}, {window.firstName}</span>
               </p>
               <p>
                 Private Key:{' '}
@@ -83,7 +83,7 @@ export const Wallet: FunctionComponent<{}> = (props) => {
               </p>
               <p>
                 Balance:{' '}
-                {balance !== null ? (
+                {/* {balance !== null ? (
                   <>
                     <span className="monospace">{balance / 10 ** 9}</span> SOL{' '}
                     <button
@@ -105,7 +105,7 @@ export const Wallet: FunctionComponent<{}> = (props) => {
                   </>
                 ) : (
                   'Loading...'
-                )}
+                )} */}
               </p>
               <button onClick={processLogout} className="btn my-2">
                 Logout
@@ -113,9 +113,9 @@ export const Wallet: FunctionComponent<{}> = (props) => {
             </>
           ) : (
             <>
-              <Alert variant="danger">Wallet is not loaded</Alert>
+              <Alert variant="danger">You haved logged out</Alert>
               <p>
-                You can load your wallet from <Link to="/wallet/import">Import Wallet</Link>
+                You can login by: <Link to="/wallet/import">Create Account</Link>
               </p>
             </>
           )}

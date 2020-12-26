@@ -444,7 +444,7 @@ kbd {
   padding: 0.2rem 0.4rem;
   font-size: 87.5%;
   color: #ffffff;
-  background-color: #212529;
+  background-color: #2d4966;
   border-radius: 0.2857rem;
   box-shadow: inset 0 -0.1rem 0 rgba(34, 42, 66, 0.25); }
   kbd kbd {
@@ -1693,6 +1693,7 @@ textarea.form-control {
 a.btn.disabled,
 fieldset:disabled a.btn {
   pointer-events: none; }
+
 
 .btn-primary {
   color: #ffffff;
@@ -4648,7 +4649,7 @@ button.close {
       height: 10px;
       content: ""; }
   .carousel-indicators .active {
-    background-color: #ffffff; }
+    background-color: #5603ad; }
 
 .carousel-caption {
   position: absolute;

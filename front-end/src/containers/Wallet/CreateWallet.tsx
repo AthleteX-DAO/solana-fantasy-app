@@ -1,9 +1,10 @@
 import React, { FunctionComponent, useState } from 'react';
-import { Alert, Card, Form } from 'react-bootstrap';
+import { Alert, Card } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { Layout } from '../Layout';
 import { hexlify } from '@ethersproject/bytes';
 import { CreateClojuredWallet } from '../../clojured-wallet';
+import { AccountModal } from './AccountModal';
 
 export const CreateWallet: FunctionComponent<{}> = (props) => {
   let [display, setDisplay] = useState<{ message: string; variant: string } | null>(null);
@@ -16,18 +17,19 @@ export const CreateWallet: FunctionComponent<{}> = (props) => {
       });
       const wallet = CreateClojuredWallet();
       window.wallet = wallet;
-      try {
-        window.wallet.callback(
-          'Wallet Created! Do you want to locally cache your wallet?',
-          (acc) => {
-            try {
-              localStorage.setItem('sfs-secret', hexlify(acc.secretKey));
-            } catch {}
-          }
-        );
-      } catch {}
+      // try {
+      //   window.wallet.callback(
+      //     'Wallet Created! Do you want to locally cache your wallet?',
+      //     (acc) => {
+      //       try {
+      //         localStorage.setItem('sfs-secret', hexlify(acc.secretKey));
+      //       } catch {}
+      //     }
+      //   );
+      // } catch {}
+      <AccountModal />
       setDisplay({
-        message: 'Wallet create successfully!',
+        message: 'Account create successfully!',
         variant: 'success',
       });
 
@@ -55,9 +57,10 @@ export const CreateWallet: FunctionComponent<{}> = (props) => {
           ) : null}
 
           <button onClick={createWallet} className="btn mt-4">
-            Create Wallet
+            Create Account
           </button>
 
+              
           {display?.variant === 'success' ? (
             <span className="small mt-3 mb-0 display-block">
               <Link to="/wallet">Go to my wallet to see private key</Link>

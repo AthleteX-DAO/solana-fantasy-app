@@ -50,14 +50,13 @@ export const ImportWallet: FunctionComponent<{}> = (props) => {
     <Layout heading="Import Wallet">
       <Card style={{ maxWidth: '400px', margin: '0 auto' }}>
         <Card.Body>
-          Solana Fantasy Sports Wallet keeps your keys in your browser until you use this app and
-          they are erased from the browser if you closed the tab or even refreshed the page.
+          Create your on chain account by using a secret key.  Your account stays cached in your browser and won't log you out.
           <Form.Control
             className="align-items-center my-2"
             onChange={(event) => setPrivateKeyInput(event.target.value)}
             value={privateKeyInput}
             type="text"
-            placeholder="Enter your wallet's private key"
+            placeholder="Enter your account's private key"
             autoComplete="off"
             isInvalid={
               privateKeyInput !== '' &&
@@ -72,15 +71,15 @@ export const ImportWallet: FunctionComponent<{}> = (props) => {
           {display?.variant !== 'success' ? (
             <>
               <button onClick={importWallet} className="btn my-2">
-                Import Wallet
+                Import my Account
               </button>
               <span className="small mt-2 mb-0 display-block">
-                <Link to="/wallet/create">But I don't have a wallet.</Link>
+                <Link to="/wallet/create">I want to create an account.</Link>
               </span>
             </>
           ) : (
             <Link to="/wallet">
-              <span className="btn mb-2">Go to my wallet</span>
+              <span className="btn mb-2">Go to my account</span>
             </Link>
           )}
         </Card.Body>
