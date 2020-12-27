@@ -23,7 +23,7 @@ function App() {
           <Route path="/h2h" component={H2HRouter} />
           <Route path="/admin" component={Admin} />
         </Switch>
-        {/* <Footer /> */}
+        <Footer />
       </BrowserRouter>
     </div>
   );

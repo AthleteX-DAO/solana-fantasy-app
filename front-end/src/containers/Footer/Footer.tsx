@@ -97,11 +97,7 @@ export function Footer() {
 
         <div className="container">
           <div className="copyright">
-            &copy; Copyright{' '}
-            <strong>
-              <span>Solana Fantasy Sports</span>
-            </strong>
-            . All Rights Reserved
+            {/* Space for AE Copyright */}
           </div>
         </div>
       </footer>
