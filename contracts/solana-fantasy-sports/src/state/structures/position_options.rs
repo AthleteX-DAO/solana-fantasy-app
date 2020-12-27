@@ -57,10 +57,19 @@ impl <'a> PositionOptions<'a>{
         let data = &mut self.data.borrow_mut();
         array_mut_ref![data,self.offset+value,1][0]
     }
-    /*
+    pub fn get_total(&self) ->u16 {
+        let mut sum:u16 = 0;
+        for i in 0..PositionOptions::LEN{
+            sum += self.get_number_by_position(i) as u16;
+        }
+        return sum
+    }
+    
     pub fn set_number_by_position(&self,pos: Position, value: u8){
-        self.slice(&mut self.data.borrow_mut())[pos] = value;
-    }*/
+        let data = &mut self.data.borrow_mut();
+        array_mut_ref![data,self.offset+pos as usize,1][0] = value;
+    }
+
     pub fn set(&self, values: &[u8;11]){
         let data = &mut self.data.borrow_mut();
         array_mut_ref![data, self.offset, PositionOptions::LEN].copy_from_slice(values);

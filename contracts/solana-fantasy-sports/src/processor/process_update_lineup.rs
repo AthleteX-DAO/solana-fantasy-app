@@ -83,6 +83,19 @@ pub fn process_update_lineup<'a>(
         }
     }
 
+    //Make sure new lineup conforms to the leagues position ruleset
+    let positions = league.get_position_options()?;
+    let total_active = positions.get_total();
+    for i in 0..total_active{
+        let id = lineup.get(i as u8);
+        let player_position = root.get_players()?.get_by_id(id)?.get_position()?;
+        let position_count = positions.get_number_by_position(player_position as usize);
+        positions.set_number_by_position(player_position, position_count -1);
+        if positions.get_number_by_position(player_position as usize) < 0 {
+            return Err(SfsError::AlreadyInUse.into()); //create new error for this
+        }
+    }
+
     if !user_state.get_is_lineup_set()? {
         user_state.set_is_lineup_set(true);
         for id in 1..user_states.get_count() + 1 {
