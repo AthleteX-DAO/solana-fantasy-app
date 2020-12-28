@@ -90,10 +90,10 @@ pub fn process_update_lineup<'a>(
         let id = lineup.get(i as u8);
         let player_position = root.get_players()?.get_by_id(id)?.get_position()?;
         let position_count = positions.get_number_by_position(player_position as usize);
-        positions.set_number_by_position(player_position, position_count -1);
-        if positions.get_number_by_position(player_position as usize) < 0 {
+        if positions.get_number_by_position(player_position as usize) == 0 {
             return Err(SfsError::AlreadyInUse.into()); //create new error for this
         }
+        positions.set_number_by_position(player_position, position_count -1);
     }
 
     if !user_state.get_is_lineup_set()? {
