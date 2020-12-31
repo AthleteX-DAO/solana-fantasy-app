@@ -7,7 +7,7 @@ export function Home() {
       <section id="hero" className="d-flex align-items-center">
         <div className="container position-relative">
           <h1>Athlete.Equity</h1>
-          <h2>Beat the dollar with daily fantasy sports</h2>
+          <h2>Invest in the player performance of athletes</h2>
           <Link
             to={!!window.wallet ? '/leagues/create' : '/wallet/import'}
             className="btn-get-started scrollto"

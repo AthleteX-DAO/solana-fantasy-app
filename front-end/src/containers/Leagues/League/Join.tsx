@@ -120,7 +120,7 @@ export const JoinLeague: FunctionComponent<RouteComponentProps<MatchParams>> = (
                   }}
                   className="btn mt-4"
                 >
-                  {spinner ? 'Joining...' : <>Join by paying {feesInput} SOL</>}
+                  {spinner ? 'Joining...' : <>Join by paying {feesInput} tokens</>}
                 </button>
               </Card.Body>
             </Card>
