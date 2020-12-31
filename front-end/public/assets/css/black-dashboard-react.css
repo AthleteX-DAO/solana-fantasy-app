@@ -12850,3 +12850,11 @@ select.form-control option {
 .nav-menu .active {
   background: #1e1e2f;
 }
+
+/*--------------------------------------------------------------
+# Sections General
+--------------------------------------------------------------*/
+section {
+  overflow: hidden;
+  padding-bottom: 60px;
+}

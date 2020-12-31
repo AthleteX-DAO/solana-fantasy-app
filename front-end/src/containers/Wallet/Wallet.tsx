@@ -74,9 +74,9 @@ export const Wallet: FunctionComponent<{}> = (props) => {
         <Card.Body>
           {window.wallet ? (
             <>
-              <p>
-                Welcome to Athelte.Equity, {window.firstName} {window.lastName}.
-              </p>
+              <h4>
+                Welcome to <b>Athelete.Equity</b>, {window.firstName} {window.lastName}.
+              </h4>
               <br />
               <p>
                 {privateKeyDisplay !== null ? (
