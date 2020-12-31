@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useState } from 'react';
 import { Alert, Card } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
+import { Link, Redirect } from 'react-router-dom';
 import { Layout } from '../Layout';
 import { hexlify } from '@ethersproject/bytes';
 import { CreateClojuredWallet } from '../../clojured-wallet';
@@ -17,6 +17,8 @@ export const CreateWallet: FunctionComponent<{}> = (props) => {
       });
       const wallet = CreateClojuredWallet();
       window.wallet = wallet;
+      window.firstName = "Sam";
+      window.lastName = "Foster";
       // try {
       //   window.wallet.callback(
       //     'Wallet Created! Do you want to locally cache your wallet?',
@@ -27,7 +29,6 @@ export const CreateWallet: FunctionComponent<{}> = (props) => {
       //     }
       //   );
       // } catch {}
-      <AccountModal />
       setDisplay({
         message: 'Account create successfully!',
         variant: 'success',
@@ -38,12 +39,19 @@ export const CreateWallet: FunctionComponent<{}> = (props) => {
           entries[1]();
         } catch {}
       });
+
+      <Redirect to=""/>
+      
     } catch (error) {
       setDisplay({
         message: `Error: ${error.message}`,
         variant: 'danger',
       });
     }
+  };
+
+  const loadModal = () => {
+    // <AccountModal show={} />
   };
 
   return (

@@ -10,7 +10,9 @@ export const AccountModal: FunctionComponent<{}> = (props) =>  {
 
     return (
         <>
-        <Modal show={show} onHide={handleClose}>
+        <Modal 
+                show={show}
+                onHide={handleClose}>
             <Modal.Header closeButton>
                 <Modal.Title>Welcome! You're on chain!</Modal.Title>
             </Modal.Header>
