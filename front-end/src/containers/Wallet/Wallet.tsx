@@ -75,7 +75,7 @@ export const Wallet: FunctionComponent<{}> = (props) => {
           {window.wallet ? (
             <>
               <h4>
-                Welcome to <b>Athelete.Equity</b>, {window.firstName} {window.lastName}.
+                Welcome to <b>Athelete.Equity</b> {window.firstName} {window.lastName}
               </h4>
               <br />
               <p>
