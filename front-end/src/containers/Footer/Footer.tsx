@@ -96,9 +96,7 @@ export function Footer() {
         </div>
 
         <div className="container">
-          <div className="copyright">
-            {/* Space for AE Copyright */}
-          </div>
+          <div className="copyright">{/* Space for AE Copyright */}</div>
         </div>
       </footer>
       {/* <!-- End Footer --></p> */}

@@ -17,8 +17,8 @@ export const CreateWallet: FunctionComponent<{}> = (props) => {
       });
       const wallet = CreateClojuredWallet();
       window.wallet = wallet;
-      window.firstName = "Sam";
-      window.lastName = "Foster";
+      window.firstName = 'Sam';
+      window.lastName = 'Foster';
       // try {
       //   window.wallet.callback(
       //     'Wallet Created! Do you want to locally cache your wallet?',
@@ -40,8 +40,7 @@ export const CreateWallet: FunctionComponent<{}> = (props) => {
         } catch {}
       });
 
-      <Redirect to=""/>
-      
+      <Redirect to="" />;
     } catch (error) {
       setDisplay({
         message: `Error: ${error.message}`,
@@ -68,7 +67,6 @@ export const CreateWallet: FunctionComponent<{}> = (props) => {
             Create Account
           </button>
 
-              
           {display?.variant === 'success' ? (
             <span className="small mt-3 mb-0 display-block">
               <Link to="/wallet">Go to my wallet to see private key</Link>

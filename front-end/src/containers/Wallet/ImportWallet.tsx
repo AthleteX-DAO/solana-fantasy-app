@@ -50,7 +50,8 @@ export const ImportWallet: FunctionComponent<{}> = (props) => {
     <Layout heading="Import Wallet">
       <Card style={{ maxWidth: '400px', margin: '0 auto' }}>
         <Card.Body>
-          Create your on chain account by using a secret key.  Your account stays cached in your browser and won't log you out.
+          Create your on chain account by using a secret key. Your account stays cached in your
+          browser and won't log you out.
           <Form.Control
             className="align-items-center my-2"
             onChange={(event) => setPrivateKeyInput(event.target.value)}

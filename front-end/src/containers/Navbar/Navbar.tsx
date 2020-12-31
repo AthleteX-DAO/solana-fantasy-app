@@ -33,7 +33,10 @@ export function Navbar() {
             {window.wallet === undefined ? (
               <NavElement to="/wallet/import" label="Create an Account" />
             ) : (
-              <NavElement to="/wallet" label={`Welcome, ${window.firstName ? window.firstName : "New Player!"}`} />
+              <NavElement
+                to="/wallet"
+                label={`Welcome, ${window.firstName ? window.firstName : 'New Player!'}`}
+              />
             )}
           </ul>
         </nav>

@@ -184,7 +184,7 @@ export class SfsInstruction {
       Layout.uint64('bid'),
       BufferLayout.u8('usersLimit'),
       Layout.utf16FixedString(TEAM_NAME_MAX_SYMBOLS, 'teamName'),
-      BufferLayout.seq(BufferLayout.u8(),NUM_POSITIONS-1,'positions')
+      BufferLayout.seq(BufferLayout.u8(), NUM_POSITIONS - 1, 'positions'),
     ]);
 
     let data = Buffer.alloc(commandDataLayout.span);
