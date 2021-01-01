@@ -389,6 +389,7 @@ export class SFS {
   async getRootInfo(): Promise<Root> {
     const info = await this.connection.getAccountInfo(this.publicKey);
     if (info === null) {
+      console.timeLog(`${this.connection}`);
       throw new Error('Failed to find root account');
     }
     if (!info.owner.equals(this.programId)) {

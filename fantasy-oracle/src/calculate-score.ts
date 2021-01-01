@@ -185,7 +185,7 @@ export async function calculateScore(playerExternalIds: number[], week: number) 
   console.log('number of players for calculating score', playerExternalIds.length);
 
   const response: AxiosResponse<ScoreRaw[]> = await axios.get(
-    `https://api.sportsdata.io/v3/nfl/stats/json/PlayerGameStatsByWeek/2020/${week}?key=014d8886bd8f40dfabc9f75bc0451a0d`
+    `https://api.sportsdata.io/v3/nfl/stats/json/PlayerGameStatsByWeek/2020/${week}?key=80f05fefe3ea4b2c81c0b6b0289beed9`
   );
 
   const playerGameStatsArr = response.data.filter((o) => playerExternalIds.includes(o.PlayerID));

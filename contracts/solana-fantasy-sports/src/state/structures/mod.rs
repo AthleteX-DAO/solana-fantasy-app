@@ -14,3 +14,5 @@ pub mod swap_proposal;
 pub use swap_proposal::*;
 pub mod stage;
 pub use stage::*;
+pub mod position_options;
+pub use position_options::*;

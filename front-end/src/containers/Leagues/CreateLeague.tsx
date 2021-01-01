@@ -102,7 +102,7 @@ export function CreateLeague() {
           >
             {!spinner
               ? `Create League and Join${
-                  leagueEntryCostInput ? ` by paying ${leagueEntryCostInput} SOL` : ''
+                  leagueEntryCostInput ? ` by paying ${leagueEntryCostInput} tokens` : ''
                 }`
               : 'Creating...'}
           </button>

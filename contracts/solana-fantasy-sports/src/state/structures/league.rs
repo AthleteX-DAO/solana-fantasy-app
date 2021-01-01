@@ -14,7 +14,7 @@ pub struct League<'a> {
     offset: usize,
 }
 impl<'a> League<'a> {
-    pub const LEN: usize = UserStateList::LEN + LEAGUE_NAME_LEN + 8 + 1 + 2 + 1 + 1 + 1;
+    pub const LEN: usize = UserStateList::LEN + LEAGUE_NAME_LEN + 8 + 1 + 2 + 1 + 1 + 1+ PositionOptions::LEN;
     fn slice<'b>(
         &self,
         data: &'b mut [u8],
@@ -27,6 +27,7 @@ impl<'a> League<'a> {
         &'b mut [u8; 1],
         &'b mut [u8; 1],
         &'b mut [u8; 1],
+        &'b mut [u8;PositionOptions::LEN],
     ) {
         mut_array_refs![
             array_mut_ref![data, self.offset, League::LEN],
@@ -37,7 +38,8 @@ impl<'a> League<'a> {
             2,
             1,
             1,
-            1
+            1,
+            PositionOptions::LEN
         ]
     }
 
@@ -115,6 +117,10 @@ impl<'a> League<'a> {
             return Err(ProgramError::InvalidAccountData);
         }
         Ok(League { data, offset })
+    }
+
+    pub fn get_position_options(&self)->Result<PositionOptions<'a>,ProgramError>{
+        PositionOptions::new(self.data,self.offset + League::LEN - PositionOptions::LEN)
     }
 }
 
