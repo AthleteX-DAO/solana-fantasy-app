@@ -89,6 +89,8 @@ pub fn process_update_lineup<'a>(
     for i in 0..total_active{
         let id = lineup.get(i as u8);
         let player_position = root.get_players()?.get_by_id(id)?.get_position()?;
+        let pos_num: u8 = player_position.into();
+        if pos_num == 0 {continue};
         let position_count = positions.get_number_by_position(player_position as usize);
         if positions.get_number_by_position(player_position as usize) == 0 {
             return Err(SfsError::AlreadyInUse.into()); //create new error for this

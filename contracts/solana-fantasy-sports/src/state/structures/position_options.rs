@@ -16,7 +16,7 @@ pub struct PositionOptions<'a>{
     Get and set the number of players / position available to select for each team in the league
 */
 impl <'a> PositionOptions<'a>{
-    pub const LEN:usize = NUM_POSITIONS as usize -1; //Ignore type of position: Uninitialized == 6
+    pub const LEN:usize = NUM_POSITIONS as usize -1; //Ignore type of position: Uninitialized == 11
 
     //Each slice represents a position
     fn slice<'b>(
@@ -67,7 +67,8 @@ impl <'a> PositionOptions<'a>{
     
     pub fn set_number_by_position(&self,pos: Position, value: u8){
         let data = &mut self.data.borrow_mut();
-        array_mut_ref![data,self.offset+pos as usize,1][0] = value;
+        let position: u8 = pos.into();
+        array_mut_ref![data,self.offset+position as usize - 1,1][0] = value;
     }
 
     pub fn set(&self, values: &[u8;11]){
