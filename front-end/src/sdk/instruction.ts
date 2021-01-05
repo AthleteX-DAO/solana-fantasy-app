@@ -184,7 +184,7 @@ export class SfsInstruction {
       Layout.uint64('bid'),
       BufferLayout.u8('usersLimit'),
       Layout.utf16FixedString(TEAM_NAME_MAX_SYMBOLS, 'teamName'),
-      BufferLayout.seq(BufferLayout.u8(),NUM_POSITIONS-1,'positions')
+      BufferLayout.seq(BufferLayout.u8(), NUM_POSITIONS - 1, 'positions'),
     ]);
 
     let data = Buffer.alloc(commandDataLayout.span);
@@ -577,6 +577,39 @@ export class SfsInstruction {
       const encodeLength = commandDataLayout.encode(
         {
           instruction: Command.ClaimReward,
+          leagueIndex,
+        },
+        data
+      );
+    }
+
+    return new TransactionInstruction({
+      keys,
+      programId,
+      data,
+    });
+  }
+
+  static createRemoveLeagueInstruction(
+    programId: PublicKey,
+    root: PublicKey,
+    bank: PublicKey,
+    owner: PublicKey,
+    leagueIndex: Number
+  ):TransactionInstruction{
+    let keys = [
+      { pubkey: root, isSigner: false, isWritable: true },
+      { pubkey: owner, isSigner: true, isWritable: false },
+      { pubkey: bank, isSigner: false, isWritable: true },
+      { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
+    ];
+    const commandDataLayout = BufferLayout.struct([BufferLayout.u8('instruction')]);
+
+    let data = Buffer.alloc(commandDataLayout.span);
+    {
+      const encodeLength = commandDataLayout.encode(
+        {
+          instruction: Command.IncrementWeek,
           leagueIndex,
         },
         data

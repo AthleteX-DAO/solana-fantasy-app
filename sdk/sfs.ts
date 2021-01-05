@@ -548,4 +548,18 @@ export class SFS {
 
     await sendAndConfirmTransaction('Claim reward', this.connection, transaction, sender);
   }
+
+  async removeLeague(owner:Account,leagueIndex: number): Promise<void> {
+    const transaction = new Transaction();
+    transaction.add(
+      SfsInstruction.createRemoveLeagueInstruction(
+        this.programId,
+        this.publicKey,
+        this.bank,
+        owner.publicKey,
+        leagueIndex
+      )
+    );
+        await sendAndConfirmTransaction('Remove League', this.connection,transaction,owner)
+  }
 }

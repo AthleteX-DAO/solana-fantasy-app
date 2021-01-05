@@ -75,6 +75,21 @@ impl<'a> LeagueList<'a> {
         }
         Ok(LeagueList { data, offset })
     }
+
+    pub fn remove(&self,index:u16)->Result<(),ProgramError>{
+        if index >= self.get_count() {
+            return Err(SfsError::IndexOutOfRange.into());
+        }
+        //Move the last league into the index to be removed
+        if index != self.get_count() - 1{
+            self.get(self.get_count() - 1)?.copy_to(&self.get(index)?);
+        }
+        //Set the last league to be unitialized so that it can be written over
+        self.get(self.get_count() - 1)?.set_is_initialized(false);
+
+        self.set_count(self.get_count() - 1);
+        Ok(())
+    }
 }
 
 // Pull in syscall stubs when building for non-BPF targets
