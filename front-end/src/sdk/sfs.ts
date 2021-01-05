@@ -164,7 +164,8 @@ export class SFS {
     name: string,
     bid: number | u64,
     usersLimit: number,
-    teamName: string
+    teamName: string,
+    positions: number[]
   ): Promise<number> {
     const transaction = new Transaction();
     transaction.add(
@@ -176,7 +177,8 @@ export class SFS {
         bid,
         usersLimit,
         teamName,
-        owner.publicKey
+        owner.publicKey,
+        positions
       )
     );
     const rootInfo = await this.connection.getAccountInfo(this.publicKey);

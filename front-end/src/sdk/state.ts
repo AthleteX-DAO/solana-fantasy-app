@@ -5,13 +5,18 @@ import * as Layout from './util/layout';
 
 export const MAX_PLAYERS_SCORES_PER_TRANSACTION = 50;
 export const MAX_PLAYERS_PER_INSTRUCTION = 255;
-export const PLAYERS_CAPACITY = 1000;
+export const PLAYERS_CAPACITY = 100;
 export const GAMES_COUNT = 17;
-export const ACTIVE_PLAYERS_COUNT = 8;
-export const BENCH_PLAYERS_COUNT = 8;
+
+export const ACTIVE_PLAYERS_COUNT = 3;
+export const BENCH_PLAYERS_COUNT = 3;
 export const TEAM_PLAYERS_COUNT = ACTIVE_PLAYERS_COUNT + BENCH_PLAYERS_COUNT;
+
+export const TEAM_PLAYERS_CAPACITY = 10; //10 is arbitrary. This should be used instead of TEAM_PLAYERS_COUNT since active/bench players # will vary between leagues
+export const NUM_POSITIONS = 12; //Number of possible positions including unitialized
+
 export const LEAGUES_CAPACITY = 10;
-export const LEAGUE_USERS_CAPACITY = Math.floor(PLAYERS_CAPACITY / TEAM_PLAYERS_COUNT);
+export const LEAGUE_USERS_CAPACITY = Math.floor(PLAYERS_CAPACITY / TEAM_PLAYERS_CAPACITY);
 export const SWAP_PROPOSALS_CAPACITY = 20;
 
 export const LEAGUE_NAME_LEN = 256;
@@ -35,6 +40,17 @@ export enum Position {
   K,
   //  DEF
   DEF,
+
+  // Point Guard
+  PG,
+  // Shooting Guard
+  SG,
+  // Small Forward
+  SF,
+  // Power Forward,
+  PF,
+  //Center,
+  C,
 }
 
 export enum Stage {
@@ -91,6 +107,7 @@ export type League = {
   startWeek: number;
   isRewardClaimed: boolean;
   isInitialized: boolean;
+  positionOptions: number[];
 };
 
 export const LeagueLayout: typeof BufferLayout.Structure = BufferLayout.struct([
@@ -103,6 +120,7 @@ export const LeagueLayout: typeof BufferLayout.Structure = BufferLayout.struct([
   BufferLayout.u8('startWeek'),
   Layout.boolean('isRewardClaimed'),
   Layout.boolean('isInitialized'),
+  BufferLayout.seq(BufferLayout.u8(), 11,'positionOptions'),
 ]);
 
 export type Score = {

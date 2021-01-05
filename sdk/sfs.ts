@@ -78,7 +78,7 @@ export class SFS {
     const rootAccount = new Account();
     const [bank, _] = await PublicKey.findProgramAddress([Buffer.from([0])], programId);
     const sfs = new SFS(connection, rootAccount.publicKey, programId, bank);
-
+    console.log('root rubkey: '+rootAccount.publicKey.toBase58());
     // Allocate memory for the account
     const balanceNeeded = await SFS.getMinBalanceRentForExemptRoot(connection);
 
@@ -389,9 +389,9 @@ export class SFS {
    * @returns Root state
    */
   async getRootInfo(): Promise<Root> {
-    const info = await this.connection.getAccountInfo(this.publicKey);
+    const info = await this.connection.getAccountInfo(this.publicKey,"single");
     if (info === null) {
-      throw new Error('Failed to find root account');
+      throw new Error('Failed to find root account:'+this.publicKey);
     }
     if (!info.owner.equals(this.programId)) {
       throw new Error(`Invalid root owner: ${JSON.stringify(info.owner)}`);
