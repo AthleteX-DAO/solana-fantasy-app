@@ -132,7 +132,7 @@ export const LeagueLayout: typeof BufferLayout.Structure = BufferLayout.struct([
   BufferLayout.u8('startWeek'),
   Layout.boolean('isRewardClaimed'),
   Layout.boolean('isInitialized'),
-  BufferLayout.seq(BufferLayout.u8(), 11,'positionOptions'),
+  BufferLayout.seq(BufferLayout.u8(), 11, 'positionOptions'),
 ]);
 
 export type Score = {
