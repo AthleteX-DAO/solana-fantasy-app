@@ -12,7 +12,8 @@
   "dependencies": {
     "@ethersproject/bytes": "^5.0.5",
     "@solana/web3.js": "^0.86.3",
-    "axios": "^0.20.0"
+    "axios": "^0.20.0",
+    "mma": "github:SportsToken/mma-api"
   },
   "devDependencies": {
     "@types/node": "^14.11.10",
