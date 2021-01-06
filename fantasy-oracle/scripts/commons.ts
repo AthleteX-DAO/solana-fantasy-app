@@ -15,7 +15,7 @@ switch (key) {
     options.privateKey =
       '0x0e9cd4917a7a6d0d9d8851f42df54c73f608e49c0a473552ea1b34da329908e4795e0f95315992fc7ecc17a7d63f7ee455b4dafa0a70eb5cb76f607944f5d9cc';
     options.connection = 'https://devnet.solana.com';
-    options.programId = 'Dp4skonbWvN4vcGn8brhTZjCq7dPwTSThdufpkiFtdYC';
+    options.programId = '5fGjuJKbFR3n4ietGL3ezVB41RouGMBJ8C26tgsNUNUo';
     options.publicKey = '3RWZuNZ5vrHDiN8n6K3ZsHdJyseswcyqxXAg166cbibD';
     break;
 

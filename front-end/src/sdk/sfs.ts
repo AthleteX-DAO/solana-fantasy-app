@@ -78,7 +78,7 @@ export class SFS {
     const rootAccount = new Account();
     const [bank, _] = await PublicKey.findProgramAddress([Buffer.from([0])], programId);
     const sfs = new SFS(connection, rootAccount.publicKey, programId, bank);
-
+    console.log('root rubkey: '+rootAccount.publicKey.toBase58());
     // Allocate memory for the account
     const balanceNeeded = await SFS.getMinBalanceRentForExemptRoot(connection);
 
@@ -164,7 +164,8 @@ export class SFS {
     name: string,
     bid: number | u64,
     usersLimit: number,
-    teamName: string
+    teamName: string,
+    positions: number[]
   ): Promise<number> {
     const transaction = new Transaction();
     transaction.add(
@@ -176,7 +177,8 @@ export class SFS {
         bid,
         usersLimit,
         teamName,
-        owner.publicKey
+        owner.publicKey,
+        positions
       )
     );
     const rootInfo = await this.connection.getAccountInfo(this.publicKey);
@@ -387,10 +389,9 @@ export class SFS {
    * @returns Root state
    */
   async getRootInfo(): Promise<Root> {
-    const info = await this.connection.getAccountInfo(this.publicKey);
+    const info = await this.connection.getAccountInfo(this.publicKey,"single");
     if (info === null) {
-      console.timeLog(`${this.connection}`);
-      throw new Error('Failed to find root account');
+      throw new Error('Failed to find root account:'+this.publicKey);
     }
     if (!info.owner.equals(this.programId)) {
       throw new Error(`Invalid root owner: ${JSON.stringify(info.owner)}`);
@@ -546,5 +547,19 @@ export class SFS {
     );
 
     await sendAndConfirmTransaction('Claim reward', this.connection, transaction, sender);
+  }
+
+  async removeLeague(owner:Account,leagueIndex: number): Promise<void> {
+    const transaction = new Transaction();
+    transaction.add(
+      SfsInstruction.createRemoveLeagueInstruction(
+        this.programId,
+        this.publicKey,
+        this.bank,
+        owner.publicKey,
+        leagueIndex
+      )
+    );
+        await sendAndConfirmTransaction('Remove League', this.connection,transaction,owner)
   }
 }

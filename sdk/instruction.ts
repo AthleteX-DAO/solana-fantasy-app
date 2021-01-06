@@ -589,4 +589,37 @@ export class SfsInstruction {
       data,
     });
   }
+
+  static createRemoveLeagueInstruction(
+    programId: PublicKey,
+    root: PublicKey,
+    bank: PublicKey,
+    owner: PublicKey,
+    leagueIndex: Number
+  ):TransactionInstruction{
+    let keys = [
+      { pubkey: root, isSigner: false, isWritable: true },
+      { pubkey: owner, isSigner: true, isWritable: false },
+      { pubkey: bank, isSigner: false, isWritable: true },
+      { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
+    ];
+    const commandDataLayout = BufferLayout.struct([BufferLayout.u8('instruction')]);
+
+    let data = Buffer.alloc(commandDataLayout.span);
+    {
+      const encodeLength = commandDataLayout.encode(
+        {
+          instruction: Command.IncrementWeek,
+          leagueIndex,
+        },
+        data
+      );
+    }
+
+    return new TransactionInstruction({
+      keys,
+      programId,
+      data,
+    });
+  }
 }

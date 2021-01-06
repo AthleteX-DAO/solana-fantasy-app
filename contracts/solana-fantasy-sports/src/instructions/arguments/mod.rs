@@ -22,3 +22,5 @@ pub mod claim_reward_args;
 pub use claim_reward_args::*;
 pub mod reject_swap_args;
 pub use reject_swap_args::*;
+pub mod remove_league_args;
+pub use remove_league_args::*;

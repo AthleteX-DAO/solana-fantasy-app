@@ -5,15 +5,15 @@ import { ok, strictEqual } from 'assert';
 import { resolve } from 'path';
 import { readFileSync } from 'fs';
 import { connection, sfsFn, wallet } from './commons';
-import { SFS } from '../../front-end/src/sdk/sfs';
+import { SFS } from '../../sdk/sfs';
 import {
   PLAYERS_CAPACITY,
   Position,
   Stage,
   LEAGUE_USERS_CAPACITY,
-} from '../../front-end/src/sdk/state';
-import { Player } from '../../front-end/src/sdk/instruction';
-import { getNFLPlayerList } from '../src/players-list';
+} from '../../sdk/state';
+import { Player } from '../../sdk/instruction';
+import { getPlayerList } from '../src/players-list';
 import { getNBAPlayerList } from '../src/nba-players-list';
 
 connection;
@@ -29,7 +29,7 @@ connection;
     // await new Promise((res) => setTimeout(res, 1000));
 
     const data = readFileSync(
-      resolve(__dirname, '../../contracts/solana-fantasy-sports/solana_fantasy_sports.so'),
+      resolve(__dirname, '../../target/deploy/solana_fantasy_sports.so'),
       {
         encoding: 'hex',
       }

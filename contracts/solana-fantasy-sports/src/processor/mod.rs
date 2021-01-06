@@ -30,3 +30,5 @@ pub mod process;
 pub use process::*;
 pub mod helpers;
 pub use helpers::*;
+pub mod process_remove_league;
+pub use process_remove_league::*;
