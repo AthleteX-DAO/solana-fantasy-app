@@ -17,16 +17,17 @@ interface NFLPlayerRaw {
   AverageDraftPosition2QB: null;
 }
 
-export interface NFLPlayer {
+export interface NFLPlayer extends Player {
   PlayerID: number; // 19801,
   Name: string; // 'Josh Allen',
   Position: string; // 'QB',
   AverageDraftPosition: number; // 108.9,
 }
 
+import { Player } from '../../sdk/state';
 import { axios, AxiosResponse } from './axios';
 
-export async function getPlayerList(): Promise<NFLPlayer[]> {
+export async function getNFLPlayerList(): Promise<NFLPlayer[]> {
   const response: AxiosResponse<NFLPlayerRaw[]> = await axios.get(
     'https://api.sportsdata.io/v3/nfl/stats/json/FantasyPlayers?key=80f05fefe3ea4b2c81c0b6b0289beed9'
   );
@@ -34,6 +35,6 @@ export async function getPlayerList(): Promise<NFLPlayer[]> {
 
   return response.data.map((player) => {
     const { PlayerID, Name, Position, AverageDraftPosition } = player;
-    return { PlayerID, Name, Position, AverageDraftPosition };
+    return { PlayerID, Name, Position };
   });
 }

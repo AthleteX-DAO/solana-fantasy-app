@@ -1,3 +1,4 @@
+import { SFS } from './sfs';
 import { BufferLayout, u64 } from './util/layout';
 import { PublicKey } from '@solana/web3.js';
 
@@ -35,6 +36,19 @@ export enum Position {
   K,
   //  DEF
   DEF,
+}
+
+export enum NBAPosition {
+  Uninitialized,
+  PG,
+  SG,
+  SF,
+  PF,
+  C
+}
+
+export enum MMAPlayer {
+
 }
 
 export enum Stage {

@@ -18,9 +18,10 @@ interface NBAPlayerRaw {
   TrueShootingAttempts: number;
 }
 
+import { Player } from '../../sdk/state';
 import { axios, AxiosResponse } from './axios';
 
-export interface NBAPlayer {
+export interface NBAPlayer extends Player {
   PlayerID: number;
   Name: string;
   Position: string;

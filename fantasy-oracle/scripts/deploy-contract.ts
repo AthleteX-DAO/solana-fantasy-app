@@ -1,3 +1,5 @@
+import { NBAPlayer } from './../src/nba-players-list';
+import { NFLPlayer } from './../src/players-list';
 import { Account, BpfLoader, BPF_LOADER_PROGRAM_ID } from '@solana/web3.js';
 import { ok, strictEqual } from 'assert';
 import { resolve } from 'path';
@@ -11,7 +13,7 @@ import {
   LEAGUE_USERS_CAPACITY,
 } from '../../front-end/src/sdk/state';
 import { Player } from '../../front-end/src/sdk/instruction';
-import { getPlayerList } from '../src/players-list';
+import { getNFLPlayerList } from '../src/players-list';
 import { getNBAPlayerList } from '../src/nba-players-list';
 
 connection;
@@ -66,7 +68,10 @@ connection;
   {
     console.log('Initializing root account');
 
-    const allPlayers = await getPlayerList();
+    const nflPlayers: NFLPlayer[] = await getNFLPlayerList();
+    const nbaPlayers: NBAPlayer[] = await getNBAPlayerList();
+    const allPlayers: Player[] = [];
+    allPlayers.concat(nbaPlayers, nflPlayers);
     console.log('allPlayers.length', allPlayers.length);
 
     //   Uninitialized,
@@ -83,7 +88,7 @@ connection;
     // .slice(0, PLAYERS_CAPACITY).map(
     for (let i = 0; choosenPlayers.length < PLAYERS_CAPACITY; i++) {
       let position: Position;
-      let p = allPlayers[i];
+      let p = nflPlayers[i];
       if (!p) {
         break;
       }
