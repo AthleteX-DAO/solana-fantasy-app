@@ -44,12 +44,10 @@ export enum NBAPosition {
   SG,
   SF,
   PF,
-  C
+  C,
 }
 
-export enum MMAPlayer {
-
-}
+export enum MMAPlayer {}
 
 export enum Stage {
   Uninitialized,
