@@ -438,11 +438,11 @@ export class SFS {
           sum +
           lineup.reduce((sum2, playerId) => {
             return (
-              sum2 + root.players[playerId - 1].scores[lineupIndex + league.startWeek - 1].score1
+              playerId? sum2 + root.players[playerId - 1].scores[lineupIndex + league.startWeek - 1].score1 : sum2
             );
           }, 0),
         0
-      );
+    );
 
       return {
         userId: i + 1,
