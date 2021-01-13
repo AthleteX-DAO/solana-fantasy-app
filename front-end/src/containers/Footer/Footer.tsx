@@ -59,11 +59,12 @@ export function Footer() {
               </div>
 
               <div className="col-lg-6 col-md-6 footer-info">
-                <h4></h4>
+                <h4>NFL Playoffs</h4>
+                
               </div>
 
-              {/* <div className="col-lg-2 col-md-6 footer-links">
-                <h4>Our Services</h4>
+              <div className="col-lg-2 col-md-6 footer-links">
+                <h4>Latest News</h4>
                 <ul>
                   <li>
                     <i className="bx bx-chevron-right"></i> <a href="#">Web Design</a>
@@ -81,7 +82,7 @@ export function Footer() {
                     <i className="bx bx-chevron-right"></i> <a href="#">Graphic Design</a>
                   </li>
                 </ul>
-              </div> */}
+              </div>
 
               {/* <div className="col-lg-4 col-md-6 footer-newsletter">
                 <h4>Our Newsletter</h4>
