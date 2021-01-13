@@ -4719,7 +4719,27 @@ input[type='button'].btn-block {
   border-top-right-radius: 0;
 }
 
-.breadcrumb {
+/*--------------------------------------------------------------
+# Breadcrumbs
+--------------------------------------------------------------*/
+.breadcrumbs {
+  padding: 0.55rem 1rem;
+  margin-bottom: 1rem;
+  list-style: none;
+  background-color: #1d253b;
+  border-radius: 0.25rem;
+  display: flex;
+  flex-wrap: wrap;
+  background-color: #101420;
+}
+
+@media (max-width: 992px) {
+  .breadcrumbs {
+    margin-top: 50px;
+  }
+}
+
+/* .breadcrumb {
   display: flex;
   flex-wrap: wrap;
   padding: 0.75rem 1rem;
@@ -4749,7 +4769,7 @@ input[type='button'].btn-block {
 
 .breadcrumb-item.active {
   color: #ffffff;
-}
+} */
 
 .pagination {
   display: flex;
