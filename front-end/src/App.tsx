@@ -21,10 +21,8 @@ function App() {
           <Route path="/" exact component={Home} />
           <Route path="/wallet" component={WalletRouter} />
           <Route path="/leagues" component={LeaguesRouter} />
-          <Route path="/h2h" component={H2HRouter} />
           <Route path="/admin" component={Admin} />
         </Switch>
-        <Footer />
       </BrowserRouter>
     </div>
   );

@@ -3,6 +3,8 @@ import { arrayify } from '@ethersproject/bytes';
 import { SFS } from '../../front-end/src/sdk/sfs';
 
 let key = 'devnet';
+
+
 let options = {
   privateKey: '',
   connection: '',
@@ -20,8 +22,9 @@ switch (key) {
     break;
 
   case 'testnet':
-    options.privateKey = '';
-    options.connection = '';
+    options.privateKey = 
+      '';
+    options.connection = 'https://testnet.solana.com';
     options.programId = '';
     options.publicKey = '';
     break;

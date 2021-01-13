@@ -60,7 +60,6 @@ export function Footer() {
 
               <div className="col-lg-6 col-md-6 footer-info">
                 <h4>NFL Playoffs</h4>
-                
               </div>
 
               <div className="col-lg-2 col-md-6 footer-links">

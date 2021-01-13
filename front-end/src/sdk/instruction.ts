@@ -596,7 +596,7 @@ export class SfsInstruction {
     bank: PublicKey,
     owner: PublicKey,
     leagueIndex: Number
-  ):TransactionInstruction{
+  ): TransactionInstruction {
     let keys = [
       { pubkey: root, isSigner: false, isWritable: true },
       { pubkey: owner, isSigner: true, isWritable: false },
