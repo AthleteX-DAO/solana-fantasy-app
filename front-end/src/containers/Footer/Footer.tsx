@@ -62,27 +62,6 @@ export function Footer() {
                 <h4>NFL Playoffs</h4>
               </div>
 
-              <div className="col-lg-2 col-md-6 footer-links">
-                <h4>Latest News</h4>
-                <ul>
-                  <li>
-                    <i className="bx bx-chevron-right"></i> <a href="#">Web Design</a>
-                  </li>
-                  <li>
-                    <i className="bx bx-chevron-right"></i> <a href="#">Web Development</a>
-                  </li>
-                  <li>
-                    <i className="bx bx-chevron-right"></i> <a href="#">Product Management</a>
-                  </li>
-                  <li>
-                    <i className="bx bx-chevron-right"></i> <a href="#">Marketing</a>
-                  </li>
-                  <li>
-                    <i className="bx bx-chevron-right"></i> <a href="#">Graphic Design</a>
-                  </li>
-                </ul>
-              </div>
-
               {/* <div className="col-lg-4 col-md-6 footer-newsletter">
                 <h4>Our Newsletter</h4>
                 <p>Tamen quem nulla quae legam multos aute sint culpa legam noster magna</p>

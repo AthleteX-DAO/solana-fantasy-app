@@ -24,7 +24,7 @@ export function Navbar() {
           <ul>
             <NavElement to="/" label="Home" />
             <NavElement to="/leagues/create" label="Create a League" />
-            <NavElement to="/leagues" label="Public League" />
+            <NavElement to="/leagues" label="Public Leagues" />
             {window.wallet &&
             window.wallet.publicKey === '9AmX84PQg4PoyLwPCHbBy2mSRsjKo1CSJXVXXXfSWZTH' ? (
               <NavElement to="/admin" label="Admin Panel" />

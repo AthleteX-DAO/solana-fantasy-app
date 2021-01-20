@@ -9,7 +9,7 @@ export const CreateLeague = () =>
 
       const balanceBefore = await global.connection.getBalance(bank);
 
-      const   leagueIndex = await global.sfs.createLeague(
+      const leagueIndex = await global.sfs.createLeague(
         global.firstAccount,
         'Test League',
         1 * 10 ** 9,
