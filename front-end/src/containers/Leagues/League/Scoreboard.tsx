@@ -175,7 +175,7 @@ export const Scoreboard: FunctionComponent<RouteComponentProps<MatchParams>> = (
                       {(root.leagues[leagueIndex].usersLimit *
                         root.leagues[leagueIndex].bid.toNumber()) /
                         10 ** 9}{' '}
-                      SOL
+                      tokens
                     </>
                   ))}
                   {!league?.isRewardClaimed && (

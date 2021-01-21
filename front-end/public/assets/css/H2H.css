@@ -1,0 +1,38 @@
+.col h2 {
+  margin: '0';
+  margin-bottom: 0;
+}
+
+h3 {
+  margin-top: 1rem;
+}
+
+.row {
+  height: 5rem;
+  padding-top: 1rem;
+}
+
+.col {
+  position: relative;
+  float: left;
+  text-align: center;
+  height: 100%;
+}
+
+table {
+  width: 100%;
+  margin-top: 1rem;
+  color: whitesmoke;
+}
+
+td,
+th {
+  width: 10rem;
+  text-align: center;
+}
+
+tr {
+  display: flex;
+  justify-content: space-around;
+  padding-bottom: 1rem;
+}

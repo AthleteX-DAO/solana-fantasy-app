@@ -1,4 +1,4 @@
-interface PlayerRaw {
+interface NFLPlayerRaw {
   FantasyPlayerKey: string; //'19801',
   PlayerID: number; // 19801,
   Name: string; // 'Josh Allen',
@@ -17,7 +17,7 @@ interface PlayerRaw {
   AverageDraftPosition2QB: null;
 }
 
-export interface PlayerRelevant {
+export interface NFLPlayer {
   PlayerID: number; // 19801,
   Name: string; // 'Josh Allen',
   Position: string; // 'QB',
@@ -26,9 +26,9 @@ export interface PlayerRelevant {
 
 import { axios, AxiosResponse } from './axios';
 
-export async function getPlayerList(): Promise<PlayerRelevant[]> {
-  const response: AxiosResponse<PlayerRaw[]> = await axios.get(
-    'https://api.sportsdata.io/v3/nfl/stats/json/FantasyPlayers?key=014d8886bd8f40dfabc9f75bc0451a0d'
+export async function getPlayerList(): Promise<NFLPlayer[]> {
+  const response: AxiosResponse<NFLPlayerRaw[]> = await axios.get(
+    'https://api.sportsdata.io/v3/nfl/stats/json/FantasyPlayers?key=80f05fefe3ea4b2c81c0b6b0289beed9'
   );
   console.log('API resp players count', response.data.length);
 

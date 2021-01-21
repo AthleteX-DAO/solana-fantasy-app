@@ -18,24 +18,21 @@ export function Navbar() {
     <header id="header" className="fixed-top" style={{ backgroundColor: '#000' }}>
       <div className="container d-flex align-items-center">
         <h1 className="logo mr-auto">
-          <Link to="/">SFS</Link>
+          <Link to="/">AE</Link>
         </h1>
         <nav className="nav-menu d-none d-lg-block">
           <ul>
             <NavElement to="/" label="Home" />
             <NavElement to="/leagues/create" label="Create a League" />
-            <NavElement to="/leagues" label="Join a League" />
+            <NavElement to="/leagues" label="Public Leagues" />
             {window.wallet &&
             window.wallet.publicKey === '9AmX84PQg4PoyLwPCHbBy2mSRsjKo1CSJXVXXXfSWZTH' ? (
               <NavElement to="/admin" label="Admin Panel" />
             ) : null}
             {window.wallet === undefined ? (
-              <NavElement to="/wallet/import" label="Connect Wallet" />
+              <NavElement to="/wallet/import" label="Create an Account" />
             ) : (
-              <NavElement
-                to="/wallet"
-                label={`Welcome ${window.wallet.publicKey.slice(0, 6)}...`}
-              />
+              <NavElement to="/wallet" label={`Account`} />
             )}
           </ul>
         </nav>

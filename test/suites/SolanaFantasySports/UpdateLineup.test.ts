@@ -9,6 +9,7 @@ export const UpdateLineup = () =>
     it('updates lineup for first user', async () => {
       let root = await global.sfs.getRootInfo();
       let league = root.leagues[0];
+      //let activeSize = league.positionOptions.length;
 
       const newLineup = league.userStates[0].userPlayers
         .sort(() => 0.5 - Math.random())

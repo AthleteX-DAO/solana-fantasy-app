@@ -1,10 +1,10 @@
 //! State transition types
 
-use num_enum::TryFromPrimitive;
+use num_enum::{TryFromPrimitive,IntoPrimitive};
 
 /// Position state.
 #[repr(u8)]
-#[derive(Clone, Copy, Debug, PartialEq, TryFromPrimitive)]
+#[derive(Clone, Copy, Debug, PartialEq, TryFromPrimitive, IntoPrimitive,)]
 pub enum Position {
     /// Not yet initialized
     Uninitialized,
@@ -21,6 +21,16 @@ pub enum Position {
     //  DEF
     DEF, 
 
+    // Point Guard
+    PG,
+    // Shooting Guard
+    SG,
+    // Small Forward
+    SF,
+    // Power Forward,
+    PF,
+    //Center,
+    C,
 }
 impl Default for Position {
     fn default() -> Self {

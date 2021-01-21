@@ -429,9 +429,7 @@ export const DraftSelection: FunctionComponent<RouteComponentProps<MatchParams>>
                     External ID
                   </Dropdown.Item>
                   <Dropdown.Item onClick={setSearchFilter.bind(null, 'Name')}>Name</Dropdown.Item>
-                  <Dropdown.Item onClick={setSearchFilter.bind(null, 'ADP')}>
-                    Average Draft Position
-                  </Dropdown.Item>
+                  <Dropdown.Item onClick={setSearchFilter.bind(null, 'ADP')}>Price</Dropdown.Item>
                   <Dropdown.Item onClick={setSearchFilter.bind(null, 'Position')}>
                     Position
                   </Dropdown.Item>

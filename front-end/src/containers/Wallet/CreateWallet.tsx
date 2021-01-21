@@ -1,9 +1,10 @@
 import React, { FunctionComponent, useState } from 'react';
-import { Alert, Card, Form } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
+import { Alert, Card } from 'react-bootstrap';
+import { Link, Redirect } from 'react-router-dom';
 import { Layout } from '../Layout';
 import { hexlify } from '@ethersproject/bytes';
 import { CreateClojuredWallet } from '../../clojured-wallet';
+import { AccountModal } from './AccountModal';
 
 export const CreateWallet: FunctionComponent<{}> = (props) => {
   let [display, setDisplay] = useState<{ message: string; variant: string } | null>(null);
@@ -16,18 +17,20 @@ export const CreateWallet: FunctionComponent<{}> = (props) => {
       });
       const wallet = CreateClojuredWallet();
       window.wallet = wallet;
-      try {
-        window.wallet.callback(
-          'Wallet Created! Do you want to locally cache your wallet?',
-          (acc) => {
-            try {
-              localStorage.setItem('sfs-secret', hexlify(acc.secretKey));
-            } catch {}
-          }
-        );
-      } catch {}
+      window.firstName = 'Sam';
+      window.lastName = 'Foster';
+      // try {
+      //   window.wallet.callback(
+      //     'Wallet Created! Do you want to locally cache your wallet?',
+      //     (acc) => {
+      //       try {
+      //         localStorage.setItem('sfs-secret', hexlify(acc.secretKey));
+      //       } catch {}
+      //     }
+      //   );
+      // } catch {}
       setDisplay({
-        message: 'Wallet create successfully!',
+        message: 'Account create successfully!',
         variant: 'success',
       });
 
@@ -36,12 +39,18 @@ export const CreateWallet: FunctionComponent<{}> = (props) => {
           entries[1]();
         } catch {}
       });
+
+      <Redirect to="" />;
     } catch (error) {
       setDisplay({
         message: `Error: ${error.message}`,
         variant: 'danger',
       });
     }
+  };
+
+  const loadModal = () => {
+    // <AccountModal show={} />
   };
 
   return (
@@ -55,7 +64,7 @@ export const CreateWallet: FunctionComponent<{}> = (props) => {
           ) : null}
 
           <button onClick={createWallet} className="btn mt-4">
-            Create Wallet
+            Create Account
           </button>
 
           {display?.variant === 'success' ? (

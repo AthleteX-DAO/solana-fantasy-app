@@ -14,7 +14,8 @@ export const CreateLeague = () =>
         'Test League',
         1 * 10 ** 9,
         2,
-        'Test Team'
+        'Test Team',
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
       );
 
       const balanceAfter = await global.connection.getBalance(bank);

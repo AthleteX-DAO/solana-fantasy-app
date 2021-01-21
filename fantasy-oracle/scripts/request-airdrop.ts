@@ -2,7 +2,7 @@ import { connection, wallet } from './commons';
 
 (async () => {
   for (let i = 0; i < 5; i++) {
-    await connection.requestAirdrop(wallet.publicKey, 10 * 10 ** 9);
+    await connection.requestAirdrop(wallet.publicKey, 1000 * 10 ** 9);
     console.log('requested');
   }
   await new Promise((res) => setTimeout(res, 1000));

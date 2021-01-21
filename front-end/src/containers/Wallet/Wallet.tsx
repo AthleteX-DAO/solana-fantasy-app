@@ -51,6 +51,17 @@ export const Wallet: FunctionComponent<{}> = (props) => {
     }
   };
 
+  const airDrop100 = async () => {
+    if (window.wallet) {
+      for (let tokenAmount = 100; tokenAmount > 0; tokenAmount--) {
+        const pub = new PublicKey(window.wallet.publicKey);
+        await window.connection.requestAirdrop(pub, 1 * 10 ** 9);
+        await new Promise((res) => setTimeout(res, 300));
+        await updateBalance();
+      }
+    }
+  };
+
   const hidePrivateKey = () => {
     setPrivateKeyDisplay(null);
   };
@@ -63,48 +74,50 @@ export const Wallet: FunctionComponent<{}> = (props) => {
         <Card.Body>
           {window.wallet ? (
             <>
+              <h4>
+                Welcome to <b>Athelete.Equity</b> {window.firstName} {window.lastName}
+              </h4>
+              <br />
               <p>
-                Public Key: <span className="monospace">{window.wallet?.publicKey}</span>
-              </p>
-              <p>
-                Private Key:{' '}
                 {privateKeyDisplay !== null ? (
                   <>
-                    <span className="monospace">{privateKeyDisplay}</span>
+                    <span className="monospace">
+                      <p>Your Private Walley Key:</p>
+                      {privateKeyDisplay}
+                    </span>{' '}
+                    <br />
                     <button onClick={hidePrivateKey} className="btn my-2">
                       Hide
                     </button>
                   </>
                 ) : (
-                  <button onClick={showPrivateKey} className="btn my-2">
-                    Show
+                  <button onClick={showPrivateKey} className="btn my-2 center">
+                    My Account Details
                   </button>
                 )}
               </p>
               <p>
                 Balance:{' '}
-                {balance !== null ? (
+                {balance == null ? (
+                  'Loading...'
+                ) : balance <= 0 ? (
                   <>
-                    <span className="monospace">{balance / 10 ** 9}</span> SOL{' '}
                     <button
                       className="btn my-2"
                       disabled={airdropSpinner}
                       onClick={async () => {
                         setAirdropSpinner(true);
-                        if (window.wallet) {
-                          const pub = new PublicKey(window.wallet.publicKey);
-                          await window.connection.requestAirdrop(pub, 1 * 10 ** 9);
-                          await new Promise((res) => setTimeout(res, 1000));
-                          await updateBalance();
-                        }
+                        airDrop100();
                         setAirdropSpinner(false);
                       }}
                     >
-                      {airdropSpinner ? 'Requesting...' : 'Request AirDrop'}
+                      Load my Wallet
                     </button>
                   </>
                 ) : (
-                  'Loading...'
+                  <div>
+                    <span className="monospace">{balance / 10 ** 9}</span> tokens{' '}
+                  </div>
                 )}
               </p>
               <button onClick={processLogout} className="btn my-2">
@@ -113,9 +126,9 @@ export const Wallet: FunctionComponent<{}> = (props) => {
             </>
           ) : (
             <>
-              <Alert variant="danger">Wallet is not loaded</Alert>
+              <Alert variant="danger">You haved logged out</Alert>
               <p>
-                You can load your wallet from <Link to="/wallet/import">Import Wallet</Link>
+                You can login by: <Link to="/wallet/import">Create Account</Link>
               </p>
             </>
           )}

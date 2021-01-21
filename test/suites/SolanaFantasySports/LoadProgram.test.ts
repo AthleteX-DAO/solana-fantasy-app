@@ -7,7 +7,7 @@ export const LoadProgram = () =>
   describe('Load SFS Program', () => {
     it('loads program to the localnet', async () => {
       const data = readFileSync(
-        resolve(__dirname, '../../../contracts/solana-fantasy-sports/solana_fantasy_sports.so'),
+        resolve(__dirname, '../../../target/deploy/solana_fantasy_sports.so'),
         {
           encoding: 'hex',
         }

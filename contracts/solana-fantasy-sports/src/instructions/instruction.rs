@@ -92,6 +92,9 @@ pub enum SfsInstruction<'a> {
     ClaimReward {
         args: ClaimRewardArgs<'a>,
     },
+    RemoveLeague {
+        args: RemoveLeagueArgs<'a>,
+    }
 }
 impl<'a> SfsInstruction<'a> {
     pub fn unpack(input: &'a RefCell<&'a [u8]>) -> Result<Self, ProgramError> {
@@ -140,6 +143,9 @@ impl<'a> SfsInstruction<'a> {
             13 => Self::IncrementWeek,
             14 => Self::ClaimReward {
                 args: ClaimRewardArgs::new(input, 1)?,
+            },
+            15 => Self::RemoveLeague {
+                args: RemoveLeagueArgs::new(input,1)?,
             },
 
             _ => return Err(SfsError::InvalidInstruction.into()),
@@ -218,6 +224,11 @@ impl<'a> SfsInstruction<'a> {
                 buf.push(14);
                 buf.extend_from_slice(&[0u8; ClaimRewardArgs::LEN]);
                 args.copy_to(array_mut_ref![buf, 1, ClaimRewardArgs::LEN]);
+            }
+            Self::RemoveLeague { args } => {
+                buf.push(15);
+                buf.extend_from_slice(&[0u8;RemoveLeagueArgs::LEN]);
+                args.copy_to(array_mut_ref![buf,1,RemoveLeagueArgs::LEN]);
             }
         };
         buf
@@ -408,6 +419,24 @@ pub fn accept_swap(
         program_id: *sfs_program_id,
         accounts,
         data,
+    })
+}
+
+pub fn remove_league(
+    sfs_program_id: &Pubkey,
+    root_pubkey: &Pubkey,
+    args: RemoveLeagueArgs,
+) -> Result<Instruction,ProgramError> {
+    let data = SfsInstruction::RemoveLeague {args}.pack();
+
+    let accounts = vec![
+        AccountMeta::new(*root_pubkey,false),
+    ];
+
+    Ok(Instruction{
+        program_id: *sfs_program_id,
+        accounts,
+        data
     })
 }
 
