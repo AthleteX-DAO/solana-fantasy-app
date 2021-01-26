@@ -39,10 +39,10 @@
   dependencies:
     regenerator-runtime "^0.13.4"
 
-"@solana/web3.js@^0.88.0":
-  version "0.88.0"
-  resolved "https://registry.yarnpkg.com/@solana/web3.js/-/web3.js-0.88.0.tgz#319d24a03b0b65922338a482c5ba060a401b514f"
-  integrity sha512-e3dvt+k6keooHuwRR7ZcQoiz0Emi/5fr5QsLBCJyM6WOtId5IYVXLl/3VRxLOBWWcvnhUrhejrOTrASEs1bEqA==
+"@solana/web3.js@^0.90.2":
+  version "0.90.2"
+  resolved "https://registry.yarnpkg.com/@solana/web3.js/-/web3.js-0.90.2.tgz#726ed4c6b267362c942af0be0a80f1efb9b8a1f9"
+  integrity sha512-KP9TQSM1oLEdqhPQ+zNCED3FbCqTvCslOXxY5TOxc829bI+rG4GNOtyzh5QkZRIx0DUTE0Kiw2qvb3kGCPxOKg==
   dependencies:
     "@babel/runtime" "^7.3.1"
     bn.js "^5.0.0"
