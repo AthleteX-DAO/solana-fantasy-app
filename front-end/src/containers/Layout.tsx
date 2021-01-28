@@ -12,18 +12,6 @@ export const Layout: FunctionComponent<{ heading: string; removeTopMargin?: bool
     <main id="main">
       <section id="breadcrumbs" className={`breadcrumbs${props.removeTopMargin ? ' mt-0' : ''}`}>
         <div className="container">
-          <ol>
-            {breadcrumb.map((name, index) => (
-              <li key={index}>
-                <Link
-                  to={breadcrumb.slice(0, index + 1).join('/')}
-                  className={breadcrumb.length - 1 === index ? 'active' : ''}
-                >
-                  {name ? name.replace(/-/g, ' ').toUpperCase() : 'HOME'}
-                </Link>
-              </li>
-            ))}
-          </ol>
           <h2>{props.heading ?? 'Heading'}</h2>
         </div>
       </section>
