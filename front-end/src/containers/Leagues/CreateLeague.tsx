@@ -14,7 +14,7 @@ export function CreateLeague() {
   const [leagueEntryCostInput, setLeagueEntryCostInput] = useState<string>('');
   const [leagueSizeInput, setLeagueSizeInput] = useState<string>('');
   const [teamNameInput, setTeamNameInput] = useState<string>('');
-  const [leagueType, setLeagueType] = useState<string>('NFL Classic');
+  const [leagueType, setLeagueType] = useState<string>('League Type');
   const [positionOptions, setPositionOptions] = useState<number[]>(nflDefault);
   const [advancedMenu, setAdvancedMenu] = useState<boolean>(false);
 
@@ -48,8 +48,11 @@ export function CreateLeague() {
   };
 
   return (
-    <Layout heading="Create a League">
       <Card style={{ maxWidth: '400px', margin: '0 auto' }}>
+        <Card.Header>
+          Create a League
+        </Card.Header>
+        
         <Card.Body>
           <Form.Control
             disabled={spinner}
@@ -95,8 +98,13 @@ export function CreateLeague() {
             // isInvalid={}
           />
 
+          <Form.Control as="select">
+            <option>NFL Classic</option>
+            <option>NBA Classic</option>
+            <option>Custom</option>
+          </Form.Control>
+
           <Dropdown className="my-4">
-            League Type:
             <Dropdown.Toggle>{leagueType}</Dropdown.Toggle>
             <Dropdown.Menu>
               <Dropdown.Item
@@ -360,6 +368,5 @@ export function CreateLeague() {
           </button>
         </Card.Body>
       </Card>
-    </Layout>
   );
 }

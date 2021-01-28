@@ -1,9 +1,10 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
-import { Table } from 'react-bootstrap';
+import { Table, Card } from 'react-bootstrap';
 import { useHistory, RouteComponentProps } from 'react-router-dom';
 import { League } from '../../sdk/state';
 import { isUserAlreadyJoined } from '../../utils';
 import { Layout } from '../Layout';
+import { CreateLeague } from './CreateLeague';
 
 export const LeagueList: FunctionComponent<RouteComponentProps> = (props) => {
   const [leagues, setLeagues] = useState<League[] | null>();
@@ -23,13 +24,18 @@ export const LeagueList: FunctionComponent<RouteComponentProps> = (props) => {
   }, []);
   return (
     <Layout heading="Leagues">
+      <Card style={{ maxWidth: '800px', margin: '0 auto'}}>
+      <Card.Header>
+        Join an Existing League
+      </Card.Header>
+      <Card.Body>
       {leagues ? (
         leagues.length !== 0 ? (
           <Table>
             <thead>
               <tr>
-                <th>Leage Index</th>
-                <th>Leage Name</th>
+                <th>League Index</th>
+                <th>League Name</th>
                 <th>Bid</th>
                 <th>Users</th>
                 <th>Action</th>
@@ -47,6 +53,10 @@ export const LeagueList: FunctionComponent<RouteComponentProps> = (props) => {
       ) : (
         'Loading state from Solana...'
       )}
+      </Card.Body>
+      </Card>
+
+      <CreateLeague />
     </Layout>
   );
 };
