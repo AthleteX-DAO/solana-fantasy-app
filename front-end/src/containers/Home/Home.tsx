@@ -16,7 +16,7 @@ export function Home() {
           </h1>
           <h2>Invest in the player performance of athletes</h2>
           <Link to="/leagues/create" style={{ marginRight: '50px' }}>
-            <button className="btn m-0">Join an existing League</button>
+            <button className="btn m-0">Create a league</button>
           </Link>
 
           <Link to="/wallet" style={{ marginLeft: '50px' }}>

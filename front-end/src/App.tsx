@@ -10,6 +10,8 @@ import { Home } from './containers/Home/Home';
 import { WalletRouter } from './containers/Wallet/Router';
 import { LeaguesRouter } from './containers/Leagues/Router';
 import { MatchupsRouter } from './containers/Matchups/Router';
+import { RosterRouter } from './containers/Roster/Router';
+import { H2HRouter } from './containers/H2H/Router';
 import { Admin } from './containers/Admin/Admin';
 
 function App() {

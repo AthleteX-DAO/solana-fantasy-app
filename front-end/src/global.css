@@ -4724,6 +4724,7 @@ input[type='button'].btn-block {
 --------------------------------------------------------------*/
 .breadcrumbs {
   padding: 0.55rem 1rem;
+  padding-top: 2.1rem;
   margin-bottom: 1rem;
   list-style: none;
   background-color: #1d253b;
@@ -4732,14 +4733,13 @@ input[type='button'].btn-block {
   flex-wrap: wrap;
   background-color: #101420;
 }
-
-@media (max-width: 992px) {
+/* @media (max-width: 992px) {
   .breadcrumbs {
     margin-top: 50px;
   }
-}
+} */
 
-/* .breadcrumb {
+.breadcrumb {
   display: flex;
   flex-wrap: wrap;
   padding: 0.75rem 1rem;
@@ -4769,7 +4769,7 @@ input[type='button'].btn-block {
 
 .breadcrumb-item.active {
   color: #ffffff;
-} */
+}
 
 .pagination {
   display: flex;
@@ -7367,7 +7367,7 @@ button.bg-darker:focus {
 }
 
 .fixed-top {
-  position: fixed;
+  position: relative;
   top: 0;
   right: 0;
   left: 0;
