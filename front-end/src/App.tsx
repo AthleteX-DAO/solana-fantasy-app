@@ -9,7 +9,7 @@ import { Footer } from './containers/Footer/Footer';
 import { Home } from './containers/Home/Home';
 import { WalletRouter } from './containers/Wallet/Router';
 import { LeaguesRouter } from './containers/Leagues/Router';
-import { H2HRouter } from './containers/H2H/Router';
+import { MatchupsRouter } from './containers/Matchups/Router';
 import { Admin } from './containers/Admin/Admin';
 
 function App() {
@@ -21,6 +21,7 @@ function App() {
           <Route path="/" exact component={Home} />
           <Route path="/wallet" component={WalletRouter} />
           <Route path="/leagues" component={LeaguesRouter} />
+          <Route path="/matchups" component={MatchupsRouter} />
           <Route path="/admin" component={Admin} />
         </Switch>
       </BrowserRouter>

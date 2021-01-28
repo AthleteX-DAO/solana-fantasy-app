@@ -25,9 +25,12 @@ export function CreateClojuredWallet(secretKey?: string): ClojuredWallet {
       return account.publicKey.toBase58();
     },
     get privateKey() {
-      const _secretKey = this.callback('Do you want to export private key?', (account: Account) => {
-        return account.secretKey;
-      });
+      const _secretKey = this.callback(
+        'This will show you you Private/Public Key Hash.. continue?',
+        (account: Account) => {
+          return account.secretKey;
+        }
+      );
       return hexlify(_secretKey);
     },
     callback(description: string, fn: (account: Account) => any): any {
