@@ -31,7 +31,7 @@
     "create-league": "ts-node fantasy-oracle/scripts/create-league.ts"
   },
   "devDependencies": {
-    "@types/mocha": "^8.0.3",
+    "@types/mocha": "^8.2.1",
     "@types/node": "^14.14.20",
     "buffer-layout": "^1.2.0",
     "husky": "^4.3.7",
